@@ -70,8 +70,32 @@ PKG_FIELD_DEFAULTS = {
     "material": "Art Matte", "size": "12\"x12\"", "pages": "40 muka surat",
 }
 
+DEFAULT_REVIEWS = [
+    {"name": "Aisyah & Haziq",     "pkg": "Album Warisan",  "date": "Jun 2026", "rating": 5,
+     "quote": "Album kami sangat cantik & tersusun. Designer faham betul vibe yang kami nak. Semak 2 kali je terus sempurna!"},
+    {"name": "Nurul & Amirul",     "pkg": "Design + Cetak", "date": "Mei 2026", "rating": 5,
+     "quote": "Proses sangat mudah. Hantar gambar pagi, esok designer dah hubungi. Layout siap dalam 5 hari. Terbaik!"},
+    {"name": "Farah & Danial",     "pkg": "Pakej Penuh",    "date": "Apr 2026", "rating": 5,
+     "quote": "Packaging pun cantik, album sampai dalam keadaan sempurna. Harga berbaloi sangat dengan kualiti yang dapat!"},
+    {"name": "Hafiz & Liyana",     "pkg": "Album Warisan",  "date": "Apr 2026", "rating": 5,
+     "quote": "Tak sangka gambar telefon pun boleh jadi album secantik ni. Designer pandai susun ikut cerita majlis."},
+    {"name": "Syafiq & Aina",      "pkg": "Design Sahaja",  "date": "Mac 2026", "rating": 5,
+     "quote": "Komunikasi sangat baik, setiap detail diambil berat. Hasil akhir buat kami menangis bahagia."},
+    {"name": "Imran & Balqis",     "pkg": "Pakej Penuh",    "date": "Mac 2026", "rating": 5,
+     "quote": "Dari mula sampai siap semua smooth. Kualiti cetakan tajam, warna cantik. Recommended!"},
+    {"name": "Danish & Maisarah",  "pkg": "Design + Cetak", "date": "Feb 2026", "rating": 5,
+     "quote": "Album untuk hadiah ibu bapa. Mereka suka sangat! Terima kasih designer PixyoPrint."},
+    {"name": "Adam & Qistina",     "pkg": "Album Warisan",  "date": "Feb 2026", "rating": 5,
+     "quote": "Layout kemas, font cantik, susunan gambar nampak profesional. Memang puas hati 100%."},
+    {"name": "Zikri & Nadia",      "pkg": "Pakej Penuh",    "date": "Jan 2026", "rating": 5,
+     "quote": "Fast response, hasil melebihi jangkaan. Album jadi memori paling berharga kami."},
+    {"name": "Iskandar & Sofea",   "pkg": "Design + Cetak", "date": "Jan 2026", "rating": 5,
+     "quote": "Setiap helaian disusun dengan teliti. Nampak betul usaha designer. Sangat berpuas hati!"},
+]
+
 DEFAULT_DATA = {
     "editors": [],
+    "reviews": DEFAULT_REVIEWS,
     "hitpay": {
         # SECURITY: Baca dari environment variable — jangan simpan secret dalam kod/Git.
         # Set HITPAY_API_KEY & HITPAY_SALT sebelum jalankan, atau isi via panel admin.
@@ -209,6 +233,9 @@ def load_data():
     if "editors" not in data:
         data["editors"] = []
         changed = True
+    if "reviews" not in data:
+        data["reviews"] = json.loads(json.dumps(DEFAULT_REVIEWS))
+        changed = True
     # Migrate plaintext passwords → hashed (PBKDF2)
     for u in data.get("users", []):
         if not u.get("password", "").startswith("pbkdf2:"):
@@ -291,6 +318,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(load_data().get("categoryOrder", []))
         if self.path == "/api/vouchers":
             return self._json(load_data().get("vouchers", []))
+        if self.path == "/api/reviews":
+            return self._json(load_data().get("reviews", []))
         if self.path == "/api/me":
             u = self._user()
             return self._json({"ok": bool(u),
@@ -637,7 +666,8 @@ class Handler(SimpleHTTPRequestHandler):
             save_data(d)
             return self._json({"ok": True})
         key_map = {"/api/flow": "flow", "/api/packages": "packages",
-                   "/api/categories": "categoryOrder", "/api/vouchers": "vouchers"}
+                   "/api/categories": "categoryOrder", "/api/vouchers": "vouchers",
+                   "/api/reviews": "reviews"}
         if self.path in key_map:
             if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)

@@ -222,6 +222,16 @@ tbody tr{border-top:1px solid #f0e8df;}
         <div class="grid-2" style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;" id="editor-cards"></div>
       </div>
 
+      <!-- ============ REVIEWS ============ -->
+      <div class="view" id="view-reviews">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <div><div class="h-title">Ulasan Pelanggan</div><div style="font-size:13px;color:#8a7e72;margin-top:2px;" id="review-count-label">0 ulasan</div></div>
+          <button class="btn-primary" style="display:flex;align-items:center;gap:8px;font-size:13px;padding:10px 18px;border-radius:8px;" onclick="showReviewModal()"><i class="ph ph-plus"></i> Tambah Ulasan</button>
+        </div>
+        <div style="font-size:13px;color:#8a7e72;margin-bottom:20px;max-width:680px;">Ulasan ini dipaparkan sebagai slider bergerak di laman pelanggan. Disyorkan 8–10 ulasan untuk slider yang kemas.</div>
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:820px;" id="review-list"></div>
+      </div>
+
       <!-- ============ PACKAGES ============ -->
       <div class="view" id="view-settings">
         <div class="h-title" style="margin-bottom:6px;">Tetapan</div>
@@ -500,6 +510,47 @@ tbody tr{border-top:1px solid #f0e8df;}
   </div>
 </div>
 
+<!-- Modal Tambah / Edit Ulasan -->
+<div id="review-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(45,37,32,.55);align-items:center;justify-content:center;">
+  <div style="width:460px;max-width:94vw;background:#fffdfa;border-radius:14px;padding:28px 26px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+    <div style="font-size:16px;font-weight:700;color:#2d2520;margin-bottom:18px;"><i class="ph ph-star" style="color:#a86d69;margin-right:6px;"></i><span id="review-modal-title">Tambah Ulasan</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Nama Pasangan</div>
+        <input id="rv-name" class="inp" style="width:100%;" placeholder="cth: Aisyah & Haziq">
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Pakej</div>
+        <input id="rv-pkg" class="inp" style="width:100%;" placeholder="cth: Album Warisan">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Tarikh</div>
+        <input id="rv-date" class="inp" style="width:100%;" placeholder="cth: Jun 2026">
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Rating</div>
+        <select id="rv-rating" class="inp" style="width:100%;">
+          <option value="5">★★★★★ (5)</option>
+          <option value="4">★★★★ (4)</option>
+          <option value="3">★★★ (3)</option>
+          <option value="2">★★ (2)</option>
+          <option value="1">★ (1)</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Ulasan</div>
+      <textarea id="rv-quote" class="inp" style="width:100%;min-height:90px;resize:vertical;" placeholder="Tulis ulasan pelanggan di sini…"></textarea>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button class="btn-ghost" style="padding:10px 18px;" onclick="closeReviewModal()">Batal</button>
+      <button id="rv-modal-save-btn" class="btn-primary" style="font-size:13px;padding:10px 20px;border-radius:7px;"><i class="ph ph-floppy-disk"></i> Simpan</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================================
 // DATA
@@ -509,9 +560,10 @@ const NAV = [
   { id:'orders',   label:'Senarai Order', icon:'ph ph-list-checks',   badge:false },
   { id:'revenue',  label:'Pendapatan',    icon:'ph ph-chart-bar',     badge:false },
   { id:'editors',  label:'Urus Editor',   icon:'ph ph-users-three',   badge:false },
+  { id:'reviews',  label:'Ulasan',        icon:'ph ph-star',          badge:false },
   { id:'settings', label:'Tetapan',       icon:'ph ph-gear',          badge:false }
 ];
-const LABELS = { overview:'Overview', orders:'Senarai Order', revenue:'Pendapatan', editors:'Urus Editor', settings:'Tetapan' };
+const LABELS = { overview:'Overview', orders:'Senarai Order', revenue:'Pendapatan', editors:'Urus Editor', reviews:'Ulasan', settings:'Tetapan' };
 
 const STATUS = {
   'Hantar Gambar':{bg:'#fef3f2',color:'#c0392b'},
@@ -639,6 +691,95 @@ function removeEditor(i){
   EDITORS.splice(i, 1);
   renderEditors();
   persistEditors(`Editor ${name} dibuang`);
+}
+
+// ============================================================
+// REVIEWS / ULASAN
+// ============================================================
+let REVIEWS = [];
+let _reviewEditIdx = null;
+
+function loadReviews(){
+  fetch('/api/reviews', { headers: authHeaders() })
+    .then(r => r.json())
+    .then(list => { if(Array.isArray(list)) REVIEWS = list; renderReviews(); })
+    .catch(() => renderReviews());
+}
+
+function persistReviews(msg){
+  fetch('/api/reviews', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body:JSON.stringify(REVIEWS) })
+    .then(r => r.json())
+    .then(res => { if(msg) showToast(res.ok ? msg : 'Gagal simpan ulasan'); })
+    .catch(() => showToast('Gagal sambung ke server'));
+}
+
+function renderReviews(){
+  const el = document.getElementById('review-list');
+  if(!el) return;
+  document.getElementById('review-count-label').textContent = REVIEWS.length + ' ulasan';
+  if(!REVIEWS.length){
+    el.innerHTML = '<div class="card" style="padding:28px;text-align:center;color:#9a8d80;">Tiada ulasan lagi. Tekan "Tambah Ulasan".</div>';
+    return;
+  }
+  el.innerHTML = REVIEWS.map((r,i)=>{
+    const rating = Math.max(1, Math.min(5, Number(r.rating)||5));
+    const stars = '★★★★★'.slice(0, rating);
+    return `<div class="card" style="padding:18px 20px;display:flex;gap:14px;align-items:flex-start;">
+      <div style="flex:1;min-width:0;">
+        <div style="color:#c98a86;font-size:13px;letter-spacing:2px;margin-bottom:6px;">${stars}</div>
+        <div style="font-size:13px;font-style:italic;color:#5a4e46;line-height:1.5;margin-bottom:8px;">"${esc(r.quote)}"</div>
+        <div style="font-size:13px;font-weight:700;color:#2d2520;">${esc(r.name)}</div>
+        <div style="font-size:12px;color:#9a8d80;">${esc([r.pkg,r.date].filter(Boolean).join(' · '))}</div>
+      </div>
+      <div style="display:flex;gap:8px;flex:none;">
+        <button class="icon-btn" onclick="showReviewModal(${i})" title="Sunting"><i class="ph ph-pencil-simple"></i></button>
+        <button class="icon-btn" onclick="removeReview(${i})" title="Buang"><i class="ph ph-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showReviewModal(editIdx){
+  _reviewEditIdx = (editIdx !== undefined) ? editIdx : null;
+  const isEdit = _reviewEditIdx !== null;
+  document.getElementById('review-modal-title').textContent = isEdit ? 'Edit Ulasan' : 'Tambah Ulasan';
+  document.getElementById('rv-modal-save-btn').onclick = saveReview;
+  const r = isEdit ? REVIEWS[_reviewEditIdx] : { name:'', pkg:'', date:'', rating:5, quote:'' };
+  document.getElementById('rv-name').value = r.name || '';
+  document.getElementById('rv-pkg').value = r.pkg || '';
+  document.getElementById('rv-date').value = r.date || '';
+  document.getElementById('rv-rating').value = String(r.rating || 5);
+  document.getElementById('rv-quote').value = r.quote || '';
+  document.getElementById('review-modal').style.display = 'flex';
+  document.getElementById('rv-name').focus();
+}
+
+function closeReviewModal(){
+  document.getElementById('review-modal').style.display = 'none';
+  _reviewEditIdx = null;
+}
+
+function saveReview(){
+  const r = {
+    name:   document.getElementById('rv-name').value.trim(),
+    pkg:    document.getElementById('rv-pkg').value.trim(),
+    date:   document.getElementById('rv-date').value.trim(),
+    rating: Number(document.getElementById('rv-rating').value) || 5,
+    quote:  document.getElementById('rv-quote').value.trim(),
+  };
+  if(!r.name){ showToast('Masukkan nama pasangan.'); return; }
+  if(!r.quote){ showToast('Masukkan teks ulasan.'); return; }
+  if(_reviewEditIdx !== null) REVIEWS[_reviewEditIdx] = r;
+  else REVIEWS.unshift(r);
+  closeReviewModal();
+  renderReviews();
+  persistReviews(_reviewEditIdx !== null ? 'Ulasan dikemaskini' : 'Ulasan ditambah');
+}
+
+function removeReview(i){
+  REVIEWS.splice(i, 1);
+  renderReviews();
+  persistReviews('Ulasan dibuang');
 }
 
 const KPI = [
@@ -1310,7 +1451,7 @@ function initAdmin(){
   loadData().then(()=>{
     renderFlow();
     if(!_adminReady){
-      renderNav(); renderRevenue(); loadEditors(); loadOrders();
+      renderNav(); renderRevenue(); loadEditors(); loadOrders(); loadReviews();
       _adminReady = true;
     }
     renderPackages();

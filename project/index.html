@@ -111,6 +111,12 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 .proof-thumb{flex:1;height:48px;border-radius:5px;}
 
 /* Mobile nav bottom */
+.review-marquee{overflow:hidden;position:relative;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);}
+.review-track{display:flex;gap:20px;width:max-content;animation:reviewScroll 60s linear infinite;}
+.review-marquee:hover .review-track{animation-play-state:paused;}
+@keyframes reviewScroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.review-card{flex:0 0 360px;width:360px;border-radius:14px;padding:28px 26px;box-sizing:border-box;}
+@media(max-width:768px){.review-card{flex-basis:300px;width:300px;}}
 .foot-link{cursor:pointer;color:#cdbfb2;transition:color .15s;}
 .foot-link:hover{color:#f5ede4;}
 .ann-cta{color:#d99e97;cursor:pointer;font-weight:700;text-decoration:underline;text-underline-offset:2px;}
@@ -198,7 +204,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
       <!-- kanan: tulisan -->
       <div style="padding:56px 44px;display:flex;flex-direction:column;justify-content:center;">
         <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(40px,5vw,60px);font-weight:500;line-height:1.05;color:#2d2520;margin-bottom:22px;">Setiap gambar <span style="font-style:italic;color:#c98a86;">layak</span> disusun dengan indah.</h1>
-        <p style="font-size:15px;color:#8a7e72;line-height:1.7;max-width:440px;margin-bottom:32px;">Kami bantu susun layout album &amp; photobook anda secara manual — dari gambar di telefon, komputer dan laptop diterjemah kepada helaian cinta yang bercerita.</p>
+        <p style="font-size:15px;color:#8a7e72;line-height:1.7;max-width:440px;margin-bottom:32px;">Kami bantu susun layout album &amp; photobook anda secara manual. Dari gambar di telefon, komputer dan laptop diterjemah kepada helaian cinta yang bercerita.</p>
         <!-- Semak status order -->
         <div style="max-width:440px;">
           <div style="font-size:12px;font-weight:600;color:#6f6358;margin-bottom:8px;"><i class="ph ph-magnifying-glass" style="color:#a86d69;"></i> Semak status order anda</div>
@@ -230,44 +236,8 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
       <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#a99c8e;margin-bottom:12px;">Kata Mereka</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(28px,4vw,42px);font-weight:500;color:#2d2520;">Pasangan yang <span style="font-style:italic;color:#c98a86;">sudah percaya</span> kami.</div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;" class="mobile-grid">
-
-      <div style="background:#faf5ef;border-radius:14px;padding:28px 26px;">
-        <div style="color:#c98a86;font-size:14px;letter-spacing:3px;margin-bottom:18px;">★★★★★</div>
-        <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;line-height:1.5;color:#5a4e46;margin-bottom:24px;">"Album kami sangat cantik &amp; tersusun. Designer faham betul vibe yang kami nak. Semak 2 kali je terus sempurna!"</p>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div style="width:40px;height:40px;border-radius:50%;background:#f0d9d4;color:#a86d69;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none;">A</div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#2d2520;">Aisyah &amp; Haziq</div>
-            <div style="font-size:12px;color:#9a8d80;">Album Warisan · Jun 2026</div>
-          </div>
-        </div>
-      </div>
-
-      <div style="background:#2d2520;border-radius:14px;padding:28px 26px;">
-        <div style="color:#c98a86;font-size:14px;letter-spacing:3px;margin-bottom:18px;">★★★★★</div>
-        <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;line-height:1.5;color:#ede4d8;margin-bottom:24px;">"Proses sangat mudah. Hantar gambar pagi, esok designer dah hubungi. Layout siap dalam 5 hari. Terbaik!"</p>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div style="width:40px;height:40px;border-radius:50%;background:#4a3d34;color:#e6c9c2;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none;">N</div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#f5ede4;">Nurul &amp; Amirul</div>
-            <div style="font-size:12px;color:#9a8d80;">Design + Cetak · Mei 2026</div>
-          </div>
-        </div>
-      </div>
-
-      <div style="background:#faf5ef;border-radius:14px;padding:28px 26px;">
-        <div style="color:#c98a86;font-size:14px;letter-spacing:3px;margin-bottom:18px;">★★★★★</div>
-        <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;line-height:1.5;color:#5a4e46;margin-bottom:24px;">"Packaging pun cantik, album sampai dalam keadaan sempurna. Harga berbaloi sangat dengan kualiti yang dapat!"</p>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div style="width:40px;height:40px;border-radius:50%;background:#d8e4d0;color:#5a6e4a;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none;">F</div>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#2d2520;">Farah &amp; Danial</div>
-            <div style="font-size:12px;color:#9a8d80;">Pakej Penuh · Apr 2026</div>
-          </div>
-        </div>
-      </div>
-
+    <div class="review-marquee">
+      <div class="review-track" id="review-track"></div>
     </div>
   </div>
 
@@ -677,6 +647,47 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 // ANNOUNCEMENT BAR (slider berputar)
 // ============================================================
 function goToPackages(){ goPage('servis'); setTimeout(()=>document.getElementById('pkg-section').scrollIntoView({behavior:'smooth'}),50); }
+
+// ============================================================
+// REVIEW MARQUEE (carousel bergerak — boleh urus di admin)
+// ============================================================
+function escR(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function reviewCard(r, i){
+  const dark = i % 2 === 1;  // selang-seli gelap/terang
+  const bg = dark ? '#2d2520' : '#faf5ef';
+  const quoteColor = dark ? '#ede4d8' : '#5a4e46';
+  const nameColor  = dark ? '#f5ede4' : '#2d2520';
+  const avBg = dark ? '#4a3d34' : '#f0d9d4';
+  const avColor = dark ? '#e6c9c2' : '#a86d69';
+  const rating = Math.max(1, Math.min(5, Number(r.rating) || 5));
+  const stars = '★★★★★☆☆☆☆☆'.slice(5 - rating, 10 - rating);
+  const initial = (r.name || '?').trim().charAt(0).toUpperCase();
+  const meta = [r.pkg, r.date].filter(Boolean).join(' · ');
+  return `<div class="review-card" style="background:${bg};">
+    <div style="color:#c98a86;font-size:14px;letter-spacing:3px;margin-bottom:18px;">${stars}</div>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;line-height:1.5;color:${quoteColor};margin-bottom:24px;">"${escR(r.quote)}"</p>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:${avBg};color:${avColor};display:flex;align-items:center;justify-content:center;font-weight:700;flex:none;">${escR(initial)}</div>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:${nameColor};">${escR(r.name)}</div>
+        <div style="font-size:12px;color:#9a8d80;">${escR(meta)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+function loadReviews(){
+  fetch('/api/reviews').then(r=>r.json()).then(list=>{
+    const track = document.getElementById('review-track');
+    if(!track) return;
+    if(!Array.isArray(list) || !list.length){ track.parentElement.style.display='none'; return; }
+    // Render dua kali untuk gelung tanpa jahitan
+    const html = list.map(reviewCard).join('');
+    track.innerHTML = html + html;
+    // Laju ikut bilangan kad (lebih banyak = lebih lama)
+    track.style.animationDuration = Math.max(30, list.length * 7) + 's';
+  }).catch(()=>{ const t=document.getElementById('review-track'); if(t) t.parentElement.style.display='none'; });
+}
+loadReviews();
 function heroCheckStatus(){
   const ref = document.getElementById('hero-status-ref').value.trim();
   if(!ref){ showToast('Masukkan nombor order dahulu.'); return; }
