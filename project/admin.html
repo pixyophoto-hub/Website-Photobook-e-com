@@ -1756,8 +1756,7 @@ function renderPackages(){
           ${editing
             ? `<button class="icon-btn" onclick="removePackage(${i})" title="Buang pakej"><i class="ph ph-trash"></i></button>`
             : `${p.category?`<span class="status-pill" style="background:#f3e0dc;color:#a86d69;"><i class="ph ph-tag" style="font-size:11px;"></i> ${esc(p.category)}</span>`:''}
-               <span class="status-pill" style="background:#dde6d8;color:#6f8466;">${esc(p.orders)} order bulan ini</span>
-               <button class="icon-btn" onclick="duplicatePackage(${i})" title="Salin pakej"><i class="ph ph-copy"></i></button>
+<button class="icon-btn" onclick="duplicatePackage(${i})" title="Salin pakej"><i class="ph ph-copy"></i></button>
                <button class="icon-btn" onclick="editPackage(${i})" title="Sunting pakej"><i class="ph ph-pencil-simple"></i></button>`}
         </div>
       </div>
@@ -1787,7 +1786,6 @@ function renderPackages(){
         <div><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Harga Semasa (RM)</div><input type="number" id="pkg-price-${i}" value="${esc(p.price)}" class="inp" style="width:100%;font-size:14px;font-weight:600;color:#2d2520;" ${dis}></div>
         <div><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Harga Asal (RM)</div><input type="number" id="pkg-strike-${i}" value="${esc(p.strike)}" class="inp" style="width:100%;font-size:14px;color:#9a8d80;" ${dis}></div>
         <div><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Muka Surat</div><select id="pkg-pages-${i}" class="inp" style="width:100%;font-size:13px;" ${dis}>${pagesOpts.map(o=>`<option value="${o}"${String(p.pages).replace(/\D/g,'')===o?' selected':''}>${o} muka surat</option>`).join('')}</select></div>
-        <div><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Order Bulan Ini</div><input type="number" id="pkg-orders-${i}" value="${esc(p.orders)}" class="inp" style="width:100%;font-size:14px;color:#2d2520;" ${dis}></div>
       </div>
       ${editing ? `<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
         <button class="btn-ghost" style="padding:10px 18px;" onclick="cancelEditPackage(${i})">Batal</button>
@@ -1873,7 +1871,6 @@ function savePackage(i){
   PACKAGES[i].price  = document.getElementById('pkg-price-'+i).value;
   PACKAGES[i].strike = document.getElementById('pkg-strike-'+i).value;
   PACKAGES[i].pages  = document.getElementById('pkg-pages-'+i).value;
-  PACKAGES[i].orders = Number(document.getElementById('pkg-orders-'+i).value) || 0;
   delete PACKAGES[i].isNew;
   delete PACKAGES[i]._editing;
   renderPackages();
