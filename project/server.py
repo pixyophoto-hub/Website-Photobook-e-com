@@ -597,6 +597,26 @@ class Handler(SimpleHTTPRequestHandler):
         return self._json({"error": "not found"}, 404)
 
     def do_PUT(self):
+        if self.path == "/api/account":
+            sess = self._user()
+            if not sess:
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            b = self._read_body()
+            d = load_data()
+            for u in d.get("users", []):
+                if u.get("email") == sess["email"]:
+                    if b.get("name","").strip():
+                        u["name"] = b["name"].strip()
+                    if b.get("password","").strip():
+                        u["password"] = hash_password(b["password"].strip())
+                    # update session name
+                    tok = self.headers.get("Authorization","").replace("Bearer ","").strip()
+                    if tok and tok in SESSIONS:
+                        SESSIONS[tok]["name"] = u["name"]
+                    save_data(d)
+                    return self._json({"ok": True, "name": u["name"]})
+            return self._json({"ok": False, "error": "user not found"}, 404)
+
         if self.path == "/api/media-links":
             if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
