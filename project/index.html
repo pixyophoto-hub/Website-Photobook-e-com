@@ -1161,8 +1161,8 @@ function renderCheckout() {
   const postLbl = document.getElementById('s-postage-label');
   if(postLbl){
     const pk = (document.getElementById('ship-poskod')||{}).value || '';
-    postLbl.textContent = pk.length >= 2
-      ? (isEastMsiaPoskod(pk) ? 'Penghantaran (Sabah/Sarawak)' : 'Penghantaran (Semenanjung)')
+    postLbl.textContent = (pk.length >= 2 && isEastMsiaPoskod(pk))
+      ? 'Penghantaran (Sabah/Sarawak)'
       : 'Penghantaran';
   }
   document.getElementById('s-total').textContent = money(total);
