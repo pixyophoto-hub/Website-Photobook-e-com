@@ -111,6 +111,10 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 .proof-thumb{flex:1;height:48px;border-radius:5px;}
 
 /* Mobile nav bottom */
+.foot-link{cursor:pointer;color:#cdbfb2;transition:color .15s;}
+.foot-link:hover{color:#f5ede4;}
+.ann-cta{color:#d99e97;cursor:pointer;font-weight:700;text-decoration:underline;text-underline-offset:2px;}
+.ann-cta:hover{color:#f5ede4;}
 @media(max-width:768px){
   .nav-links .nav-link:not(.nav-link-mobile){display:none;}
   .nav{padding:14px 20px;}
@@ -134,6 +138,13 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 </style>
 </head>
 <body>
+
+<!-- ANNOUNCEMENT BAR -->
+<div style="background:#2d2520;color:#f5ede4;display:flex;align-items:center;padding:9px 18px;">
+  <i class="ph ph-caret-left" onclick="announceMove(-1)" style="color:#8a7e72;font-size:18px;cursor:pointer;flex:none;padding:0 6px;" title="Sebelum"></i>
+  <div id="announce-text" style="flex:1;text-align:center;font-size:13px;font-weight:600;line-height:1.4;"></div>
+  <i class="ph ph-caret-right" onclick="announceMove(1)" style="color:#8a7e72;font-size:18px;cursor:pointer;flex:none;padding:0 6px;" title="Seterusnya"></i>
+</div>
 
 <!-- NAV -->
 <nav class="nav">
@@ -175,6 +186,41 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 <!-- ============================================================ -->
 <div class="page active" id="page-servis" style="padding:40px 32px 80px;">
 
+  <!-- Hero -->
+  <div class="card" style="margin-bottom:32px;overflow:hidden;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;" class="mobile-grid">
+      <!-- kiri -->
+      <div style="padding:56px 44px;display:flex;flex-direction:column;justify-content:center;">
+        <div style="align-self:flex-start;font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#a86d69;background:#f6e7e3;padding:7px 16px;border-radius:100px;margin-bottom:26px;">● Album &amp; Photobook Atelier</div>
+        <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(40px,5vw,60px);font-weight:500;line-height:1.05;color:#2d2520;margin-bottom:22px;">Setiap gambar <span style="font-style:italic;color:#c98a86;">layak</span> disusun dengan indah.</h1>
+        <p style="font-size:15px;color:#8a7e72;line-height:1.7;max-width:440px;margin-bottom:32px;">Kami susun layout album kahwin &amp; photobook anda secara manual — dari gambar mentah ke spread yang bercerita, siap dalam 7 hari.</p>
+        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+          <button class="btn-primary" style="display:flex;align-items:center;gap:10px;" onclick="document.getElementById('pkg-section').scrollIntoView({behavior:'smooth'})">Tempah Sekarang <i class="ph ph-arrow-right"></i></button>
+          <span style="display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:#6f6358;cursor:pointer;" onclick="document.getElementById('flow-grid').scrollIntoView({behavior:'smooth'})"><i class="ph ph-images"></i> Lihat Portfolio</span>
+        </div>
+      </div>
+      <!-- kanan -->
+      <div style="position:relative;min-height:520px;background:repeating-linear-gradient(45deg,#ece2d6,#ece2d6 14px,#e3d7c8 14px,#e3d7c8 28px);display:flex;align-items:center;justify-content:center;">
+        <div style="text-align:center;color:#a99c8e;">
+          <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,253,250,.9);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:#a86d69;font-size:22px;"><i class="ph ph-image"></i></div>
+          <span style="font-family:'Courier New',monospace;font-size:12px;letter-spacing:0.08em;">hero · album spread</span>
+        </div>
+        <div style="position:absolute;top:22px;right:22px;background:#fffdfa;border-radius:12px;padding:10px 16px;box-shadow:0 4px 14px rgba(0,0,0,.1);text-align:center;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#2d2520;line-height:1;">7 Hari</div>
+          <div style="font-size:10px;color:#9a8d80;margin-top:2px;">siap album</div>
+        </div>
+        <div style="position:absolute;bottom:22px;left:22px;right:22px;background:#fffdfa;border-radius:12px;padding:14px 16px;box-shadow:0 4px 14px rgba(0,0,0,.1);display:flex;align-items:center;gap:12px;">
+          <div style="width:42px;height:42px;border-radius:50%;background:#c98a86;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex:none;">AH</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:700;color:#2d2520;">Aisyah &amp; Haziq</div>
+            <div style="color:#c98a86;font-size:13px;letter-spacing:2px;">★★★★★</div>
+          </div>
+          <div style="font-size:11px;color:#9a8d80;text-align:right;flex:none;">40 muka surat</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Flow Kerja -->
   <div class="card" style="margin-bottom:32px;">
     <div style="padding:34px 32px 8px;">
@@ -188,8 +234,55 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 
   </div>
 
+  <!-- Testimoni -->
+  <div style="margin-bottom:36px;">
+    <div style="text-align:center;margin-bottom:34px;">
+      <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#a99c8e;margin-bottom:12px;">Kata Mereka</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(28px,4vw,42px);font-weight:500;color:#2d2520;">Pasangan yang <span style="font-style:italic;color:#c98a86;">sudah percaya</span> kami.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;" class="mobile-grid">
+
+      <div style="background:#faf5ef;border-radius:14px;padding:28px 26px;">
+        <div style="color:#c98a86;font-size:14px;letter-spacing:3px;margin-bottom:18px;">★★★★★</div>
+        <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;line-height:1.5;color:#5a4e46;margin-bottom:24px;">"Album kami sangat cantik &amp; tersusun. Designer faham betul vibe yang kami nak. Semak 2 kali je terus sempurna!"</p>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:50%;background:#f0d9d4;color:#a86d69;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none;">A</div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#2d2520;">Aisyah &amp; Haziq</div>
+            <div style="font-size:12px;color:#9a8d80;">Album Warisan · Jun 2026</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#2d2520;border-radius:14px;padding:28px 26px;">
+        <div style="color:#c98a86;font-size:14px;letter-spacing:3px;margin-bottom:18px;">★★★★★</div>
+        <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;line-height:1.5;color:#ede4d8;margin-bottom:24px;">"Proses sangat mudah. Hantar gambar pagi, esok designer dah hubungi. Layout siap dalam 5 hari. Terbaik!"</p>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:50%;background:#4a3d34;color:#e6c9c2;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none;">N</div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#f5ede4;">Nurul &amp; Amirul</div>
+            <div style="font-size:12px;color:#9a8d80;">Design + Cetak · Mei 2026</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#faf5ef;border-radius:14px;padding:28px 26px;">
+        <div style="color:#c98a86;font-size:14px;letter-spacing:3px;margin-bottom:18px;">★★★★★</div>
+        <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;line-height:1.5;color:#5a4e46;margin-bottom:24px;">"Packaging pun cantik, album sampai dalam keadaan sempurna. Harga berbaloi sangat dengan kualiti yang dapat!"</p>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:50%;background:#d8e4d0;color:#5a6e4a;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none;">F</div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#2d2520;">Farah &amp; Danial</div>
+            <div style="font-size:12px;color:#9a8d80;">Pakej Penuh · Apr 2026</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Pilih Pakej -->
-  <div class="card">
+  <div class="card" id="pkg-section">
     <div style="padding:34px 32px 36px;">
       <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:500;margin-bottom:20px;">Pilih Pakej Anda</div>
       <div id="pkg-list"></div>
@@ -539,7 +632,76 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
   </div>
 </div>
 
+<!-- FOOTER -->
+<footer style="background:#2d2520;color:#cdbfb2;padding:56px 32px 28px;">
+  <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:32px;" class="mobile-grid">
+    <div>
+      <img src="logo-light.png?v=2" alt="PixyoPrint" style="height:30px;display:block;">
+      <p style="font-size:13px;line-height:1.7;color:#9a8d80;margin-top:14px;max-width:320px;">Servis susun layout photobook &amp; album kahwin. Disusun manual dengan teliti oleh designer kami.</p>
+      <div style="display:flex;gap:10px;margin-top:22px;">
+        <span onclick="if(_mediaLinks.instagram){window.open(_mediaLinks.instagram,'_blank','noopener')}else{showToast('Link Instagram belum ditetapkan.')}" style="width:38px;height:38px;border-radius:50%;background:#3d2f27;display:flex;align-items:center;justify-content:center;color:#cdbfb2;cursor:pointer;font-size:17px;transition:background .15s;" onmouseover="this.style.background='#4a3a30'" onmouseout="this.style.background='#3d2f27'"><i class="ph ph-instagram-logo"></i></span>
+        <span onclick="if(_mediaLinks.whatsapp){window.open(_mediaLinks.whatsapp,'_blank','noopener')}else{showToast('Link WhatsApp belum ditetapkan.')}" style="width:38px;height:38px;border-radius:50%;background:#3d2f27;display:flex;align-items:center;justify-content:center;color:#cdbfb2;cursor:pointer;font-size:17px;transition:background .15s;" onmouseover="this.style.background='#4a3a30'" onmouseout="this.style.background='#3d2f27'"><i class="ph ph-whatsapp-logo"></i></span>
+        <span onclick="if(_mediaLinks.telegram){window.open(_mediaLinks.telegram,'_blank','noopener')}else{showToast('Link Telegram belum ditetapkan.')}" style="width:38px;height:38px;border-radius:50%;background:#3d2f27;display:flex;align-items:center;justify-content:center;color:#cdbfb2;cursor:pointer;font-size:17px;transition:background .15s;" onmouseover="this.style.background='#4a3a30'" onmouseout="this.style.background='#3d2f27'"><i class="ph ph-telegram-logo"></i></span>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#7a6a5e;margin-bottom:16px;">Servis</div>
+      <div style="display:flex;flex-direction:column;gap:11px;font-size:14px;">
+        <span class="foot-link" onclick="goPage('servis');setTimeout(()=>document.getElementById('pkg-section').scrollIntoView({behavior:'smooth'}),50)">Lihat Pakej</span>
+        <span class="foot-link" onclick="goPage('servis');setTimeout(()=>document.getElementById('flow-grid').scrollIntoView({behavior:'smooth'}),50)">Flow Kerja</span>
+        <span class="foot-link" onclick="goPage('upload')">Hantar Gambar</span>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#7a6a5e;margin-bottom:16px;">Info</div>
+      <div style="display:flex;flex-direction:column;gap:11px;font-size:14px;">
+        <span class="foot-link" onclick="goPage('servis');setTimeout(()=>document.getElementById('flow-grid').scrollIntoView({behavior:'smooth'}),50)">Portfolio</span>
+        <span class="foot-link" onclick="goPage('servis')">Cara Kerja</span>
+        <span class="foot-link" onclick="goPage('hubungi')">Hubungi Kami</span>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#7a6a5e;margin-bottom:16px;">Pelanggan</div>
+      <div style="display:flex;flex-direction:column;gap:11px;font-size:14px;">
+        <span class="foot-link" onclick="goPage('status')">Semak Status Order</span>
+        <span class="foot-link" onclick="goPage('upload')">Hantar Gambar</span>
+        <span class="foot-link" onclick="openLogin()">Log Masuk Admin</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1200px;margin:36px auto 0;padding-top:22px;border-top:1px solid #3d2f27;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:12px;color:#7a6a5e;">
+    <div>© 2026 PixyoPrint · Album &amp; Photobook Atelier · Semua hak terpelihara</div>
+    <div style="display:flex;gap:20px;">
+      <span class="foot-link" onclick="showToast('Halaman akan datang.')">Terma &amp; Syarat</span>
+      <span class="foot-link" onclick="showToast('Halaman akan datang.')">Polisi Privasi</span>
+    </div>
+  </div>
+</footer>
+
 <script>
+// ============================================================
+// ANNOUNCEMENT BAR (slider berputar)
+// ============================================================
+function goToPackages(){ goPage('servis'); setTimeout(()=>document.getElementById('pkg-section').scrollIntoView({behavior:'smooth'}),50); }
+const ANNOUNCE = [
+  '🌷 <b>Tote Bag percuma</b> untuk setiap order RM79 &amp; ke atas. <span class="ann-cta" onclick="goToPackages()">Tempah Sekarang</span>',
+  '✨ Guna kod <b>FIFA10</b> untuk diskaun 10% semasa checkout. <span class="ann-cta" onclick="goToPackages()">Tempah</span>',
+  '📦 Album siap disusun dalam <b>7 hari</b> — design manual oleh designer kami.'
+];
+let _annIdx = 0, _annTimer = null;
+function renderAnnounce(){ const el=document.getElementById('announce-text'); if(el) el.innerHTML = ANNOUNCE[_annIdx]; }
+function announceMove(d){
+  _annIdx = (_annIdx + d + ANNOUNCE.length) % ANNOUNCE.length;
+  renderAnnounce();
+  if(_annTimer){ clearInterval(_annTimer); _annTimer = setInterval(()=>announceMove(1), 6000); }
+}
+renderAnnounce();
+if(ANNOUNCE.length > 1) _annTimer = setInterval(()=>announceMove(1), 6000);
+
 // ============================================================
 // STATE
 // ============================================================
