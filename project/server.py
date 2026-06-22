@@ -435,7 +435,16 @@ class Handler(SimpleHTTPRequestHandler):
                         "error": f"Pakej tidak sah: {nm}"}, 400)
                 price = float(pkg.get("price", 0) or 0)
                 subtotal += price * qty
-                server_items.append({"name": nm, "price": price, "qty": qty})
+                # Snapshot spesifikasi pakej waktu beli (kekal walau pakej diubah kemudian)
+                server_items.append({
+                    "name":     nm,
+                    "price":    price,
+                    "qty":      qty,
+                    "desc":     pkg.get("desc", ""),
+                    "pages":    pkg.get("pages", ""),
+                    "material": pkg.get("material", ""),
+                    "size":     pkg.get("size", ""),
+                })
 
             # SECURITY: Sahkan baucar di server (jangan percaya diskaun client)
             discount = 0.0

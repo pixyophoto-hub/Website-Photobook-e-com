@@ -759,11 +759,19 @@ function showOrderDetail(id){
   const raw = o._raw || {};
   const items = raw.items || [];
   document.getElementById('od-items').innerHTML = items.length
-    ? items.map(i=>`
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
-          <span style="color:#2d2520;">${esc(i.name)}${Number(i.qty)>1?' ×'+Number(i.qty):''}</span>
-          <span style="font-weight:600;color:#6f6358;">RM ${parseFloat(i.price*i.qty||i.price||0).toFixed(2)}</span>
-        </div>`).join('')
+    ? items.map(i=>{
+        const tags = [i.pages, i.material, i.size].filter(Boolean)
+          .map(t=>`<span style="font-size:10px;color:#6f6358;background:#f0e8df;padding:2px 8px;border-radius:100px;">${esc(t)}</span>`).join('');
+        return `
+        <div style="border-bottom:1px solid #f0ebe4;padding-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;gap:10px;">
+            <span style="color:#2d2520;font-weight:600;">${esc(i.name)}${Number(i.qty)>1?' ×'+Number(i.qty):''}</span>
+            <span style="font-weight:600;color:#6f6358;white-space:nowrap;">RM ${parseFloat(i.price*i.qty||i.price||0).toFixed(2)}</span>
+          </div>
+          ${i.desc?`<div style="font-size:11px;color:#9a8d80;margin-top:3px;line-height:1.4;">${esc(i.desc)}</div>`:''}
+          ${tags?`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;">${tags}</div>`:''}
+        </div>`;
+      }).join('')
     : `<div style="font-size:13px;color:#9a8d80;">— tiada maklumat item —</div>`;
 
   // Cara hantar gambar
