@@ -1724,7 +1724,22 @@ function renderPackages(){
                <button class="icon-btn" onclick="editPackage(${i})" title="Sunting pakej"><i class="ph ph-pencil-simple"></i></button>`}
         </div>
       </div>
-      ${editing?`<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Kategori <span style="color:#9a8d80;font-weight:500;">(pelanggan nampak harga disusun ikut kategori)</span></div><input type="text" id="pkg-cat-${i}" list="cat-suggestions" value="${esc(p.category||'')}" class="inp" style="width:100%;font-size:13px;color:#2d2520;" placeholder="cth: Digital, Cetak & Album"></div>
+      ${editing?`
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Gambar Produk</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          ${p.img ? `<img src="${esc(p.img)}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #ddd;" id="pkg-img-preview-${i}">` : `<div id="pkg-img-preview-${i}" style="width:64px;height:64px;border-radius:8px;background:#f0e7dc;display:flex;align-items:center;justify-content:center;color:#c2ad9b;font-size:22px;"><i class="ph ph-image"></i></div>`}
+          <div>
+            <label class="btn-ghost" style="cursor:pointer;font-size:12px;padding:7px 14px;">
+              <i class="ph ph-upload-simple"></i> ${p.img ? 'Tukar Gambar' : 'Muat Naik Gambar'}
+              <input type="file" accept="image/*" style="display:none;" onchange="uploadPkgImg(${i}, this)">
+            </label>
+            ${p.img ? `<button class="btn-ghost" style="font-size:12px;padding:7px 10px;margin-left:4px;" onclick="clearPkgImg(${i})"><i class="ph ph-trash"></i></button>` : ''}
+            <input type="hidden" id="pkg-img-${i}" value="${esc(p.img||'')}">
+          </div>
+        </div>
+      </div>
+      <div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Kategori <span style="color:#9a8d80;font-weight:500;">(pelanggan nampak harga disusun ikut kategori)</span></div><input type="text" id="pkg-cat-${i}" list="cat-suggestions" value="${esc(p.category||'')}" class="inp" style="width:100%;font-size:13px;color:#2d2520;" placeholder="cth: Digital, Cetak & Album"></div>
       <div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Nota Tambahan <span style="color:#9a8d80;font-weight:500;">(ayat selepas keterangan di laman pelanggan)</span></div><input type="text" id="pkg-note-${i}" value="${esc(p.note||'')}" class="inp" style="width:100%;font-size:13px;color:#2d2520;" placeholder="cth: disusun manual, 2× semakan percuma, siap dalam 7 hari bekerja"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
         <div><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Bahan <span style="color:#9a8d80;font-weight:500;">(tag)</span></div><input type="text" id="pkg-material-${i}" value="${esc(p.material||'')}" class="inp" style="width:100%;font-size:13px;color:#2d2520;" placeholder="cth: Art Matte"></div>
@@ -1744,6 +1759,32 @@ function renderPackages(){
   }).join('');
 }
 
+function uploadPkgImg(i, input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  const fd = new FormData();
+  fd.append('file', file);
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST','/api/upload');
+  const t = sessionStorage.getItem('pixyo_token');
+  if(t) xhr.setRequestHeader('Authorization','Bearer '+t);
+  xhr.setRequestHeader('X-Filename', file.name);
+  xhr.onload = ()=>{
+    try {
+      const res = JSON.parse(xhr.responseText);
+      if(res.ok){
+        PACKAGES[i].img = res.url;
+        renderPackages();
+        showToast('Gambar dimuat naik — tekan Simpan untuk terbitkan');
+      } else showToast(res.error||'Gagal muat naik');
+    } catch(e){ showToast('Gagal muat naik'); }
+  };
+  xhr.send(file);
+}
+function clearPkgImg(i){
+  PACKAGES[i].img = '';
+  renderPackages();
+}
 function editPackage(i){
   PACKAGES.forEach(p=>delete p._editing); // hanya satu kad terbuka pada satu masa
   PACKAGES[i]._editing = true;
@@ -1783,6 +1824,7 @@ function persistPackages(msg){
 }
 
 function savePackage(i){
+  PACKAGES[i].img    = document.getElementById('pkg-img-'+i)?.value || '';
   PACKAGES[i].name   = document.getElementById('pkg-name-'+i).value.trim() || 'Pakej Baharu';
   PACKAGES[i].desc   = document.getElementById('pkg-desc-'+i).value.trim();
   PACKAGES[i].category = document.getElementById('pkg-cat-'+i).value.trim();
