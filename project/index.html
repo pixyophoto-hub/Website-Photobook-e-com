@@ -1119,7 +1119,7 @@ function getCheckoutTotals() {
 }
 
 function renderCheckout() {
-  const { items, subtotal, discount, total } = getCheckoutTotals();
+  const { items, subtotal, discount, postage, total } = getCheckoutTotals();
   const lines = document.getElementById('cart-lines');
   if(!items.length) {
     lines.innerHTML = '<div style="font-size:13px;color:#8a7e72;padding:16px 0;">Tiada item dalam troli. <span style="color:#a86d69;cursor:pointer;font-weight:600;" onclick="goPage(\'servis\')">Lihat pakej</span></div>';
