@@ -69,6 +69,7 @@ select,input{font-family:'Hanken Grotesk',sans-serif;}
 
 <script>
 const WORKFLOW = ['Hantar Gambar','Order','Editing','Reviewing','Amend','Printing','Delivery','Siap'];
+let PACKAGES = [];
 const STATUS_COLOR = {
   'Menunggu Bayaran':{bg:'#fdecea',color:'#c0392b'},
   'Hantar Gambar':{bg:'#fef3f2',color:'#c0392b'},
@@ -135,7 +136,11 @@ function initPortal(){
   showPortal();
   const name = sessionStorage.getItem('pixyo_name') || '';
   document.getElementById('ed-name').textContent = name;
-  loadMyOrders();
+  // Muat pakej (untuk fallback spesifikasi order lama), kemudian order
+  fetch('/api/packages').then(r=>r.json())
+    .then(list=>{ if(Array.isArray(list)) PACKAGES = list; })
+    .catch(()=>{})
+    .finally(loadMyOrders);
 }
 
 function loadMyOrders(){
@@ -159,12 +164,18 @@ function loadMyOrders(){
 function renderOrderCard(o){
   const status = mapStatus(o.status);
   const items = (o.items||[]).map(i=>{
-    const tags = [i.pages,i.material,i.size].filter(Boolean)
+    // Order lama tiada snapshot spec — ambil dari pakej semasa ikut nama
+    const pk = PACKAGES.find(p=>p.name===i.name) || {};
+    const desc     = i.desc     || pk.desc     || '';
+    const pages    = i.pages    || pk.pages    || '';
+    const material = i.material || pk.material || '';
+    const size     = i.size     || pk.size     || '';
+    const tags = [pages,material,size].filter(Boolean)
       .map(t=>`<span class="tag">${esc(t)}</span>`).join(' ');
     const qty = Number(i.qty)>1 ? ' ×'+Number(i.qty) : '';
     return `<div style="padding:8px 0;border-top:1px solid #f4efe7;">
       <div style="font-size:13px;font-weight:600;color:#2d2520;">${esc(i.name)}${qty}</div>
-      ${i.desc?`<div style="font-size:11px;color:#9a8d80;margin-top:2px;">${esc(i.desc)}</div>`:''}
+      ${desc?`<div style="font-size:11px;color:#9a8d80;margin-top:2px;">${esc(desc)}</div>`:''}
       ${tags?`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;">${tags}</div>`:''}
     </div>`;
   }).join('');
