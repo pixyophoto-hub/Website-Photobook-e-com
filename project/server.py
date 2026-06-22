@@ -268,8 +268,11 @@ def load_data():
 
 
 def save_data(d):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
+    import tempfile, os
+    tmp = DATA_FILE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(d, f, ensure_ascii=False, indent=2)
+    os.replace(tmp, DATA_FILE)
 
 
 _SECURITY_HEADERS = [
@@ -742,7 +745,7 @@ if __name__ == "__main__":
     _d = load_data()
     _admin = next((u for u in _d.get("users", []) if u.get("role") == "admin"), None)
     if _admin and verify_password(_admin.get("password", ""), "admin123"):
-        print("⚠  AMARAN: Kata laluan admin masih 'admin123' (default).")
+        print("AMARAN: Kata laluan admin masih 'admin123' (default).")
         print("   Tukar segera sebelum guna untuk produksi — set ADMIN_PASSWORD env var")
         print("   atau kemaskini dalam data.json.")
     if not _d.get("hitpay", {}).get("api_key"):
