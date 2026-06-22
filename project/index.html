@@ -469,7 +469,12 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
         <div style="flex:1;padding:30px 32px;border-right:1px solid #efe6da;">
 
           <!-- Cart items -->
-          <div style="font-size:15px;font-weight:700;color:#473f38;margin-bottom:14px;">Item dalam Troli</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="font-size:15px;font-weight:700;color:#473f38;">Item dalam Troli</div>
+            <button onclick="goPage('servis');setTimeout(()=>{const el=document.getElementById('section-terokai');const nav=document.querySelector('.nav');if(el)window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-(nav?nav.offsetHeight:60),behavior:'smooth'});},80);" style="background:none;border:1px solid #e3d8cb;border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600;color:#6f6358;cursor:pointer;display:flex;align-items:center;gap:5px;" onmouseover="this.style.borderColor='#c98a86'" onmouseout="this.style.borderColor='#e3d8cb'">
+              <i class="ph ph-plus"></i> Tambah Produk
+            </button>
+          </div>
           <div id="cart-lines"></div>
 
           <!-- Promo -->
