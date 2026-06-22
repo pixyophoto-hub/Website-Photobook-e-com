@@ -146,7 +146,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 <body>
 
 <!-- ANNOUNCEMENT BAR -->
-<div style="background:#2d2520;color:#f5ede4;display:flex;align-items:center;padding:9px 18px;">
+<div id="announce-bar" style="background:#2d2520;color:#f5ede4;display:flex;align-items:center;padding:9px 18px;">
   <i class="ph ph-caret-left" onclick="announceMove(-1)" style="color:#8a7e72;font-size:18px;cursor:pointer;flex:none;padding:0 6px;" title="Sebelum"></i>
   <div id="announce-text" style="flex:1;text-align:center;font-size:13px;font-weight:600;line-height:1.4;"></div>
   <i class="ph ph-caret-right" onclick="announceMove(1)" style="color:#8a7e72;font-size:18px;cursor:pointer;flex:none;padding:0 6px;" title="Seterusnya"></i>
@@ -695,20 +695,33 @@ function heroCheckStatus(){
   if(inp) inp.value = ref;
   lookupOrder();
 }
-const ANNOUNCE = [
-  '🌷 <b>Tote Bag percuma</b> untuk setiap order RM79 &amp; ke atas. <span class="ann-cta" onclick="goToPackages()">Tempah Sekarang</span>',
-  '✨ Guna kod <b>FIFA10</b> untuk diskaun 10% semasa checkout. <span class="ann-cta" onclick="goToPackages()">Tempah</span>',
-  '📦 Album siap disusun dalam <b>7 hari</b> — design manual oleh designer kami.'
-];
+function escA(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+let ANNOUNCE = [];
 let _annIdx = 0, _annTimer = null;
-function renderAnnounce(){ const el=document.getElementById('announce-text'); if(el) el.innerHTML = ANNOUNCE[_annIdx]; }
+function annHtml(a){
+  const emoji = a.emoji ? escA(a.emoji) + ' ' : '';
+  const cta = a.cta ? ` <span class="ann-cta" onclick="goToPackages()">${escA(a.cta)}</span>` : '';
+  return emoji + escA(a.text) + cta;
+}
+function renderAnnounce(){ const el=document.getElementById('announce-text'); if(el && ANNOUNCE.length) el.innerHTML = annHtml(ANNOUNCE[_annIdx]); }
 function announceMove(d){
+  if(!ANNOUNCE.length) return;
   _annIdx = (_annIdx + d + ANNOUNCE.length) % ANNOUNCE.length;
   renderAnnounce();
   if(_annTimer){ clearInterval(_annTimer); _annTimer = setInterval(()=>announceMove(1), 6000); }
 }
-renderAnnounce();
-if(ANNOUNCE.length > 1) _annTimer = setInterval(()=>announceMove(1), 6000);
+function loadAnnouncements(){
+  const bar = document.getElementById('announce-bar');
+  fetch('/api/announcements').then(r=>r.json()).then(list=>{
+    ANNOUNCE = (Array.isArray(list)?list:[]).filter(a=>a.active!==false && (a.text||'').trim());
+    if(!ANNOUNCE.length){ if(bar) bar.style.display='none'; return; }
+    if(bar) bar.style.display='flex';
+    _annIdx = 0; renderAnnounce();
+    if(_annTimer) clearInterval(_annTimer);
+    if(ANNOUNCE.length > 1) _annTimer = setInterval(()=>announceMove(1), 6000);
+  }).catch(()=>{ if(bar) bar.style.display='none'; });
+}
+loadAnnouncements();
 
 // ============================================================
 // STATE

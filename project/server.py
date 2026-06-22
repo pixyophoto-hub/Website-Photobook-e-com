@@ -93,9 +93,16 @@ DEFAULT_REVIEWS = [
      "quote": "Setiap helaian disusun dengan teliti. Nampak betul usaha designer. Sangat berpuas hati!"},
 ]
 
+DEFAULT_ANNOUNCEMENTS = [
+    {"emoji": "🌷", "text": "Tote Bag percuma untuk setiap order RM79 & ke atas.", "cta": "Tempah Sekarang", "active": True},
+    {"emoji": "✨", "text": "Guna kod FIFA10 untuk diskaun 10% semasa checkout.",   "cta": "Tempah",          "active": True},
+    {"emoji": "📦", "text": "Album siap disusun dalam 7 hari — design manual oleh designer kami.", "cta": "", "active": True},
+]
+
 DEFAULT_DATA = {
     "editors": [],
     "reviews": DEFAULT_REVIEWS,
+    "announcements": DEFAULT_ANNOUNCEMENTS,
     "hitpay": {
         # SECURITY: Baca dari environment variable — jangan simpan secret dalam kod/Git.
         # Set HITPAY_API_KEY & HITPAY_SALT sebelum jalankan, atau isi via panel admin.
@@ -236,6 +243,9 @@ def load_data():
     if "reviews" not in data:
         data["reviews"] = json.loads(json.dumps(DEFAULT_REVIEWS))
         changed = True
+    if "announcements" not in data:
+        data["announcements"] = json.loads(json.dumps(DEFAULT_ANNOUNCEMENTS))
+        changed = True
     # Migrate plaintext passwords → hashed (PBKDF2)
     for u in data.get("users", []):
         if not u.get("password", "").startswith("pbkdf2:"):
@@ -320,6 +330,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(load_data().get("vouchers", []))
         if self.path == "/api/reviews":
             return self._json(load_data().get("reviews", []))
+        if self.path == "/api/announcements":
+            return self._json(load_data().get("announcements", []))
         if self.path == "/api/me":
             u = self._user()
             return self._json({"ok": bool(u),
@@ -667,7 +679,7 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json({"ok": True})
         key_map = {"/api/flow": "flow", "/api/packages": "packages",
                    "/api/categories": "categoryOrder", "/api/vouchers": "vouchers",
-                   "/api/reviews": "reviews"}
+                   "/api/reviews": "reviews", "/api/announcements": "announcements"}
         if self.path in key_map:
             if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
