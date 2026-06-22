@@ -329,28 +329,48 @@ tbody tr{border-top:1px solid #f0e8df;}
 
         <!-- PANEL: Pakej & Harga -->
         <div id="settings-packages" style="display:none;">
-          <!-- Baucar & Promo -->
-          <div class="card" style="padding:18px 20px;max-width:740px;margin-bottom:20px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-              <div style="font-size:13px;font-weight:700;color:#2d2520;"><i class="ph ph-ticket" style="color:#a86d69;"></i> Baucar &amp; Promo</div>
-              <button class="btn-primary" style="font-size:12px;padding:7px 14px;border-radius:6px;" onclick="addVoucher()"><i class="ph ph-plus"></i> Tambah</button>
+
+          <!-- Baris atas: Baucar + Susunan Kategori -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;margin-bottom:20px;">
+
+            <!-- Baucar & Promo -->
+            <div class="card" style="padding:18px 20px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <i class="ph ph-ticket" style="color:#a86d69;font-size:16px;"></i>
+                  <div style="font-size:13px;font-weight:700;color:#2d2520;">Baucar &amp; Promo</div>
+                </div>
+                <button class="btn-primary" style="font-size:12px;padding:7px 12px;border-radius:6px;" onclick="addVoucher()"><i class="ph ph-plus"></i> Tambah</button>
+              </div>
+              <div style="font-size:12px;color:#8a7e72;margin-bottom:12px;">Kod diskaun untuk pelanggan semasa checkout.</div>
+              <div id="voucher-list"></div>
             </div>
-            <div style="font-size:12px;color:#8a7e72;margin-bottom:14px;">Kod baucar ini boleh digunakan oleh pelanggan semasa checkout untuk mendapat diskaun.</div>
-            <div id="voucher-list"></div>
+
+            <!-- Susunan Kategori -->
+            <div class="card" style="padding:18px 20px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <i class="ph ph-list-numbers" style="color:#a86d69;font-size:16px;"></i>
+                <div style="font-size:13px;font-weight:700;color:#2d2520;">Susunan Kategori</div>
+              </div>
+              <div style="font-size:12px;color:#8a7e72;margin-bottom:12px;">Turutan kategori menentukan kedudukan tab di laman pelanggan.</div>
+              <div id="category-order"></div>
+            </div>
+
           </div>
 
-          <!-- Susunan Kategori -->
-          <div class="card" style="padding:18px 20px;max-width:740px;margin-bottom:20px;">
-            <div style="font-size:13px;font-weight:700;color:#2d2520;margin-bottom:4px;"><i class="ph ph-list-numbers" style="color:#a86d69;"></i> Susunan Kategori</div>
-            <div style="font-size:12px;color:#8a7e72;margin-bottom:14px;">Susun turutan kategori — turutan ini menentukan kedudukan tab di laman pelanggan (atas = paling kiri).</div>
-            <div id="category-order"></div>
+          <!-- Senarai Pakej -->
+          <div class="card" style="padding:18px 20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <i class="ph ph-package" style="color:#a86d69;font-size:16px;"></i>
+                <div style="font-size:13px;font-weight:700;color:#2d2520;">Senarai Pakej</div>
+              </div>
+              <button class="btn-primary" style="display:flex;align-items:center;gap:6px;font-size:12px;padding:7px 14px;border-radius:8px;" onclick="addPackage()"><i class="ph ph-plus"></i> Tambah Pakej</button>
+            </div>
+            <div style="font-size:12px;color:#8a7e72;margin-bottom:14px;">Kemaskini harga — perubahan ditunjukkan terus kepada pelanggan.</div>
+            <div style="display:flex;flex-direction:column;gap:14px;" id="package-settings"></div>
           </div>
 
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;max-width:740px;gap:16px;">
-            <div style="font-size:13px;color:#8a7e72;">Kemaskini harga — perubahan akan ditunjukkan terus kepada pelanggan</div>
-            <button class="btn-primary" style="display:flex;align-items:center;gap:8px;font-size:13px;padding:10px 18px;border-radius:8px;flex:none;white-space:nowrap;" onclick="addPackage()"><i class="ph ph-plus"></i> Tambah Pakej</button>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:14px;max-width:740px;" id="package-settings"></div>
         </div>
 
         <!-- PANEL: Hantar Gambar -->
