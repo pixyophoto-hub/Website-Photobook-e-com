@@ -1185,20 +1185,116 @@ function onMediumChange(value) {
   if(sel) sel.style.borderColor = value ? '#c98a86' : '#e3d8cb';
 }
 
+const _NEGERI_MAP = {
+  '01':'Perlis','02':'Perlis','03':'Perlis','04':'Kedah','05':'Kedah','06':'Kedah','07':'Kedah','08':'Kedah','09':'Kedah',
+  '10':'Pulau Pinang','11':'Pulau Pinang','12':'Pulau Pinang','13':'Pulau Pinang','14':'Pulau Pinang',
+  '15':'Kelantan','16':'Kelantan','17':'Kelantan','18':'Kelantan',
+  '20':'Terengganu','21':'Terengganu','22':'Terengganu','23':'Terengganu','24':'Terengganu',
+  '25':'Pahang','26':'Pahang','27':'Pahang','28':'Pahang',
+  '30':'Perak','31':'Perak','32':'Perak','33':'Perak','34':'Perak','35':'Perak',
+  '36':'Perak','37':'Perak','38':'Perak','39':'Perak',
+  '40':'Selangor','41':'Selangor','42':'Selangor','43':'Selangor','44':'Selangor','45':'Selangor','46':'Selangor','47':'Selangor','48':'Selangor',
+  '50':'W.P. Kuala Lumpur','51':'W.P. Kuala Lumpur','52':'W.P. Kuala Lumpur','53':'W.P. Kuala Lumpur','54':'W.P. Kuala Lumpur',
+  '55':'W.P. Kuala Lumpur','56':'W.P. Kuala Lumpur','57':'W.P. Kuala Lumpur','58':'W.P. Kuala Lumpur','59':'W.P. Kuala Lumpur','60':'W.P. Kuala Lumpur',
+  '62':'W.P. Putrajaya','63':'Selangor','64':'Selangor','65':'W.P. Labuan','68':'Selangor',
+  '70':'Negeri Sembilan','71':'Negeri Sembilan','72':'Negeri Sembilan','73':'Negeri Sembilan',
+  '75':'Melaka','76':'Melaka','77':'Melaka','78':'Melaka',
+  '79':'Johor','80':'Johor','81':'Johor','82':'Johor','83':'Johor','84':'Johor','85':'Johor','86':'Johor',
+  '87':'Sabah','88':'Sabah','89':'Sabah','90':'Sabah','91':'Sabah',
+  '93':'Sarawak','94':'Sarawak','95':'Sarawak','96':'Sarawak','97':'Sarawak','98':'Sarawak'
+};
+const _CITY_MAP = {
+  '01000':'Kangar','01007':'Beseri','01009':'Kaki Bukit','01500':'Padang Besar','02600':'Arau',
+  '05000':'Alor Setar','05100':'Alor Setar','05150':'Alor Setar','05200':'Alor Setar','05400':'Alor Setar','05460':'Alor Setar','05500':'Alor Setar',
+  '06000':'Jitra','06007':'Bukit Kayu Hitam','06009':'Changlun','06010':'Jitra','06100':'Kubang Pasu','06150':'Pokok Sena',
+  '06200':'Pendang','06300':'Kuala Nerang','06400':'Sik','06500':'Baling','06600':'Gua Musang','06700':'Merbok','06710':'Gurun','06720':'Tikam Batu','06800':'Kuala Kedah','06810':'Kuah',
+  '07000':'Langkawi','07100':'Langkawi','07200':'Kuala Perlis','07300':'Padang Serai','07400':'Kulim','07500':'Kulim','07600':'Sungai Petani','07700':'Sungai Petani','07800':'Sungai Petani','07900':'Sungai Petani',
+  '08000':'Sungai Petani','08100':'Bedong','08200':'Gurun','08300':'Baling','08400':'Kuala Muda','08500':'Kota Kuala Muda','08600':'Batu Maung','08700':'Nibong Tebal',
+  '09000':'Kulim','09010':'Kulim','09100':'Penaga','09300':'Kuala Ketil','09400':'Padang Serai','09500':'Kupang','09600':'Baling','09700':'Kuala Nerang','09800':'Kota Sarang Semut',
+  '10000':'Georgetown','10050':'Georgetown','10100':'Georgetown','10150':'Georgetown','10200':'Georgetown','10250':'Georgetown','10300':'Georgetown','10350':'Georgetown','10400':'Georgetown','10450':'Georgetown','10460':'Georgetown','10470':'Georgetown','10500':'Georgetown',
+  '10050':'Penang Hill','10600':'Georgetown','10700':'Georgetown','10800':'Georgetown','10900':'Balik Pulau',
+  '11000':'Balik Pulau','11100':'Balik Pulau','11200':'Tanjung Bungah','11400':'Ayer Itam','11500':'Air Itam','11600':'Georgetown','11700':'Gelugor','11800':'Gelugor','11900':'Bayan Lepas',
+  '12000':'Butterworth','12100':'Butterworth','12200':'Butterworth','12300':'Butterworth','12400':'Butterworth','12460':'Butterworth','12500':'Batu Kawan','12600':'Butterworth',
+  '13000':'Kepala Batas','13020':'Tasek Gelugor','13200':'Kepala Batas','13400':'Mergong','13500':'Permatang Pauh','13600':'Perai','13700':'Prai','13800':'Butterworth',
+  '14000':'Bukit Mertajam','14100':'Simpang Ampat','14200':'Sungai Bakap','14300':'Nibong Tebal','14400':'Bertam','14600':'Kepala Batas',
+  '15000':'Kota Bharu','15050':'Kota Bharu','15100':'Kota Bharu','15150':'Kota Bharu','15200':'Kota Bharu','15300':'Kota Bharu','15350':'Kota Bharu','15400':'Kota Bharu','15500':'Kota Bharu','15550':'Kota Bharu','15600':'Kota Bharu',
+  '16000':'Kota Bharu','16010':'Bachok','16050':'Bachok','16100':'Pasir Mas','16150':'Pasir Mas','16200':'Pasir Mas','16210':'Pasir Mas','16400':'Pasir Puteh','16450':'Pasir Puteh','16500':'Pasir Puteh','16700':'Tanah Merah','16800':'Tanah Merah','16810':'Tanah Merah','16820':'Tanah Merah',
+  '17000':'Pasir Mas','17010':'Pasir Mas','17020':'Pasir Mas','17030':'Pasir Mas','17040':'Pasir Mas','17050':'Pasir Mas','17060':'Pasir Mas','17070':'Pasir Mas','17500':'Tanah Merah','17510':'Tanah Merah','17520':'Tanah Merah','17530':'Tanah Merah','17540':'Tanah Merah','17600':'Machang','17700':'Machang',
+  '18000':'Kuala Krai','18050':'Kuala Krai','18100':'Kuala Krai','18200':'Kuala Krai','18300':'Kuala Krai','18400':'Kuala Krai','18500':'Gua Musang','18600':'Kuala Krai',
+  '20000':'Kuala Terengganu','20050':'Kuala Terengganu','20100':'Kuala Terengganu','20150':'Kuala Terengganu','20200':'Kuala Terengganu','20400':'Kuala Terengganu','20500':'Kuala Terengganu','20503':'Kuala Terengganu',
+  '21000':'Kuala Terengganu','21030':'Marang','21060':'Marang','21080':'Marang','21090':'Kuala Terengganu','21100':'Marang','21200':'Marang','21300':'Kuala Terengganu','21400':'Marang','21500':'Dungun','21600':'Dungun','21650':'Dungun','21700':'Dungun','21800':'Dungun',
+  '22000':'Besut','22100':'Besut','22200':'Besut','22300':'Besut','22400':'Besut',
+  '23000':'Dungun','23050':'Dungun','23100':'Dungun','23150':'Dungun','23200':'Dungun','23300':'Dungun','23400':'Dungun','23500':'Dungun',
+  '24000':'Kemaman','24007':'Kemaman','24009':'Kemaman','24100':'Kemaman','24200':'Kemaman','24300':'Kemaman',
+  '25000':'Kuantan','25050':'Kuantan','25100':'Kuantan','25150':'Kuantan','25200':'Kuantan','25250':'Kuantan','25300':'Kuantan','25350':'Kuantan','25400':'Kuantan','25500':'Kuantan','25502':'Kuantan','25503':'Kuantan','25504':'Kuantan',
+  '26000':'Temerloh','26010':'Temerloh','26060':'Temerloh','26080':'Temerloh','26090':'Temerloh','26100':'Temerloh','26200':'Temerloh','26300':'Temerloh','26400':'Temerloh','26500':'Temerloh','26600':'Pekan','26610':'Pekan','26620':'Pekan','26700':'Pekan','26800':'Pekan',
+  '27000':'Jerantut','27010':'Jerantut','27020':'Jerantut','27030':'Jerantut','27040':'Jerantut','27050':'Jerantut','27060':'Jerantut','27100':'Kuala Lipis','27150':'Kuala Lipis','27200':'Kuala Lipis','27300':'Kuala Lipis','27500':'Raub','27600':'Raub','27610':'Raub','27620':'Raub',
+  '28000':'Temerloh','28010':'Temerloh','28020':'Temerloh','28030':'Temerloh','28040':'Temerloh','28100':'Bera','28200':'Maran','28300':'Maran','28400':'Maran','28500':'Maran','28600':'Maran','28700':'Maran','28800':'Maran',
+  '30000':'Ipoh','30010':'Ipoh','30020':'Ipoh','30100':'Ipoh','30150':'Ipoh','30200':'Ipoh','30250':'Ipoh','30300':'Ipoh','30350':'Ipoh','30400':'Ipoh','30450':'Ipoh','30460':'Ipoh','30470':'Ipoh','30500':'Ipoh','30503':'Ipoh','30504':'Ipoh',
+  '31000':'Batu Gajah','31100':'Batu Gajah','31150':'Batu Gajah','31200':'Batu Gajah','31300':'Batu Gajah','31350':'Batu Gajah','31400':'Batu Gajah','31450':'Batu Gajah','31500':'Lahat','31600':'Lahat','31650':'Lahat','31700':'Lahat','31750':'Lahat','31800':'Gopeng','31900':'Gopeng',
+  '32000':'Sitiawan','32010':'Sitiawan','32020':'Sitiawan','32040':'Sitiawan','32050':'Sitiawan','32100':'Manjung','32200':'Manjung','32300':'Manjung','32400':'Manjung','32600':'Manjung','32700':'Teluk Intan','32800':'Teluk Intan','32900':'Teluk Intan',
+  '33000':'Kuala Kangsar','33010':'Kuala Kangsar','33020':'Kuala Kangsar','33030':'Kuala Kangsar','33040':'Kuala Kangsar','33050':'Kuala Kangsar','33300':'Kuala Kangsar','33400':'Kuala Kangsar','33500':'Kuala Kangsar',
+  '34000':'Taiping','34010':'Taiping','34020':'Taiping','34030':'Taiping','34100':'Taiping','34200':'Taiping','34300':'Taiping','34400':'Taiping','34500':'Taiping','34600':'Taiping','34650':'Taiping','34700':'Taiping','34800':'Taiping','34900':'Taiping',
+  '35000':'Teluk Intan','35050':'Teluk Intan','35100':'Teluk Intan','35200':'Teluk Intan','35400':'Teluk Intan','35500':'Teluk Intan','35600':'Teluk Intan','35700':'Teluk Intan','35800':'Teluk Intan','35900':'Teluk Intan',
+  '36000':'Slim River','36010':'Slim River','36100':'Slim River','36200':'Slim River','36300':'Slim River','36400':'Sabak Bernam','36500':'Sabak Bernam','36600':'Sabak Bernam','36700':'Sabak Bernam','36800':'Slim River',
+  '40000':'Shah Alam','40100':'Shah Alam','40150':'Shah Alam','40160':'Shah Alam','40170':'Shah Alam','40200':'Shah Alam','40250':'Shah Alam','40300':'Shah Alam','40350':'Shah Alam','40400':'Shah Alam','40450':'Shah Alam','40460':'Shah Alam','40470':'Shah Alam','40490':'Shah Alam','40500':'Shah Alam','40503':'Shah Alam','40504':'Shah Alam',
+  '41000':'Klang','41050':'Klang','41100':'Klang','41150':'Klang','41200':'Klang','41250':'Klang','41300':'Klang','41400':'Klang','41450':'Klang','41560':'Klang','41700':'Klang',
+  '42000':'Pelabuhan Klang','42007':'Pelabuhan Klang','42009':'Pelabuhan Klang','42100':'Pelabuhan Klang','42200':'Kapar','42300':'Kapar','42400':'Kapar','42500':'Teluk Panglima Garang','42600':'Jenjarom','42700':'Banting',
+  '43000':'Kajang','43100':'Hulu Langat','43150':'Hulu Langat','43200':'Hulu Langat','43300':'Balakong','43400':'Seri Kembangan','43500':'Semenyih','43600':'Kajang','43650':'Bangi','43700':'Beranang','43800':'Dengkil','43900':'Sepang',
+  '44000':'Kuala Kubu Baharu','44010':'Ulu Yam','44100':'Batang Kali','44200':'Rawang','44300':'Rawang','44400':'Sungai Besar','44500':'Sabak Bernam','44600':'Hulu Selangor','44700':'Kerling',
+  '45000':'Kuala Selangor','45100':'Kuala Selangor','45200':'Kuala Selangor','45300':'Sungai Besar','45400':'Ijok','45500':'Tanjung Karang','45600':'Sekinchan','45700':'Sungai Besar','45800':'Kuala Selangor','45900':'Rantau Panjang',
+  '46000':'Petaling Jaya','46050':'Petaling Jaya','46100':'Petaling Jaya','46150':'Petaling Jaya','46200':'Petaling Jaya','46300':'Petaling Jaya','46350':'Petaling Jaya','46400':'Petaling Jaya','46450':'Petaling Jaya','46460':'Petaling Jaya','46480':'Petaling Jaya','46500':'Petaling Jaya','46503':'Petaling Jaya','46504':'Petaling Jaya','46506':'Petaling Jaya','46507':'Petaling Jaya','46508':'Petaling Jaya','46509':'Petaling Jaya','46510':'Petaling Jaya','46520':'Petaling Jaya','46530':'Petaling Jaya','46540':'Petaling Jaya','46550':'Petaling Jaya','46560':'Petaling Jaya','46570':'Petaling Jaya','46580':'Petaling Jaya','46590':'Petaling Jaya',
+  '47000':'Subang Jaya','47100':'Subang Jaya','47200':'Subang Jaya','47300':'Petaling Jaya','47400':'Petaling Jaya','47500':'Subang Jaya','47600':'Subang Jaya','47810':'Petaling Jaya','47820':'Petaling Jaya','47830':'Petaling Jaya',
+  '48000':'Rawang','48010':'Rawang','48020':'Rawang','48050':'Rawang','48100':'Rawang','48200':'Rawang','48300':'Rawang',
+  '50000':'Kuala Lumpur','50050':'Kuala Lumpur','50088':'Kuala Lumpur','50100':'Kuala Lumpur','50150':'Kuala Lumpur','50200':'Kuala Lumpur','50250':'Kuala Lumpur','50300':'Kuala Lumpur','50350':'Kuala Lumpur','50400':'Kuala Lumpur','50450':'Kuala Lumpur','50460':'Kuala Lumpur','50470':'Kuala Lumpur','50480':'Kuala Lumpur','50490':'Kuala Lumpur','50500':'Kuala Lumpur','50502':'Kuala Lumpur','50503':'Kuala Lumpur','50505':'Kuala Lumpur','50506':'Kuala Lumpur','50508':'Kuala Lumpur','50512':'Kuala Lumpur',
+  '51000':'Kepong','51200':'Kepong','52000':'Kepong','52100':'Kepong','52200':'Kepong',
+  '53000':'Setapak','53100':'Setapak','53200':'Setapak','53300':'Setapak',
+  '54000':'Jalan Ipoh','54100':'Jalan Ipoh','54200':'Jalan Ipoh',
+  '55000':'Chow Kit','55100':'Chow Kit','55200':'Chow Kit',
+  '56000':'Cheras','56100':'Cheras','56200':'Cheras',
+  '57000':'Cheras','57100':'Cheras','57200':'Cheras',
+  '58000':'Bangsar','58100':'Bangsar','58200':'Bangsar',
+  '59000':'Petaling','59100':'Petaling','59200':'Petaling',
+  '60000':'KL Sentral','60100':'KL Sentral','60200':'KL Sentral',
+  '62000':'Putrajaya','62050':'Putrajaya','62100':'Putrajaya','62150':'Putrajaya','62200':'Putrajaya','62250':'Putrajaya','62300':'Putrajaya','62350':'Putrajaya','62400':'Putrajaya','62450':'Putrajaya','62500':'Putrajaya','62502':'Putrajaya','62503':'Putrajaya','62504':'Putrajaya','62505':'Putrajaya','62506':'Putrajaya','62510':'Putrajaya','62512':'Putrajaya','62514':'Putrajaya','62516':'Putrajaya','62518':'Putrajaya','62519':'Putrajaya','62520':'Putrajaya','62522':'Putrajaya','62524':'Putrajaya','62530':'Putrajaya','62532':'Putrajaya','62536':'Putrajaya','62540':'Putrajaya','62542':'Putrajaya','62546':'Putrajaya','62550':'Putrajaya','62570':'Putrajaya','62574':'Putrajaya','62576':'Putrajaya','62578':'Putrajaya','62582':'Putrajaya','62584':'Putrajaya','62586':'Putrajaya','62588':'Putrajaya','62590':'Putrajaya','62592':'Putrajaya','62594':'Putrajaya','62596':'Putrajaya','62598':'Putrajaya','62600':'Putrajaya','62602':'Putrajaya','62604':'Putrajaya','62605':'Putrajaya','62606':'Putrajaya','62620':'Putrajaya',
+  '63000':'Cyberjaya','63100':'Cyberjaya',
+  '68000':'Ampang','68100':'Batu Caves',
+  '70000':'Seremban','70100':'Seremban','70150':'Seremban','70200':'Seremban','70300':'Seremban','70400':'Seremban','70450':'Seremban','70460':'Seremban','70500':'Seremban','70502':'Seremban','70503':'Seremban','70504':'Seremban','70506':'Seremban','70508':'Seremban','70512':'Seremban','70514':'Seremban','70516':'Seremban','70518':'Seremban','70520':'Seremban','70522':'Seremban','70524':'Seremban','70526':'Seremban','70528':'Seremban','70530':'Seremban','70532':'Seremban','70534':'Seremban','70536':'Seremban','70538':'Seremban','70540':'Seremban','70542':'Seremban','70544':'Seremban','70546':'Seremban','70548':'Seremban','70550':'Seremban','70552':'Seremban','70554':'Seremban','70556':'Seremban','70558':'Seremban','70560':'Seremban','70562':'Seremban','70564':'Seremban','70566':'Seremban','70568':'Seremban','70570':'Seremban','70572':'Seremban','70574':'Seremban','70576':'Seremban','70578':'Seremban','70580':'Seremban','70582':'Seremban','70584':'Seremban','70586':'Seremban','70588':'Seremban','70590':'Seremban','70592':'Seremban','70594':'Seremban','70596':'Seremban','70598':'Seremban','70600':'Seremban','70604':'Seremban','70606':'Seremban','70608':'Seremban','70609':'Seremban','70610':'Seremban','70612':'Seremban','70614':'Seremban',
+  '71000':'Port Dickson','71010':'Port Dickson','71050':'Port Dickson','71100':'Port Dickson','71200':'Port Dickson','71300':'Rembau','71400':'Kuala Pilah','71450':'Kuala Pilah','71500':'Kuala Pilah','71600':'Kuala Pilah','71700':'Kuala Pilah','71800':'Nilai','71900':'Nilai',
+  '72000':'Kuala Pilah','72100':'Kuala Pilah','72200':'Jempol','72300':'Jempol','72400':'Jempol','72500':'Jempol','72600':'Jempol','72700':'Jelebu','72800':'Jelebu','72900':'Jelebu',
+  '73000':'Tampin','73100':'Tampin','73200':'Tampin','73300':'Tampin','73400':'Tampin','73500':'Gemas',
+  '75000':'Melaka','75050':'Melaka','75100':'Melaka','75150':'Melaka','75200':'Melaka','75250':'Melaka','75300':'Melaka','75350':'Melaka','75400':'Melaka','75450':'Melaka','75460':'Melaka','75500':'Melaka','75502':'Melaka','75503':'Melaka','75504':'Melaka','75505':'Melaka','75506':'Melaka','75508':'Melaka','75512':'Melaka','75514':'Melaka','75516':'Melaka','75518':'Melaka','75519':'Melaka','75520':'Melaka','75522':'Melaka','75524':'Melaka','75530':'Melaka','75532':'Melaka','75534':'Melaka','75536':'Melaka','75538':'Melaka','75540':'Melaka','75542':'Melaka','75550':'Melaka','75552':'Melaka','75560':'Melaka','75564':'Melaka','75566':'Melaka','75570':'Melaka','75572':'Melaka','75574':'Melaka','75576':'Melaka','75578':'Melaka','75580':'Melaka','75582':'Melaka','75584':'Melaka','75586':'Melaka','75588':'Melaka','75590':'Melaka','75592':'Melaka','75594':'Melaka','75596':'Melaka','75598':'Melaka','75600':'Melaka','75604':'Melaka','75606':'Melaka','75608':'Melaka','75609':'Melaka','75610':'Melaka',
+  '76000':'Alor Gajah','76100':'Alor Gajah','76200':'Alor Gajah','76300':'Alor Gajah','76400':'Alor Gajah','76450':'Alor Gajah',
+  '77000':'Jasin','77100':'Jasin','77200':'Jasin','77300':'Jasin','77400':'Jasin','77500':'Jasin','77600':'Masjid Tanah',
+  '78000':'Masjid Tanah','78100':'Masjid Tanah','78200':'Masjid Tanah','78300':'Ayer Keroh','78400':'Ayer Keroh','78500':'Ayer Keroh',
+  '79000':'Pontian','79100':'Pontian','79150':'Pontian','79200':'Pontian','79250':'Pontian','79300':'Pontian','79400':'Pontian','79500':'Pontian','79503':'Pontian','79504':'Pontian',
+  '80000':'Johor Bahru','80050':'Johor Bahru','80100':'Johor Bahru','80150':'Johor Bahru','80200':'Johor Bahru','80250':'Johor Bahru','80300':'Johor Bahru','80350':'Johor Bahru','80400':'Johor Bahru','80500':'Johor Bahru','80502':'Johor Bahru','80503':'Johor Bahru','80504':'Johor Bahru','80506':'Johor Bahru','80508':'Johor Bahru','80512':'Johor Bahru',
+  '81000':'Kulai','81100':'Kulai','81200':'Kulai','81300':'Skudai','81400':'Senai','81500':'Ulu Tiram','81550':'Ulu Tiram','81600':'Ulu Tiram','81700':'Pasir Gudang','81750':'Masai','81800':'Ulu Tiram','81900':'Kota Tinggi',
+  '82000':'Kota Tinggi','82010':'Kota Tinggi','82100':'Kota Tinggi','82200':'Kota Tinggi','82300':'Mersing','82400':'Mersing','82500':'Mersing','82600':'Mersing','82700':'Mersing','82800':'Mersing','82900':'Mersing',
+  '83000':'Batu Pahat','83010':'Batu Pahat','83100':'Batu Pahat','83200':'Batu Pahat','83300':'Batu Pahat','83400':'Batu Pahat','83500':'Batu Pahat','83600':'Batu Pahat','83700':'Batu Pahat','83800':'Batu Pahat','83900':'Batu Pahat',
+  '84000':'Muar','84100':'Muar','84200':'Muar','84300':'Muar','84400':'Muar','84500':'Muar','84600':'Muar','84700':'Muar','84800':'Muar','84900':'Muar',
+  '85000':'Segamat','85010':'Segamat','85100':'Segamat','85200':'Segamat','85300':'Segamat','85400':'Segamat','85500':'Segamat','85600':'Segamat','85700':'Segamat','85800':'Segamat','85900':'Segamat',
+  '86000':'Kluang','86010':'Kluang','86100':'Kluang','86200':'Kluang','86300':'Kluang','86400':'Kluang','86500':'Kluang','86600':'Kluang','86700':'Kluang','86800':'Kluang','86900':'Kluang',
+  '87000':'Labuan','87010':'Labuan','87015':'Labuan','87020':'Labuan','87025':'Labuan','87028':'Labuan','87030':'Labuan','87033':'Labuan',
+  '88000':'Kota Kinabalu','88100':'Kota Kinabalu','88150':'Kota Kinabalu','88200':'Kota Kinabalu','88300':'Kota Kinabalu','88400':'Kota Kinabalu','88450':'Kota Kinabalu','88460':'Kota Kinabalu','88500':'Kota Kinabalu','88502':'Kota Kinabalu','88503':'Kota Kinabalu','88504':'Kota Kinabalu','88505':'Kota Kinabalu','88506':'Kota Kinabalu','88508':'Kota Kinabalu','88510':'Kota Kinabalu','88512':'Kota Kinabalu','88514':'Kota Kinabalu','88516':'Kota Kinabalu','88518':'Kota Kinabalu','88520':'Kota Kinabalu','88522':'Kota Kinabalu','88524':'Kota Kinabalu','88526':'Kota Kinabalu','88527':'Kota Kinabalu','88528':'Kota Kinabalu','88530':'Kota Kinabalu','88532':'Kota Kinabalu','88534':'Kota Kinabalu','88536':'Kota Kinabalu','88538':'Kota Kinabalu','88540':'Kota Kinabalu','88544':'Kota Kinabalu','88546':'Kota Kinabalu','88548':'Kota Kinabalu','88550':'Kota Kinabalu','88554':'Kota Kinabalu','88556':'Kota Kinabalu','88558':'Kota Kinabalu','88560':'Kota Kinabalu','88562':'Kota Kinabalu','88563':'Kota Kinabalu','88564':'Kota Kinabalu','88566':'Kota Kinabalu','88568':'Kota Kinabalu','88570':'Kota Kinabalu','88572':'Kota Kinabalu','88574':'Kota Kinabalu','88576':'Kota Kinabalu','88578':'Kota Kinabalu','88580':'Kota Kinabalu','88582':'Kota Kinabalu','88584':'Kota Kinabalu','88586':'Kota Kinabalu','88588':'Kota Kinabalu','88590':'Kota Kinabalu','88592':'Kota Kinabalu','88594':'Kota Kinabalu','88596':'Kota Kinabalu','88598':'Kota Kinabalu','88600':'Kota Kinabalu','88602':'Kota Kinabalu','88604':'Kota Kinabalu','88606':'Kota Kinabalu','88608':'Kota Kinabalu','88609':'Kota Kinabalu','88610':'Kota Kinabalu','88612':'Kota Kinabalu','88614':'Kota Kinabalu','88616':'Kota Kinabalu','88618':'Kota Kinabalu',
+  '89000':'Keningau','89010':'Keningau','89100':'Keningau','89150':'Keningau','89200':'Keningau','89250':'Keningau','89300':'Keningau','89400':'Keningau','89500':'Beaufort','89600':'Beaufort','89700':'Sipitang','89800':'Kuala Penyu',
+  '90000':'Sandakan','90007':'Sandakan','90009':'Sandakan','90100':'Sandakan','90200':'Sandakan','90300':'Sandakan','90400':'Sandakan','90500':'Sandakan','90503':'Sandakan','90504':'Sandakan',
+  '91000':'Tawau','91007':'Tawau','91009':'Tawau','91100':'Tawau','91103':'Tawau','91104':'Tawau','91107':'Tawau','91108':'Tawau','91109':'Tawau','91110':'Tawau','91111':'Tawau','91112':'Tawau','91113':'Tawau','91114':'Tawau','91115':'Tawau','91116':'Tawau','91117':'Tawau','91118':'Tawau','91119':'Tawau','91120':'Tawau','91122':'Tawau','91124':'Tawau','91126':'Tawau',
+  '93000':'Kuching','93050':'Kuching','93100':'Kuching','93150':'Kuching','93200':'Kuching','93250':'Kuching','93300':'Kuching','93350':'Kuching','93400':'Kuching','93450':'Kuching','93460':'Kuching','93500':'Kuching','93502':'Kuching','93503':'Kuching','93504':'Kuching','93505':'Kuching','93506':'Kuching','93508':'Kuching','93510':'Kuching','93512':'Kuching','93514':'Kuching','93516':'Kuching','93517':'Kuching','93518':'Kuching','93519':'Kuching','93520':'Kuching','93522':'Kuching','93524':'Kuching','93526':'Kuching','93528':'Kuching','93530':'Kuching','93532':'Kuching','93534':'Kuching','93536':'Kuching','93538':'Kuching','93540':'Kuching','93542':'Kuching','93544':'Kuching','93546':'Kuching','93548':'Kuching','93550':'Kuching','93552':'Kuching','93554':'Kuching','93556':'Kuching','93558':'Kuching','93560':'Kuching','93562':'Kuching','93564':'Kuching','93566':'Kuching','93568':'Kuching','93570':'Kuching','93572':'Kuching','93574':'Kuching','93576':'Kuching','93578':'Kuching','93580':'Kuching','93582':'Kuching','93584':'Kuching','93586':'Kuching','93588':'Kuching','93590':'Kuching','93592':'Kuching','93594':'Kuching','93596':'Kuching','93598':'Kuching','93600':'Kuching','93602':'Kuching','93604':'Kuching','93606':'Kuching','93608':'Kuching','93609':'Kuching','93610':'Kuching','93612':'Kuching','93614':'Kuching','93616':'Kuching','93618':'Kuching','93620':'Kuching','93622':'Kuching','93624':'Kuching','93626':'Kuching','93628':'Kuching','93630':'Kuching','93632':'Kuching','93634':'Kuching','93636':'Kuching','93638':'Kuching','93640':'Kuching','93642':'Kuching','93644':'Kuching','93646':'Kuching','93648':'Kuching','93650':'Kuching','93652':'Kuching','93654':'Kuching','93656':'Kuching','93658':'Kuching','93660':'Kuching','93662':'Kuching',
+  '94000':'Serian','94010':'Serian','94100':'Serian','94200':'Serian','94300':'Serian','94400':'Serian','94500':'Serian','94600':'Serian','94700':'Serian','94800':'Serian',
+  '95000':'Sri Aman','95010':'Sri Aman','95100':'Sri Aman','95200':'Sri Aman','95300':'Sri Aman','95400':'Sri Aman','95500':'Sri Aman','95600':'Sri Aman','95700':'Sri Aman',
+  '96000':'Sibu','96007':'Sibu','96009':'Sibu','96100':'Sibu','96200':'Sibu','96300':'Sibu','96400':'Sarikei','96500':'Sarikei','96600':'Sarikei','96700':'Kapit','96800':'Kapit','96900':'Kapit',
+  '97000':'Bintulu','97007':'Bintulu','97008':'Bintulu','97009':'Bintulu','97010':'Bintulu','97011':'Bintulu','97012':'Bintulu','97014':'Bintulu','97016':'Bintulu','97017':'Bintulu','97018':'Bintulu','97019':'Bintulu','97020':'Bintulu','97100':'Bintulu',
+  '98000':'Miri','98007':'Miri','98008':'Miri','98009':'Miri','98010':'Miri','98011':'Miri','98012':'Miri','98050':'Miri','98100':'Miri','98150':'Miri','98200':'Miri','98300':'Miri','98400':'Miri','98500':'Miri','98600':'Miri','98700':'Miri','98800':'Miri','98850':'Miri','98900':'Miri'
+};
 function onPoskodInput(val) {
   const bandar = document.getElementById('ship-bandar');
   const negeri = document.getElementById('ship-negeri');
-  const spinner = document.getElementById('poskod-spinner');
   if (val.length < 5) { bandar.value = ''; negeri.value = ''; return; }
-  spinner.style.display = 'block';
-  fetch('https://api.postcode.my/postcode/' + val)
-    .then(r => r.json())
-    .then(d => {
-      spinner.style.display = 'none';
-      if (d && d.city) { bandar.value = d.city; negeri.value = d.state || ''; }
-      else { bandar.value = ''; negeri.value = ''; }
-    })
-    .catch(() => { spinner.style.display = 'none'; bandar.value = ''; negeri.value = ''; });
+  const city = _CITY_MAP[val] || '';
+  const state = _NEGERI_MAP[val.substring(0,2)] || '';
+  bandar.value = city;
+  negeri.value = state;
 }
 
 function applyPromo() {
