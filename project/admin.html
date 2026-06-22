@@ -321,8 +321,11 @@ tbody tr{border-top:1px solid #f0e8df;}
         </div>
 
         <!-- PANEL: Hantar Gambar -->
-        <div id="settings-medialinks" style="display:none;">
-          <div class="card" style="padding:18px 20px;max-width:740px;margin-bottom:20px;">
+        <!-- WRAPPER: Pembayaran group — 2 kolum sebelah2 -->
+        <div id="settings-pembayaran-wrap" style="display:none;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+
+        <div id="settings-medialinks">
+          <div class="card" style="padding:18px 20px;margin-bottom:20px;">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
               <i class="ph ph-share-network" style="color:#a86d69;font-size:16px;"></i>
               <div style="font-size:13px;font-weight:700;color:#2d2520;">Link Cara Hantar Gambar</div>
@@ -424,7 +427,8 @@ tbody tr{border-top:1px solid #f0e8df;}
               </button>
             </div>
           </div>
-        </div>
+        </div><!-- /settings-payment -->
+        </div><!-- /settings-pembayaran-wrap -->
 
         <!-- PANEL: Flow Kerja -->
         <div id="settings-flow">
@@ -1248,7 +1252,10 @@ function goSettingsGroup(groupId){
   const subEl   = document.getElementById('settings-page-sub');
   if(titleEl) titleEl.textContent = group.label;
   if(subEl)   subEl.textContent   = '';
-  const allTabs = ['flow','packages','payment','medialinks','announce','explore','akaun'];
+  // pembayaran group uses a shared grid wrapper
+  const wrap = document.getElementById('settings-pembayaran-wrap');
+  if(wrap) wrap.style.display = group.id === 'pembayaran' ? 'grid' : 'none';
+  const allTabs = ['flow','packages','announce','explore','akaun'];
   allTabs.forEach(t => {
     const el = document.getElementById('settings-'+t);
     if(el) el.style.display = group.tabs.includes(t) ? 'block' : 'none';
