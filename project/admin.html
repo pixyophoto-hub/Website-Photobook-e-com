@@ -1782,9 +1782,8 @@ function renderPackages(){
         <div><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Saiz <span style="color:#9a8d80;font-weight:500;">(tag)</span></div><input type="text" id="pkg-size-${i}" value="${esc(p.size||'')}" class="inp" style="width:100%;font-size:13px;color:#2d2520;" placeholder='cth: 12&quot;×12&quot;'></div>
         <div><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Berat (kg) <span style="color:#9a8d80;font-weight:500;">— untuk kiraan postage</span></div><input type="number" step="0.1" min="0" id="pkg-weight-${i}" value="${esc(p.weight||'')}" class="inp" style="width:100%;font-size:13px;color:#2d2520;" placeholder="cth: 0.8"></div>
       </div>`:''}
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
         <div><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Harga Semasa (RM)</div><input type="number" id="pkg-price-${i}" value="${esc(p.price)}" class="inp" style="width:100%;font-size:14px;font-weight:600;color:#2d2520;" ${dis}></div>
-        <div><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Harga Asal (RM)</div><input type="number" id="pkg-strike-${i}" value="${esc(p.strike)}" class="inp" style="width:100%;font-size:14px;color:#9a8d80;" ${dis}></div>
         <div><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Muka Surat</div><select id="pkg-pages-${i}" class="inp" style="width:100%;font-size:13px;" ${dis}>${pagesOpts.map(o=>`<option value="${o}"${String(p.pages).replace(/\D/g,'')===o?' selected':''}>${o} muka surat</option>`).join('')}</select></div>
       </div>
       ${editing ? `<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
@@ -1869,7 +1868,6 @@ function savePackage(i){
   PACKAGES[i].size     = document.getElementById('pkg-size-'+i).value.trim();
   PACKAGES[i].weight   = parseFloat(document.getElementById('pkg-weight-'+i).value) || 0;
   PACKAGES[i].price  = document.getElementById('pkg-price-'+i).value;
-  PACKAGES[i].strike = document.getElementById('pkg-strike-'+i).value;
   PACKAGES[i].pages  = document.getElementById('pkg-pages-'+i).value;
   delete PACKAGES[i].isNew;
   delete PACKAGES[i]._editing;
