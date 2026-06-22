@@ -698,7 +698,8 @@ function goToCatalog(cat, label, desc){
 function renderCatalog(cat){
   const grid = document.getElementById('catalog-grid');
   if(!grid) return;
-  const items = cat ? PKG.filter(p=>(p.category||'')=== cat) : PKG;
+  const cats = cat ? cat.split(',').map(c=>c.trim()) : null;
+  const items = cats ? PKG.filter(p=>cats.includes(p.category||'')) : PKG;
   if(!items.length){
     grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:#9a8d80;">Tiada pakej dalam kategori ini.</div>';
     return;
