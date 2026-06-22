@@ -615,18 +615,9 @@ tbody tr{border-top:1px solid #f0e8df;}
       <input id="ex-desc" class="inp" style="width:100%;" placeholder="cth: Kemas, tahan lama & premium">
     </div>
     <div style="margin-bottom:14px;">
-      <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Ikon</div>
-      <select id="ex-icon" class="inp" style="width:100%;">
-        <option value="ph ph-book-bookmark">📕 Buku (hardcover)</option>
-        <option value="ph ph-book-open">📖 Buku terbuka (softcover)</option>
-        <option value="ph ph-diamond">💎 Berlian (crystal)</option>
-        <option value="ph ph-gift">🎁 Hadiah (add-on)</option>
-        <option value="ph ph-image">🖼️ Gambar</option>
-        <option value="ph ph-camera">📷 Kamera</option>
-        <option value="ph ph-heart">❤️ Hati</option>
-        <option value="ph ph-star">⭐ Bintang</option>
-        <option value="ph ph-package">📦 Pakej</option>
-      </select>
+      <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Ikon (Emoji)</div>
+      <input id="ex-icon" class="inp" style="width:100%;font-size:18px;" placeholder="cth: 📕 atau 🎁">
+      <div style="font-size:11px;color:#8a7e72;margin-top:4px;">Taip atau tampal mana-mana emoji. Contoh: 📕 📖 💎 🎁 🖼️ 📷 ❤️ ⭐ 📦</div>
     </div>
     <div style="margin-bottom:20px;">
       <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">URL Gambar <span style="color:#9a8d80;font-weight:500;">— pilihan, ganti ikon jika diisi</span></div>
@@ -985,6 +976,13 @@ function persistExplore(msg){
     .catch(() => showToast('Gagal sambung ke server'));
 }
 
+function exploreIconMark(e){
+  if(e.img) return `<img src="${esc(e.img)}" style="width:100%;height:100%;object-fit:cover;">`;
+  const ic = (e.icon||'').trim();
+  if(ic.indexOf('ph') === 0) return `<i class="${esc(ic)}"></i>`;   // sokong ikon Phosphor lama
+  return `<span>${esc(ic || '📦')}</span>`;                          // emoji
+}
+
 function renderExploreList(){
   const el = document.getElementById('explore-list');
   if(!el) return;
@@ -996,7 +994,7 @@ function renderExploreList(){
   el.innerHTML = EXPLORE.map((e,i)=>`
     <div class="card" style="padding:16px 20px;display:flex;gap:14px;align-items:center;">
       <div style="width:46px;height:46px;border-radius:10px;background:#f6efe6;display:flex;align-items:center;justify-content:center;color:#a86d69;font-size:22px;flex:none;overflow:hidden;">
-        ${e.img?`<img src="${esc(e.img)}" style="width:100%;height:100%;object-fit:cover;">`:`<i class="${esc(e.icon||'ph ph-image')}"></i>`}
+        ${exploreIconMark(e)}
       </div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:14px;font-weight:700;color:#2d2520;">${esc(e.name)}</div>
@@ -1014,7 +1012,7 @@ function showExploreModal(editIdx){
   const isEdit = _exploreEditIdx !== null;
   document.getElementById('explore-modal-title').textContent = isEdit ? 'Edit Kad' : 'Tambah Kad';
   document.getElementById('ex-modal-save-btn').onclick = saveExplore;
-  const e = isEdit ? EXPLORE[_exploreEditIdx] : { name:'', desc:'', icon:'ph ph-book-bookmark', img:'' };
+  const e = isEdit ? EXPLORE[_exploreEditIdx] : { name:'', desc:'', icon:'📦', img:'' };
   document.getElementById('ex-name').value = e.name || '';
   document.getElementById('ex-desc').value = e.desc || '';
   document.getElementById('ex-icon').value = e.icon || 'ph ph-book-bookmark';
