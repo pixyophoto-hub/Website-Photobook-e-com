@@ -484,9 +484,14 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
               <input type="text" id="ship-name" placeholder="Nama penuh" class="inp" style="padding:9px 12px;font-size:13px;">
               <input type="tel" id="ship-phone" placeholder="No. Telefon" class="inp" style="padding:9px 12px;font-size:13px;">
               <input type="email" id="ship-email" placeholder="Email" class="inp" style="padding:9px 12px;font-size:13px;">
-              <input type="text" id="ship-poskod" placeholder="Poskod" class="inp" style="padding:9px 12px;font-size:13px;">
+              <div style="position:relative;">
+                <input type="text" id="ship-poskod" placeholder="Poskod" class="inp" maxlength="5" oninput="onPoskodInput(this.value)" style="padding:9px 12px;font-size:13px;width:100%;box-sizing:border-box;">
+                <span id="poskod-spinner" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:#a08878;">⟳</span>
+              </div>
+              <input type="text" id="ship-bandar" placeholder="Bandar / Kawasan" class="inp" readonly style="padding:9px 12px;font-size:13px;background:#faf6f2;color:#473f38;">
+              <input type="text" id="ship-negeri" placeholder="Negeri" class="inp" readonly style="padding:9px 12px;font-size:13px;background:#faf6f2;color:#473f38;">
             </div>
-            <textarea id="ship-alamat" placeholder="Alamat penuh" class="inp" rows="3" style="width:100%;resize:none;padding:9px 12px;font-size:13px;font-family:inherit;line-height:1.5;margin-bottom:16px;box-sizing:border-box;"></textarea>
+            <textarea id="ship-alamat" placeholder="Alamat penuh (No. rumah, jalan, taman...)" class="inp" rows="3" style="width:100%;resize:none;padding:9px 12px;font-size:13px;font-family:inherit;line-height:1.5;margin-bottom:16px;box-sizing:border-box;"></textarea>
           </div>
 
           <!-- Cara Hantar Gambar -->
@@ -1178,6 +1183,22 @@ fetch('/api/media-links').then(r=>r.json()).then(d=>{ _mediaLinks = d; }).catch(
 function onMediumChange(value) {
   const sel = document.getElementById('medium-select');
   if(sel) sel.style.borderColor = value ? '#c98a86' : '#e3d8cb';
+}
+
+function onPoskodInput(val) {
+  const bandar = document.getElementById('ship-bandar');
+  const negeri = document.getElementById('ship-negeri');
+  const spinner = document.getElementById('poskod-spinner');
+  if (val.length < 5) { bandar.value = ''; negeri.value = ''; return; }
+  spinner.style.display = 'block';
+  fetch('https://api.postcode.my/postcode/' + val)
+    .then(r => r.json())
+    .then(d => {
+      spinner.style.display = 'none';
+      if (d && d.city) { bandar.value = d.city; negeri.value = d.state || ''; }
+      else { bandar.value = ''; negeri.value = ''; }
+    })
+    .catch(() => { spinner.style.display = 'none'; bandar.value = ''; negeri.value = ''; });
 }
 
 function applyPromo() {
