@@ -27,6 +27,8 @@ select,input,textarea{font-family:'Hanken Grotesk',sans-serif;}
 .nav-sub{padding-left:10px;}
 .nav-sub .nav-item{font-size:12px;padding:8px 12px;}
 .nav-sub .nav-item.active{background:#3d2f27;color:#c98a86;}
+.nav-sub-item{padding-left:28px!important;}
+.nav-sub-item.active{color:#c98a86!important;}
 .nav-badge{margin-left:auto;font-size:10px;font-weight:700;background:#c98a86;color:#fff;padding:2px 7px;border-radius:100px;}
 
 /* Main */
@@ -1217,14 +1219,21 @@ function renderNav(){
     </div>`).join('');
 
   const settingsActive = currentView === 'settings';
-  const divider = `<div class="nav-label" style="font-size:10px;font-family:'Courier New',monospace;letter-spacing:0.14em;text-transform:uppercase;color:#5a4a3e;padding:14px 12px 4px;">Tetapan</div>`;
-  const groupItems = SETTINGS_GROUPS.map(g => `
-    <div class="nav-item ${settingsActive && _activeSettingsGroup===g.id ? 'active' : ''}" onclick="goSettingsGroup('${g.id}')">
-      <i style="font-size:16px;" class="${g.icon}"></i>
+  const subItems = _settingsOpen ? SETTINGS_GROUPS.map(g => `
+    <div class="nav-item nav-sub-item ${settingsActive && _activeSettingsGroup===g.id ? 'active' : ''}" onclick="goSettingsGroup('${g.id}')">
+      <i style="font-size:15px;" class="${g.icon}"></i>
       <span class="nav-label" style="font-size:13px;font-weight:500;">${g.label}</span>
-    </div>`).join('');
+    </div>`).join('') : '';
 
-  document.getElementById('nav-list').innerHTML = mainItems + divider + groupItems;
+  const settingsItem = `
+    <div class="nav-item ${settingsActive ? 'active' : ''}" onclick="_settingsOpen=!_settingsOpen;renderNav()" style="margin-top:2px;">
+      <i style="font-size:16px;" class="ph ph-gear"></i>
+      <span class="nav-label" style="font-size:13px;font-weight:500;">Tetapan</span>
+      <i class="ph ${_settingsOpen ? 'ph-caret-up' : 'ph-caret-down'} nav-label" style="font-size:12px;margin-left:auto;opacity:.6;"></i>
+    </div>
+    ${subItems}`;
+
+  document.getElementById('nav-list').innerHTML = mainItems + settingsItem;
 }
 
 let _activeSettingsTab = 'flow';
