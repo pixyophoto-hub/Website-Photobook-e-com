@@ -522,7 +522,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
           <div style="font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#6f6358;margin-bottom:18px;">Ringkasan Pesanan</div>
           <div class="summary-row"><span>Subtotal</span><span id="s-subtotal" style="font-weight:600;color:#473f38;"></span></div>
           <div class="summary-row" style="color:#6f8466;"><span id="s-discount-label">Diskaun</span><span id="s-discount" style="font-weight:600;"></span></div>
-          <div class="summary-row" style="border-bottom:1px solid #e3d8cb;"><span>Penghantaran</span><span style="font-weight:600;color:#6f8466;">Percuma</span></div>
+          <div id="s-postage-row" class="summary-row" style="border-bottom:1px solid #e3d8cb;color:#6f8466;"><span>Penghantaran</span><span id="s-postage" style="font-weight:600;">Percuma</span></div>
           <div class="summary-total">
             <span style="font-size:14px;color:#473f38;font-weight:600;">Jumlah</span>
             <span id="s-total" style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#423b36;"></span>
@@ -874,6 +874,10 @@ let PKG = [
 ];
 
 function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+function loadPostageCfg(){
+  return fetch('/api/postage').then(r=>r.json()).then(d=>{ window._postageCfg = d; }).catch(()=>{});
+}
+
 function loadPackages(){
   return fetch('/api/packages').then(r=>r.json()).then(list=>{
     if(Array.isArray(list) && list.length){
@@ -1070,6 +1074,16 @@ function updateCartLabel() {
 // ============================================================
 // CHECKOUT
 // ============================================================
+function calcPostage(items) {
+  const cfg = window._postageCfg || { base: 0, threshold: 1.5, per_kg: 0 };
+  if (!cfg.base) return 0;
+  const totalWeight = items.reduce((s, {pkg, qty}) => s + (parseFloat(pkg.weight) || 0) * qty, 0);
+  if (totalWeight <= 0) return cfg.base;
+  if (totalWeight <= cfg.threshold) return cfg.base;
+  const extra = Math.ceil((totalWeight - cfg.threshold) * 10) / 10;
+  return cfg.base + extra * cfg.per_kg;
+}
+
 function getCheckoutTotals() {
   const items = [];
   for(const [pkgId, qty] of Object.entries(state.cart)){
@@ -1080,8 +1094,9 @@ function getCheckoutTotals() {
   const discount = state.promoActive
     ? (state.promoType === 'rm' ? Math.min(state.promoRate, subtotal) : subtotal * (state.promoRate / 100))
     : 0;
-  const total = subtotal - discount;
-  return { items, subtotal, discount, total };
+  const postage = calcPostage(items);
+  const total = subtotal - discount + postage;
+  return { items, subtotal, discount, postage, total };
 }
 
 function renderCheckout() {
@@ -1115,6 +1130,10 @@ function renderCheckout() {
     ? `Diskaun (${state.promoCode} −${state.promoType==='rm'?'RM '+state.promoRate:state.promoRate+'%'})`
     : 'Diskaun';
   document.getElementById('s-discount').textContent = discount > 0 ? '−' + money(discount) : '−';
+  const postEl = document.getElementById('s-postage');
+  if(postEl) postEl.textContent = postage > 0 ? money(postage) : 'Percuma';
+  const postRow = document.getElementById('s-postage-row');
+  if(postRow) postRow.style.color = postage > 0 ? '#473f38' : '#6f8466';
   document.getElementById('s-total').textContent = money(total);
   document.getElementById('pay-btn').textContent = 'Buat Bayaran · ' + money(total);
 
@@ -1414,7 +1433,7 @@ function submitLogin(ev){
   // Buang query string dari URL supaya bersih
   history.replaceState(null, '', window.location.pathname);
 
-  Promise.all([loadPackages(), loadCategories()]).then(()=>{
+  Promise.all([loadPackages(), loadCategories(), loadPostageCfg()]).then(()=>{
     if(!activeCat && CATEGORIES.length) activeCat = CATEGORIES[0];
     renderPkgList(); renderCheckout(); renderStatus();
     goPage('checkout');
@@ -1450,7 +1469,7 @@ if(window.location.search.indexOf('payment=return') === -1) {
   renderPkgList();
   renderCheckout();
   renderStatus();
-  Promise.all([loadPackages(), loadCategories()]).then(()=>{
+  Promise.all([loadPackages(), loadCategories(), loadPostageCfg()]).then(()=>{
     if(!activeCat && CATEGORIES.length) activeCat = CATEGORIES[0];
     renderPkgList(); renderCheckout(); renderStatus();
   });

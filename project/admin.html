@@ -483,6 +483,41 @@ tbody tr{border-top:1px solid #f0e8df;}
         </div><!-- /settings-payment -->
         </div><!-- /settings-pembayaran-wrap -->
 
+        <!-- PANEL: Postage (bawah Pembayaran) -->
+        <div id="settings-postage" style="display:none;max-width:760px;margin-top:20px;">
+          <div class="card" style="padding:18px 20px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <i class="ph ph-package" style="color:#a86d69;font-size:16px;"></i>
+              <div style="font-size:13px;font-weight:700;color:#2d2520;">Tetapan Penghantaran</div>
+            </div>
+            <div style="font-size:12px;color:#8a7e72;margin-bottom:18px;">Kiraan postage automatik ikut berat item dalam troli.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Harga Asas (RM)</label>
+                <input id="post-base" type="number" step="0.5" min="0" class="inp" style="width:100%;box-sizing:border-box;" placeholder="cth: 8">
+                <div style="font-size:11px;color:#8a7e72;margin-top:3px;">Caj minimum / berat dalam had</div>
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Had Berat (kg)</label>
+                <input id="post-threshold" type="number" step="0.1" min="0" class="inp" style="width:100%;box-sizing:border-box;" placeholder="cth: 1.5">
+                <div style="font-size:11px;color:#8a7e72;margin-top:3px;">Bawah had → harga asas sahaja</div>
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Tambahan per kg (RM)</label>
+                <input id="post-per-kg" type="number" step="0.5" min="0" class="inp" style="width:100%;box-sizing:border-box;" placeholder="cth: 2">
+                <div style="font-size:11px;color:#8a7e72;margin-top:3px;">Setiap kg melebihi had</div>
+              </div>
+            </div>
+            <div style="background:#f5f0eb;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#6f6358;">
+              <b>Contoh kiraan:</b> Berat total 2.3kg, had 1.5kg, asas RM8, tambahan RM2/kg<br>
+              → RM 8 + (0.8kg × RM 2) = <b>RM 9.60</b>
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+              <button class="btn-primary" style="font-size:13px;padding:9px 18px;border-radius:8px;" onclick="savePostage()"><i class="ph ph-floppy-disk"></i> Simpan Tetapan</button>
+            </div>
+          </div>
+        </div>
+
         <!-- PANEL: Flow Kerja -->
         <div id="settings-flow">
           <div class="card" style="padding:18px 20px;max-width:760px;margin-top:20px;">
@@ -1314,6 +1349,8 @@ function goSettingsGroup(groupId){
   // group wrappers (grid side-by-side)
   const wrapPembayaran = document.getElementById('settings-pembayaran-wrap');
   if(wrapPembayaran) wrapPembayaran.style.display = group.id === 'pembayaran' ? 'grid' : 'none';
+  const postagePanel = document.getElementById('settings-postage');
+  if(postagePanel) postagePanel.style.display = group.id === 'pembayaran' ? 'block' : 'none';
   const wrapKandungan = document.getElementById('settings-kandungan-wrap');
   if(wrapKandungan) wrapKandungan.style.display = group.id === 'kandungan' ? 'grid' : 'none';
   const allTabs = ['flow','packages','akaun'];
@@ -1321,7 +1358,7 @@ function goSettingsGroup(groupId){
     const el = document.getElementById('settings-'+t);
     if(el) el.style.display = group.tabs.includes(t) ? 'block' : 'none';
   });
-  if(group.tabs.includes('payment'))    loadHitPayConfig();
+  if(group.tabs.includes('payment'))    { loadHitPayConfig(); loadPostage(); }
   if(group.tabs.includes('medialinks')) loadMediaLinks();
   if(group.tabs.includes('announce'))   loadAnnouncements();
   if(group.tabs.includes('explore'))    loadExplore();
@@ -1741,9 +1778,10 @@ function renderPackages(){
       </div>
       <div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Kategori <span style="color:#9a8d80;font-weight:500;">(pelanggan nampak harga disusun ikut kategori)</span></div><input type="text" id="pkg-cat-${i}" list="cat-suggestions" value="${esc(p.category||'')}" class="inp" style="width:100%;font-size:13px;color:#2d2520;" placeholder="cth: Digital, Cetak & Album"></div>
       <div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Nota Tambahan <span style="color:#9a8d80;font-weight:500;">(ayat selepas keterangan di laman pelanggan)</span></div><input type="text" id="pkg-note-${i}" value="${esc(p.note||'')}" class="inp" style="width:100%;font-size:13px;color:#2d2520;" placeholder="cth: disusun manual, 2× semakan percuma, siap dalam 7 hari bekerja"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
         <div><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Bahan <span style="color:#9a8d80;font-weight:500;">(tag)</span></div><input type="text" id="pkg-material-${i}" value="${esc(p.material||'')}" class="inp" style="width:100%;font-size:13px;color:#2d2520;" placeholder="cth: Art Matte"></div>
         <div><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Saiz <span style="color:#9a8d80;font-weight:500;">(tag)</span></div><input type="text" id="pkg-size-${i}" value="${esc(p.size||'')}" class="inp" style="width:100%;font-size:13px;color:#2d2520;" placeholder='cth: 12&quot;×12&quot;'></div>
+        <div><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Berat (kg) <span style="color:#9a8d80;font-weight:500;">— untuk kiraan postage</span></div><input type="number" step="0.1" min="0" id="pkg-weight-${i}" value="${esc(p.weight||'')}" class="inp" style="width:100%;font-size:13px;color:#2d2520;" placeholder="cth: 0.8"></div>
       </div>`:''}
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;">
         <div><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Harga Semasa (RM)</div><input type="number" id="pkg-price-${i}" value="${esc(p.price)}" class="inp" style="width:100%;font-size:14px;font-weight:600;color:#2d2520;" ${dis}></div>
@@ -1831,6 +1869,7 @@ function savePackage(i){
   PACKAGES[i].note     = document.getElementById('pkg-note-'+i).value.trim();
   PACKAGES[i].material = document.getElementById('pkg-material-'+i).value.trim();
   PACKAGES[i].size     = document.getElementById('pkg-size-'+i).value.trim();
+  PACKAGES[i].weight   = parseFloat(document.getElementById('pkg-weight-'+i).value) || 0;
   PACKAGES[i].price  = document.getElementById('pkg-price-'+i).value;
   PACKAGES[i].strike = document.getElementById('pkg-strike-'+i).value;
   PACKAGES[i].pages  = document.getElementById('pkg-pages-'+i).value;
@@ -2140,6 +2179,25 @@ function saveMediaLinks(){
     if(res.ok) showToast('Link cara hantar gambar disimpan ✓');
     else showToast('Gagal simpan: ' + (res.error || ''));
   });
+}
+
+// ── Postage Settings ───────────────────────────────────────
+function loadPostage(){
+  fetch('/api/postage', { headers: authHeaders() })
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('post-base').value      = d.base      ?? '';
+      document.getElementById('post-threshold').value = d.threshold ?? '';
+      document.getElementById('post-per-kg').value    = d.per_kg    ?? '';
+    }).catch(()=>{});
+}
+function savePostage(){
+  const body = {
+    base:      parseFloat(document.getElementById('post-base').value)      || 0,
+    threshold: parseFloat(document.getElementById('post-threshold').value) || 1.5,
+    per_kg:    parseFloat(document.getElementById('post-per-kg').value)    || 0,
+  };
+  fetch('/api/postage', { method:'PUT', headers: authHeaders(), body: JSON.stringify(body) })
+    .then(r=>r.json()).then(res=>showToast(res.ok ? 'Tetapan penghantaran disimpan' : 'Gagal simpan'));
 }
 
 // ── HitPay Config ─────────────────────────────────────────

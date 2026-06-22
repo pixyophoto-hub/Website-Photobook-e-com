@@ -350,6 +350,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json({"ok": bool(u),
                                "name": u["name"] if u else None,
                                "role": u.get("role") if u else None})
+        if self.path == "/api/postage":
+            return self._json(load_data().get("postage", {"base":8,"threshold":1.5,"per_kg":2}))
         if self.path == "/api/media-links":
             return self._json(load_data().get("media_links", {}))
         if self.path == "/api/hitpay-config":
@@ -617,6 +619,14 @@ class Handler(SimpleHTTPRequestHandler):
                     return self._json({"ok": True, "name": u["name"]})
             return self._json({"ok": False, "error": "user not found"}, 404)
 
+        if self.path == "/api/postage":
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            b = self._read_body()
+            d = load_data()
+            d["postage"] = {"base": float(b.get("base", 8)), "threshold": float(b.get("threshold", 1.5)), "per_kg": float(b.get("per_kg", 2))}
+            save_data(d)
+            return self._json({"ok": True})
         if self.path == "/api/media-links":
             if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
