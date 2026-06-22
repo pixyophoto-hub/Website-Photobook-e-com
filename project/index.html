@@ -891,9 +891,11 @@ function loadPackages(){
         pages: p.pages || '40 muka surat',
         note: p.note || '',
         material: p.material || '',
-        size: p.size || ''
+        size: p.size || '',
+        img: p.img || '',
+        weight: parseFloat(p.weight) || 0,
       }));
-      if(!PKG.find(p=>p.id===state.selPkg)) state.selPkg = PKG[0].id;
+      if(PKG.length && !PKG.find(p=>p.id===state.selPkg)) state.selPkg = PKG[0].id;
     }
   }).catch(()=>{});
 }
