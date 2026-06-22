@@ -382,7 +382,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
     </div>
   </div>
   <!-- grid -->
-  <div id="catalog-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;"></div>
+  <div id="catalog-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;"></div>
 </div>
 
 <!-- ============================================================ -->
@@ -717,17 +717,17 @@ function renderCatalog(cat){
       <div style="height:110px;background:repeating-linear-gradient(45deg,#f0e7dc,#f0e7dc 11px,#eadfd1 11px,#eadfd1 22px);display:flex;align-items:center;justify-content:center;color:#c2ad9b;font-size:28px;">
         <i class="ph ph-image"></i>
       </div>
-      <div style="padding:18px 20px 20px;flex:1;display:flex;flex-direction:column;">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#2d2520;line-height:1.2;">${esc(p.name)}</div>
-        <div style="font-size:12px;color:#9a8d80;margin:6px 0 10px;line-height:1.5;">${esc(p.desc||'')}${p.note?' — '+esc(p.note):''}</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
-          ${p.pages?`<span class="tag">${String(p.pages).replace(/\D/g,'')||p.pages} muka surat</span>`:''}
-          ${p.material?`<span class="tag">${esc(p.material)}</span>`:''}
-          ${p.size?`<span class="tag">${esc(p.size)}</span>`:''}
+      <div style="padding:12px 14px 14px;flex:1;display:flex;flex-direction:column;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:#2d2520;line-height:1.2;">${esc(p.name)}</div>
+        <div style="font-size:11px;color:#9a8d80;margin:4px 0 8px;line-height:1.4;">${esc(p.desc||'')}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">
+          ${p.pages?`<span class="tag" style="font-size:10px;padding:2px 8px;">${String(p.pages).replace(/\D/g,'')||p.pages} ms</span>`:''}
+          ${p.material?`<span class="tag" style="font-size:10px;padding:2px 8px;">${esc(p.material)}</span>`:''}
+          ${p.size?`<span class="tag" style="font-size:10px;padding:2px 8px;">${esc(p.size)}</span>`:''}
         </div>
         <div style="margin-top:auto;">
-          ${p.strike?`<div style="font-size:12px;color:#b0a498;text-decoration:line-through;">RM ${Number(p.strike).toFixed(2)}</div>`:''}
-          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#2d2520;">${money(p.price)}</div>
+          ${p.strike?`<div style="font-size:11px;color:#b0a498;text-decoration:line-through;">RM ${Number(p.strike).toFixed(2)}</div>`:''}
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#2d2520;">${money(p.price)}</div>
           ${ctrl}
         </div>
       </div>
