@@ -487,6 +487,8 @@ class Handler(SimpleHTTPRequestHandler):
             medium  = str(b.get("medium", ""))[:40]
             req_items = b.get("items", [])
             voucher_code = str(b.get("voucher", "")).strip().upper()[:40]
+            consent_marketing = bool(b.get("consent_marketing", False))
+            consent_version = str(b.get("consent_version", "1.0"))[:10]
 
             if not isinstance(req_items, list) or not req_items:
                 return self._json({"ok": False, "error": "Troli kosong"}, 400)
@@ -555,6 +557,13 @@ class Handler(SimpleHTTPRequestHandler):
                 "medium":     medium,
                 "created_at": datetime.datetime.now().strftime("%d %b %Y, %H:%M"),
                 "items":      server_items,
+                # Rekod persetujuan PDPA (s.7/s.40 — bukti kebenaran)
+                "consent": {
+                    "given":     True,
+                    "marketing": consent_marketing,
+                    "version":   consent_version,
+                    "at":        datetime.datetime.now().strftime("%d %b %Y, %H:%M"),
+                },
             })
             save_data(d)
 

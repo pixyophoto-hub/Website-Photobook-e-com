@@ -527,6 +527,17 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
             <span style="font-size:14px;color:#473f38;font-weight:600;">Jumlah</span>
             <span id="s-total" style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#423b36;"></span>
           </div>
+          <!-- Persetujuan PDPA -->
+          <div style="margin:6px 0 14px;display:flex;flex-direction:column;gap:10px;">
+            <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:11.5px;color:#6f6358;line-height:1.5;">
+              <input type="checkbox" id="consent-pdpa" style="margin-top:2px;flex:none;width:15px;height:15px;accent-color:#a86d69;cursor:pointer;">
+              <span>Saya bersetuju data peribadi saya diproses untuk tujuan pesanan & penghantaran, mengikut <span onclick="event.preventDefault();event.stopPropagation();goPage('privasi')" style="color:#a86d69;font-weight:600;text-decoration:underline;cursor:pointer;">Notis Privasi</span>.</span>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:11.5px;color:#8a7e72;line-height:1.5;">
+              <input type="checkbox" id="consent-marketing" style="margin-top:2px;flex:none;width:15px;height:15px;accent-color:#a86d69;cursor:pointer;">
+              <span>(Pilihan) Saya ingin menerima promosi & tawaran melalui WhatsApp/e-mel.</span>
+            </label>
+          </div>
           <button class="btn-primary" style="width:100%;font-size:15px;padding:15px;" onclick="doPay()" id="pay-btn">Buat Bayaran</button>
           <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-size:11px;color:#9a8d80;">
             <span><i class="ph ph-lock-simple"></i> Selamat & disulitkan</span>
@@ -630,6 +641,21 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
   </div>
 </div>
 
+<!-- PRIVACY POLICY (PDPA 2010 / pindaan 2024) -->
+<div class="page" id="page-privasi" style="padding:40px 32px 80px;">
+  <div class="card" style="max-width:760px;margin:0 auto;padding:40px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:500;" id="privasi-title">Notis Privasi</div>
+      <div style="display:flex;border:1px solid #e3d8cb;border-radius:100px;overflow:hidden;font-size:12px;font-weight:600;">
+        <button id="lang-bm" onclick="setPrivasiLang('bm')" style="border:none;background:#a86d69;color:#fff;padding:7px 14px;cursor:pointer;">BM</button>
+        <button id="lang-en" onclick="setPrivasiLang('en')" style="border:none;background:#fff;color:#8a7e72;padding:7px 14px;cursor:pointer;">EN</button>
+      </div>
+    </div>
+    <div style="font-size:12px;color:#a08878;margin-bottom:28px;" id="privasi-meta">Versi 1.0 · Kemaskini Jun 2026 · Selaras Akta Perlindungan Data Peribadi 2010 (pindaan 2024)</div>
+    <div id="privasi-content" style="font-size:14px;color:#5a5048;line-height:1.75;"></div>
+  </div>
+</div>
+
 <!-- FOOTER -->
 <footer style="background:#2d2520;color:#cdbfb2;padding:56px 32px 28px;">
   <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:32px;" class="mobile-grid">
@@ -675,7 +701,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
     <div>© 2026 PixyoPrint · Album &amp; Photobook Atelier · Semua hak terpelihara</div>
     <div style="display:flex;gap:20px;">
       <span class="foot-link" onclick="showToast('Halaman akan datang.')">Terma &amp; Syarat</span>
-      <span class="foot-link" onclick="showToast('Halaman akan datang.')">Polisi Privasi</span>
+      <span class="foot-link" onclick="goPage('privasi')">Notis Privasi</span>
     </div>
   </div>
 </footer>
@@ -979,7 +1005,7 @@ function showToast(msg) {
 // ============================================================
 // NAVIGATION
 // ============================================================
-const pages = ['servis','upload','catalog','checkout','status','hubungi'];
+const pages = ['servis','upload','catalog','checkout','status','hubungi','privasi'];
 
 function goPage(id) {
   pages.forEach(p => {
@@ -994,7 +1020,128 @@ function goPage(id) {
 
   if(id === 'checkout') renderCheckout();
   if(id === 'status') renderStatus();
+  if(id === 'privasi') renderPrivasi();
 }
+
+// ============================================================
+// NOTIS PRIVASI (PDPA 2010 / pindaan 2024)
+// ============================================================
+var _privasiLang = 'bm';
+function setPrivasiLang(l){ _privasiLang = l; renderPrivasi(); }
+function renderPrivasi(){
+  const isBm = _privasiLang === 'bm';
+  document.getElementById('lang-bm').style.background = isBm ? '#a86d69' : '#fff';
+  document.getElementById('lang-bm').style.color      = isBm ? '#fff' : '#8a7e72';
+  document.getElementById('lang-en').style.background = isBm ? '#fff' : '#a86d69';
+  document.getElementById('lang-en').style.color      = isBm ? '#8a7e72' : '#fff';
+  document.getElementById('privasi-title').textContent = isBm ? 'Notis Privasi' : 'Privacy Notice';
+  document.getElementById('privasi-meta').textContent = isBm
+    ? 'Versi 1.0 · Kemaskini Jun 2026 · Selaras Akta Perlindungan Data Peribadi 2010 (pindaan 2024)'
+    : 'Version 1.0 · Updated June 2026 · In line with the Personal Data Protection Act 2010 (as amended 2024)';
+  document.getElementById('privasi-content').innerHTML = isBm ? _PRIVASI_BM : _PRIVASI_EN;
+}
+
+const _PRIVASI_BM = `
+<p>Notis ini menerangkan bagaimana <b>PixyoPrint</b> ("kami") mengumpul, menggunakan, mendedah dan melindungi data peribadi anda selaras dengan <b>Akta Perlindungan Data Peribadi 2010 (Akta 709)</b> dan pindaan 2024.</p>
+
+<h3 style="font-size:15px;font-weight:700;color:#473f38;margin:24px 0 8px;">1. Data peribadi yang kami kumpul</h3>
+<ul style="margin:0;padding-left:20px;">
+  <li>Nama penuh, alamat e-mel, nombor telefon (WhatsApp)</li>
+  <li>Alamat penghantaran (alamat, poskod, bandar, negeri)</li>
+  <li>Gambar/foto majlis yang anda hantar untuk disusun</li>
+  <li>Maklumat pesanan & pembayaran</li>
+</ul>
+<p style="margin-top:8px;">Kami hanya mengumpul data yang <b>perlu</b> untuk memproses tempahan anda. Pemberian data adalah <b>sukarela</b>, tetapi tanpa data tertentu (nama, telefon, alamat) kami tidak dapat memproses atau menghantar pesanan anda.</p>
+
+<h3 style="font-size:15px;font-weight:700;color:#473f38;margin:24px 0 8px;">2. Tujuan penggunaan</h3>
+<ul style="margin:0;padding-left:20px;">
+  <li>Memproses tempahan, susunan layout & penghantaran produk</li>
+  <li>Berhubung dengan anda berkenaan pesanan (cth: semakan layout, status)</li>
+  <li>Memproses pembayaran & mengeluarkan resit</li>
+  <li>Pemasaran/promosi — <b>hanya jika anda beri kebenaran</b></li>
+</ul>
+
+<h3 style="font-size:15px;font-weight:700;color:#473f38;margin:24px 0 8px;">3. Pendedahan kepada pihak ketiga</h3>
+<p>Kami berkongsi data anda hanya dengan pihak yang diperlukan untuk melaksanakan perkhidmatan:</p>
+<ul style="margin:0;padding-left:20px;">
+  <li><b>HitPay</b> — gerbang pembayaran (diproses di Singapura)</li>
+  <li>Syarikat <b>kurier/penghantaran</b> — untuk hantar produk</li>
+  <li>Penyedia <b>hosting</b> & komunikasi (WhatsApp/Telegram)</li>
+</ul>
+<p style="margin-top:8px;">Kami <b>tidak menjual</b> data peribadi anda kepada sesiapa.</p>
+
+<h3 style="font-size:15px;font-weight:700;color:#473f38;margin:24px 0 8px;">4. Pemindahan ke luar negara</h3>
+<p>Sesetengah penyedia (cth: HitPay di Singapura) memproses data di luar Malaysia. Kami memastikan pihak tersebut memberi tahap perlindungan yang setara dengan PDPA.</p>
+
+<h3 style="font-size:15px;font-weight:700;color:#473f38;margin:24px 0 8px;">5. Keselamatan & penyimpanan</h3>
+<p>Data dihantar melalui sambungan disulitkan (HTTPS) dan kata laluan disimpan dalam bentuk <i>hashed</i>. Kami menyimpan data anda hanya selama yang diperlukan untuk tujuan pesanan dan keperluan undang-undang, kemudian ia dipadam secara kekal.</p>
+
+<h3 style="font-size:15px;font-weight:700;color:#473f38;margin:24px 0 8px;">6. Hak anda</h3>
+<p>Di bawah PDPA, anda berhak untuk:</p>
+<ul style="margin:0;padding-left:20px;">
+  <li><b>Akses & pembetulan</b> data peribadi anda</li>
+  <li><b>Tarik balik kebenaran</b> pada bila-bila masa</li>
+  <li><b>Berhenti langgan</b> pemasaran pada bila-bila masa</li>
+  <li>Minta data anda <b>dipadam</b> atau dipindahkan (mudah alih)</li>
+  <li>Halang pemprosesan yang menyebabkan kerugian/kesusahan</li>
+</ul>
+<p style="margin-top:8px;">Kami akan membalas permohonan akses dalam tempoh <b>21 hari</b>.</p>
+
+<h3 style="font-size:15px;font-weight:700;color:#473f38;margin:24px 0 8px;">7. Hubungi kami (Pegawai Privasi)</h3>
+<p>Untuk sebarang pertanyaan privasi atau untuk melaksanakan hak anda, hubungi:</p>
+<p style="margin-top:4px;">📧 <b>pixyophoto@gmail.com</b><br>💬 WhatsApp: melalui pautan "Hubungi Kami"</p>
+`;
+
+const _PRIVASI_EN = `
+<p>This notice explains how <b>PixyoPrint</b> ("we") collects, uses, discloses and protects your personal data in accordance with the <b>Personal Data Protection Act 2010 (Act 709)</b> and its 2024 amendment.</p>
+
+<h3 style="font-size:15px;font-weight:700;color:#473f38;margin:24px 0 8px;">1. Personal data we collect</h3>
+<ul style="margin:0;padding-left:20px;">
+  <li>Full name, email address, phone number (WhatsApp)</li>
+  <li>Delivery address (address, postcode, city, state)</li>
+  <li>Event photos you send for layout</li>
+  <li>Order & payment information</li>
+</ul>
+<p style="margin-top:8px;">We only collect data that is <b>necessary</b> to process your order. Providing data is <b>voluntary</b>, but without certain data (name, phone, address) we cannot process or deliver your order.</p>
+
+<h3 style="font-size:15px;font-weight:700;color:#473f38;margin:24px 0 8px;">2. Purposes of use</h3>
+<ul style="margin:0;padding-left:20px;">
+  <li>Processing orders, layout work & product delivery</li>
+  <li>Contacting you about your order (e.g. layout review, status)</li>
+  <li>Processing payments & issuing receipts</li>
+  <li>Marketing/promotions — <b>only with your consent</b></li>
+</ul>
+
+<h3 style="font-size:15px;font-weight:700;color:#473f38;margin:24px 0 8px;">3. Disclosure to third parties</h3>
+<p>We share your data only with parties needed to deliver the service:</p>
+<ul style="margin:0;padding-left:20px;">
+  <li><b>HitPay</b> — payment gateway (processed in Singapore)</li>
+  <li><b>Courier/delivery</b> companies — to ship your product</li>
+  <li><b>Hosting</b> & communication providers (WhatsApp/Telegram)</li>
+</ul>
+<p style="margin-top:8px;">We <b>do not sell</b> your personal data to anyone.</p>
+
+<h3 style="font-size:15px;font-weight:700;color:#473f38;margin:24px 0 8px;">4. Cross-border transfer</h3>
+<p>Some providers (e.g. HitPay in Singapore) process data outside Malaysia. We ensure they provide protection substantially similar to the PDPA.</p>
+
+<h3 style="font-size:15px;font-weight:700;color:#473f38;margin:24px 0 8px;">5. Security & retention</h3>
+<p>Data is sent over encrypted connections (HTTPS) and passwords are stored hashed. We keep your data only as long as needed for the order and legal requirements, after which it is permanently deleted.</p>
+
+<h3 style="font-size:15px;font-weight:700;color:#473f38;margin:24px 0 8px;">6. Your rights</h3>
+<p>Under the PDPA, you have the right to:</p>
+<ul style="margin:0;padding-left:20px;">
+  <li><b>Access & correct</b> your personal data</li>
+  <li><b>Withdraw consent</b> at any time</li>
+  <li><b>Unsubscribe</b> from marketing at any time</li>
+  <li>Request your data be <b>deleted</b> or ported (portability)</li>
+  <li>Prevent processing causing damage/distress</li>
+</ul>
+<p style="margin-top:8px;">We will respond to access requests within <b>21 days</b>.</p>
+
+<h3 style="font-size:15px;font-weight:700;color:#473f38;margin:24px 0 8px;">7. Contact us (Privacy Officer)</h3>
+<p>For any privacy enquiry or to exercise your rights, contact:</p>
+<p style="margin-top:4px;">📧 <b>pixyophoto@gmail.com</b><br>💬 WhatsApp: via the "Contact Us" link</p>
+`;
 
 // ============================================================
 // PACKAGES (servis page)
@@ -1261,6 +1408,15 @@ function doPay() {
     return;
   }
 
+  // Persetujuan PDPA wajib
+  const consentEl = document.getElementById('consent-pdpa');
+  if(consentEl && !consentEl.checked){
+    consentEl.parentElement.style.color = '#c0392b';
+    consentEl.scrollIntoView({ behavior:'smooth', block:'center' });
+    showToast('⚠ Sila tanda persetujuan Notis Privasi untuk teruskan.');
+    return;
+  }
+
   const { items, total } = getCheckoutTotals();
   if(total <= 0) { showToast('Jumlah bayaran tidak sah.'); return; }
 
@@ -1282,6 +1438,9 @@ function doPay() {
       phone,
       medium,
       voucher: state.promoActive ? state.promoCode : '',
+      consent: true,
+      consent_marketing: !!(document.getElementById('consent-marketing')||{}).checked,
+      consent_version: '1.0',
       items: items.map(({pkg, qty}) => ({ name: pkg.name, qty }))
     })
   })
