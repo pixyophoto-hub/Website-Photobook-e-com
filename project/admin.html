@@ -397,6 +397,7 @@ tbody tr{border-top:1px solid #f0e8df;}
           <div style="font-size:11px;color:#9a8d80;font-weight:600;margin-bottom:4px;">PELANGGAN</div>
           <div id="od-name" style="font-size:14px;font-weight:700;color:#2d2520;"></div>
           <div id="od-email" style="font-size:12px;color:#9a8d80;margin-top:2px;"></div>
+          <div id="od-phone" style="font-size:12px;color:#9a8d80;margin-top:2px;"></div>
         </div>
         <div style="background:#faf8f5;border-radius:10px;padding:14px;">
           <div style="font-size:11px;color:#9a8d80;font-weight:600;margin-bottom:4px;">TARIKH ORDER</div>
@@ -407,6 +408,10 @@ tbody tr{border-top:1px solid #f0e8df;}
       <div style="background:#faf8f5;border-radius:10px;padding:14px;">
         <div style="font-size:11px;color:#9a8d80;font-weight:600;margin-bottom:10px;">ITEM TEMPAHAN</div>
         <div id="od-items" style="display:flex;flex-direction:column;gap:8px;"></div>
+        <div id="od-medium-row" style="border-top:1px solid #e8e0d8;margin-top:12px;padding-top:12px;display:none;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;color:#6f6358;">Cara hantar gambar</span>
+          <span id="od-medium" style="font-size:13px;font-weight:600;color:#2d2520;"></span>
+        </div>
         <div style="border-top:1px solid #e8e0d8;margin-top:12px;padding-top:12px;display:flex;justify-content:space-between;align-items:center;">
           <span style="font-size:13px;font-weight:600;color:#6f6358;">JUMLAH</span>
           <span id="od-total" style="font-size:16px;font-weight:700;color:#a86d69;"></span>
@@ -653,7 +658,7 @@ function showToast(msg){
 }
 function statusPill(status){
   const c = STATUS[status] || {bg:'#f0e8df',color:'#6f6358'};
-  return `<span class="status-pill" style="background:${c.bg};color:${c.color};">${status}</span>`;
+  return `<span class="status-pill" style="background:${c.bg};color:${c.color};">${esc(status)}</span>`;
 }
 
 // ============================================================
@@ -699,17 +704,17 @@ function renderOrders(){
     return;
   }
   tbody.innerHTML = rows.map(o=>{
-    const opts = [o.editor].concat(editorOpts.filter(x=>x!==o.editor)).map(x=>`<option>${x}</option>`).join('');
+    const opts = [o.editor].concat(editorOpts.filter(x=>x!==o.editor)).map(x=>`<option>${esc(x)}</option>`).join('');
     return `
     <tr>
-      <td style="padding:13px 16px;font-size:12px;font-weight:600;color:#a86d69;">${o.id}</td>
-      <td style="padding:13px 16px;"><div style="font-size:13px;font-weight:600;color:#2d2520;">${o.name}</div><div style="font-size:11px;color:#9a8d80;">${o.email}</div></td>
-      <td style="padding:13px 16px;font-size:12px;color:#6f6358;">${o.pkg}</td>
-      <td style="padding:13px 16px;font-size:13px;font-weight:600;color:#2d2520;">${o.total}</td>
+      <td style="padding:13px 16px;font-size:12px;font-weight:600;color:#a86d69;">${esc(o.id)}</td>
+      <td style="padding:13px 16px;"><div style="font-size:13px;font-weight:600;color:#2d2520;">${esc(o.name)}</div><div style="font-size:11px;color:#9a8d80;">${esc(o.email)}</div></td>
+      <td style="padding:13px 16px;font-size:12px;color:#6f6358;">${esc(o.pkg)}</td>
+      <td style="padding:13px 16px;font-size:13px;font-weight:600;color:#2d2520;">${esc(o.total)}</td>
       <td style="padding:13px 16px;">${statusPill(o.status)}</td>
-      <td style="padding:13px 16px;"><select class="inp" style="padding:6px 10px;font-size:12px;" onchange="assignEditor('${o.id}', this.value)">${opts}</select></td>
-      <td style="padding:13px 16px;font-size:12px;color:#9a8d80;white-space:nowrap;">${o.date}</td>
-      <td style="padding:13px 16px;"><button class="btn-ghost" onclick="showOrderDetail('${o.id}')">Lihat</button></td>
+      <td style="padding:13px 16px;"><select class="inp" style="padding:6px 10px;font-size:12px;" onchange="assignEditor('${esc(o.id)}', this.value)">${opts}</select></td>
+      <td style="padding:13px 16px;font-size:12px;color:#9a8d80;white-space:nowrap;">${esc(o.date)}</td>
+      <td style="padding:13px 16px;"><button class="btn-ghost" onclick="showOrderDetail('${esc(o.id)}')">Lihat</button></td>
     </tr>`;
   }).join('');
 }
@@ -737,6 +742,15 @@ function showOrderDetail(id){
   document.getElementById('od-id').textContent = o.id;
   document.getElementById('od-name').textContent = o.name;
   document.getElementById('od-email').textContent = o.email;
+  // Nombor WhatsApp — jadikan pautan boleh klik jika ada
+  const phone = (o._raw && o._raw.phone) ? String(o._raw.phone) : '';
+  const phoneEl = document.getElementById('od-phone');
+  if(phone){
+    const waNum = phone.replace(/[^0-9]/g,'');
+    phoneEl.innerHTML = `<i class="ph ph-whatsapp-logo" style="color:#25D366;"></i> <a href="https://wa.me/${esc(waNum)}" target="_blank" rel="noopener" style="color:#2471a3;text-decoration:none;">${esc(phone)}</a>`;
+  } else {
+    phoneEl.textContent = '';
+  }
   document.getElementById('od-date').textContent = o.date;
   document.getElementById('od-total').textContent = o.total;
   document.getElementById('od-status-wrap').innerHTML = statusPill(o.status);
@@ -747,15 +761,25 @@ function showOrderDetail(id){
   document.getElementById('od-items').innerHTML = items.length
     ? items.map(i=>`
         <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
-          <span style="color:#2d2520;">${i.name}${i.qty>1?' ×'+i.qty:''}</span>
+          <span style="color:#2d2520;">${esc(i.name)}${Number(i.qty)>1?' ×'+Number(i.qty):''}</span>
           <span style="font-weight:600;color:#6f6358;">RM ${parseFloat(i.price*i.qty||i.price||0).toFixed(2)}</span>
         </div>`).join('')
     : `<div style="font-size:13px;color:#9a8d80;">— tiada maklumat item —</div>`;
 
+  // Cara hantar gambar
+  const medium = (raw.medium || '').trim();
+  const medRow = document.getElementById('od-medium-row');
+  if(medium){
+    document.getElementById('od-medium').textContent = medium;
+    medRow.style.display = 'flex';
+  } else {
+    medRow.style.display = 'none';
+  }
+
   // Editor select
   const edSel = document.getElementById('od-editor-select');
   const editorNames = ['—', ...EDITORS.map(e=>e.name.split(' ')[0])];
-  edSel.innerHTML = editorNames.map(n=>`<option${n===o.editor?' selected':''}>${n}</option>`).join('');
+  edSel.innerHTML = editorNames.map(n=>`<option${n===o.editor?' selected':''}>${esc(n)}</option>`).join('');
 
   // Status select
   const stSel = document.getElementById('od-status-select');
@@ -1289,11 +1313,11 @@ function renderOverview(){
 
   document.getElementById('recent-orders').innerHTML = ORDERS.slice(0,6).map(o=>`
     <tr>
-      <td style="padding:12px 16px;font-size:12px;font-weight:600;color:#a86d69;">${o.id}</td>
-      <td style="padding:12px 16px;font-size:13px;color:#2d2520;">${o.name}</td>
-      <td style="padding:12px 16px;font-size:12px;color:#6f6358;">${o.pkg}</td>
+      <td style="padding:12px 16px;font-size:12px;font-weight:600;color:#a86d69;">${esc(o.id)}</td>
+      <td style="padding:12px 16px;font-size:13px;color:#2d2520;">${esc(o.name)}</td>
+      <td style="padding:12px 16px;font-size:12px;color:#6f6358;">${esc(o.pkg)}</td>
       <td style="padding:12px 16px;">${statusPill(o.status)}</td>
-      <td style="padding:12px 16px;font-size:12px;color:#6f6358;">${o.editor}</td>
+      <td style="padding:12px 16px;font-size:12px;color:#6f6358;">${esc(o.editor)}</td>
     </tr>
   `).join('') || '<tr><td colspan="5" style="padding:20px 16px;text-align:center;font-size:13px;color:#9a8d80;">Tiada order lagi.</td></tr>';
 

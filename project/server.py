@@ -11,11 +11,40 @@ import secrets
 import datetime
 import hashlib
 import hmac as hmac_lib
+import time
 import urllib.request
 import urllib.parse
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 HITPAY_CURRENCY = "MYR"
+
+# ============================================================
+# SECURITY: Password hashing (PBKDF2-SHA256)
+# Mencegah: kata laluan bocor jika data.json terdedah
+# ============================================================
+def hash_password(password: str) -> str:
+    salt = secrets.token_hex(16)
+    key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), 260000)
+    return f"pbkdf2:sha256:260000:{salt}:{key.hex()}"
+
+def verify_password(stored: str, provided: str) -> bool:
+    if stored.startswith('pbkdf2:'):
+        try:
+            _, algo, iters, salt, stored_key = stored.split(':', 4)
+            key = hashlib.pbkdf2_hmac(algo, provided.encode('utf-8'), salt.encode('utf-8'), int(iters))
+            return hmac_lib.compare_digest(key.hex(), stored_key)
+        except Exception:
+            return False
+    # Legacy plaintext — akan auto-migrate selepas login berjaya
+    return hmac_lib.compare_digest(stored, provided)
+
+# ============================================================
+# SECURITY: Rate limiting login
+# Mencegah: brute-force / credential stuffing
+# ============================================================
+_LOGIN_ATTEMPTS: dict = {}  # ip -> [count, timestamp]
+_MAX_ATTEMPTS = 5
+_LOCKOUT_SECS = 300  # 5 minit
 
 def get_hitpay_cfg():
     """Baca config HitPay dari data.json (live, boleh tukar tanpa restart)."""
@@ -44,9 +73,11 @@ PKG_FIELD_DEFAULTS = {
 DEFAULT_DATA = {
     "editors": [],
     "hitpay": {
-        "api_key": "test_b483fc92015565bc2915478a63d179da7211e7d811a007c34793478ca689356a",
-        "salt":    "6ZFVtkRAi9CWkMJx2ydw3ddTx0gR2GUiOFddFbsukKBK7eqPVXA5fl15C42MXbMp",
-        "sandbox": True,
+        # SECURITY: Baca dari environment variable — jangan simpan secret dalam kod/Git.
+        # Set HITPAY_API_KEY & HITPAY_SALT sebelum jalankan, atau isi via panel admin.
+        "api_key": os.environ.get("HITPAY_API_KEY", ""),
+        "salt":    os.environ.get("HITPAY_SALT", ""),
+        "sandbox": os.environ.get("HITPAY_SANDBOX", "true").lower() != "false",
     },
     "media_links": {
         "whatsapp": "",
@@ -55,7 +86,8 @@ DEFAULT_DATA = {
     },
     "vouchers": [],
     "users": [
-        {"email": "admin@pixyoprint.com", "password": "admin123",
+        {"email": os.environ.get("ADMIN_EMAIL", "admin@pixyoprint.com"),
+         "password": os.environ.get("ADMIN_PASSWORD", "admin123"),
          "name": "Azlinda", "role": "admin"}
     ],
     "flow": [
@@ -177,6 +209,11 @@ def load_data():
     if "editors" not in data:
         data["editors"] = []
         changed = True
+    # Migrate plaintext passwords → hashed (PBKDF2)
+    for u in data.get("users", []):
+        if not u.get("password", "").startswith("pbkdf2:"):
+            u["password"] = hash_password(u["password"])
+            changed = True
     if changed:
         save_data(data)
     return data
@@ -187,9 +224,32 @@ def save_data(d):
         json.dump(d, f, ensure_ascii=False, indent=2)
 
 
+_SECURITY_HEADERS = [
+    ("X-Content-Type-Options",  "nosniff"),
+    ("X-Frame-Options",         "DENY"),
+    ("X-XSS-Protection",        "1; mode=block"),
+    ("Referrer-Policy",         "strict-origin-when-cross-origin"),
+    ("Permissions-Policy",      "camera=(), microphone=(), geolocation=()"),
+    ("Content-Security-Policy",
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
+        "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; "
+        "img-src 'self' data: blob:; "
+        "media-src 'self' blob:; "
+        "connect-src 'self'; "
+        "frame-ancestors 'none'"),
+]
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *a, **k):
         super().__init__(*a, directory=BASE, **k)
+
+    # SECURITY: inject security headers on every response
+    def end_headers(self):
+        for name, value in _SECURITY_HEADERS:
+            self.send_header(name, value)
+        super().end_headers()
 
     # --- utilities -------------------------------------------------
     def _json(self, obj, code=200):
@@ -257,19 +317,59 @@ class Handler(SimpleHTTPRequestHandler):
             ref = self.path.split("ref=")[-1] if "ref=" in self.path else ""
             orders = load_data().get("orders", [])
             order = next((o for o in orders if o.get("reference") == ref), None)
-            return self._json(order or {"status": "not_found"})
+            # SECURITY: Dedah status sahaja — bukan nama/email/items pelanggan
+            if not order:
+                return self._json({"status": "not_found"})
+            return self._json({"reference": order.get("reference"),
+                               "status": order.get("status")})
+
+        # SECURITY: Blok akses fail sensitif (data.json, kod sumber, dotfiles)
+        if not self._is_safe_static_path(self.path):
+            return self._json({"error": "not found"}, 404)
         return super().do_GET()
+
+    # SECURITY: Hanya benarkan static serving fail "selamat"
+    def _is_safe_static_path(self, path):
+        clean = path.split("?")[0].split("#")[0].lstrip("/").lower()
+        blocked_ext = (".py", ".pyc", ".json", ".env", ".log", ".db", ".sqlite")
+        base = clean.rsplit("/", 1)[-1]
+        if base.startswith("."):       # dotfiles spt .gitignore, .env
+            return False
+        if clean.endswith(blocked_ext):  # data.json, server.py, dll
+            return False
+        if "__pycache__" in clean:
+            return False
+        return True
 
     def do_POST(self):
         if self.path == "/api/login":
+            # SECURITY: Rate limiting — cegah brute-force
+            client_ip = self.client_address[0]
+            now = time.time()
+            att_count, att_time = _LOGIN_ATTEMPTS.get(client_ip, [0, 0])
+            if now - att_time > _LOCKOUT_SECS:
+                att_count = 0
+            if att_count >= _MAX_ATTEMPTS:
+                remaining = int(_LOCKOUT_SECS - (now - att_time))
+                return self._json({"ok": False,
+                    "error": f"Terlalu banyak percubaan. Cuba lagi dalam {remaining//60+1} minit."}, 429)
+
             b = self._read_body()
+            email = str(b.get("email", ""))[:254]
+            password = str(b.get("password", ""))[:128]
             data = load_data()
             for u in data.get("users", []):
-                if u["email"] == b.get("email") and u["password"] == b.get("password"):
-                    token = secrets.token_hex(16)
+                if u["email"] == email and verify_password(u["password"], password):
+                    _LOGIN_ATTEMPTS.pop(client_ip, None)
+                    # SECURITY: auto-upgrade legacy plaintext hash selepas login
+                    if not u["password"].startswith("pbkdf2:"):
+                        u["password"] = hash_password(password)
+                        save_data(data)
+                    token = secrets.token_hex(32)
                     SESSIONS[token] = u["name"]
                     return self._json({"ok": True, "token": token,
                                        "name": u["name"], "role": u.get("role")})
+            _LOGIN_ATTEMPTS[client_ip] = [att_count + 1, now]
             return self._json({"ok": False,
                                "error": "Email atau kata laluan salah"}, 401)
         if self.path == "/api/logout":
@@ -286,37 +386,91 @@ class Handler(SimpleHTTPRequestHandler):
             if length > MAX_UPLOAD:
                 return self._json({"ok": False,
                                    "error": "Fail terlalu besar (maks 200MB)"}, 413)
-            raw_name = self.headers.get("X-Filename", "video")
+            # SECURITY: Sanitize filename — ambil extension sahaja, buang path
+            raw_name = os.path.basename(self.headers.get("X-Filename", "video"))[:200]
             ext = os.path.splitext(raw_name)[1].lower()
-            if ext not in ALLOWED_EXT:
+            # SECURITY: Strict allowlist — bukan sekadar extension check
+            if ext not in ALLOWED_EXT or len(ext) > 5 or '/' in ext or '\\' in ext:
                 return self._json({"ok": False,
                                    "error": "Format tidak disokong"}, 415)
             os.makedirs(UPLOAD_DIR, exist_ok=True)
-            fname = secrets.token_hex(8) + ext
-            with open(os.path.join(UPLOAD_DIR, fname), "wb") as out:
+            # SECURITY: Random filename — cegah overwrite & enumeration
+            fname = secrets.token_hex(16) + ext
+            dest = os.path.join(UPLOAD_DIR, fname)
+            # SECURITY: Verify path dalam UPLOAD_DIR sahaja (cegah traversal)
+            if not os.path.abspath(dest).startswith(os.path.abspath(UPLOAD_DIR)):
+                return self._json({"ok": False, "error": "Laluan tidak sah"}, 400)
+            with open(dest, "wb") as out:
                 out.write(self.rfile.read(length))
             return self._json({"ok": True, "url": "uploads/" + fname,
                                "name": raw_name})
         if self.path == "/api/pay":
             b = self._read_body()
-            total   = b.get("total", 0)
-            name    = b.get("name", "")
-            email   = b.get("email", "")
-            items   = b.get("items", [])
-            if not total or float(total) <= 0:
+            name    = str(b.get("name", ""))[:120]
+            email   = str(b.get("email", ""))[:254]
+            phone   = str(b.get("phone", ""))[:30]
+            medium  = str(b.get("medium", ""))[:40]
+            req_items = b.get("items", [])
+            voucher_code = str(b.get("voucher", "")).strip().upper()[:40]
+
+            if not isinstance(req_items, list) or not req_items:
+                return self._json({"ok": False, "error": "Troli kosong"}, 400)
+
+            d = load_data()
+            # SECURITY: Kira semula harga dari pakej tersimpan di server —
+            # JANGAN percaya 'total' atau 'price' yang dihantar client.
+            pkg_by_name = {p.get("name"): p for p in d.get("packages", [])}
+            server_items = []
+            subtotal = 0.0
+            for it in req_items:
+                nm = str(it.get("name", ""))
+                try:
+                    qty = int(it.get("qty", 1))
+                except (TypeError, ValueError):
+                    qty = 1
+                qty = max(1, min(qty, 99))  # had munasabah
+                pkg = pkg_by_name.get(nm)
+                if not pkg:
+                    return self._json({"ok": False,
+                        "error": f"Pakej tidak sah: {nm}"}, 400)
+                price = float(pkg.get("price", 0) or 0)
+                subtotal += price * qty
+                server_items.append({"name": nm, "price": price, "qty": qty})
+
+            # SECURITY: Sahkan baucar di server (jangan percaya diskaun client)
+            discount = 0.0
+            applied_voucher = ""
+            if voucher_code:
+                v = next((v for v in d.get("vouchers", [])
+                          if str(v.get("code", "")).upper() == voucher_code
+                          and v.get("active")), None)
+                if v:
+                    rate = float(v.get("discount", 0) or 0)
+                    if v.get("type") == "rm":
+                        discount = min(rate, subtotal)
+                    else:
+                        discount = subtotal * (rate / 100.0)
+                    applied_voucher = voucher_code
+
+            total = round(max(0.0, subtotal - discount), 2)
+            if total <= 0:
                 return self._json({"ok": False, "error": "Jumlah tidak sah"}, 400)
 
             reference = secrets.token_hex(8).upper()
             # Simpan order dengan status 'pending'
-            d = load_data()
             d["orders"].append({
                 "reference":  reference,
                 "status":     "pending",
                 "total":      total,
+                "subtotal":   round(subtotal, 2),
+                "discount":   round(discount, 2),
+                "voucher":    applied_voucher,
                 "name":       name,
                 "email":      email,
+                "phone":      phone,
+                "medium":     medium,
                 "created_at": datetime.datetime.now().strftime("%d %b %Y, %H:%M"),
-                "items":     items,
+                "items":      server_items,
             })
             save_data(d)
 
@@ -426,5 +580,14 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    # SECURITY: Amaran jika kredential / secret default masih digunakan
+    _d = load_data()
+    _admin = next((u for u in _d.get("users", []) if u.get("role") == "admin"), None)
+    if _admin and verify_password(_admin.get("password", ""), "admin123"):
+        print("⚠  AMARAN: Kata laluan admin masih 'admin123' (default).")
+        print("   Tukar segera sebelum guna untuk produksi — set ADMIN_PASSWORD env var")
+        print("   atau kemaskini dalam data.json.")
+    if not _d.get("hitpay", {}).get("api_key"):
+        print("ℹ  HitPay belum dikonfigurasi — set via panel admin atau HITPAY_API_KEY env var.")
     print(f"PixyoPrint server di http://localhost:{PORT}")
     ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
