@@ -2196,7 +2196,7 @@ function savePostage(){
     threshold: parseFloat(document.getElementById('post-threshold').value) || 1.5,
     per_kg:    parseFloat(document.getElementById('post-per-kg').value)    || 0,
   };
-  fetch('/api/postage', { method:'PUT', headers: authHeaders(), body: JSON.stringify(body) })
+  fetch('/api/postage', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body: JSON.stringify(body) })
     .then(r=>r.json()).then(res=>showToast(res.ok ? 'Tetapan penghantaran disimpan' : 'Gagal simpan'));
 }
 
