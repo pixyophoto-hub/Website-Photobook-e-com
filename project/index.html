@@ -800,7 +800,7 @@ function renderExplore(){
       <div class="explore-thumb">${exploreIcon(e)}</div>
       <div style="font-size:15px;font-weight:700;color:#2d2520;margin-top:14px;text-align:center;">${escA(e.name)}</div>
       <div style="font-size:12px;color:#9a8d80;text-align:center;margin-top:2px;">${escA(e.desc)}</div>
-      <div style="text-align:center;margin-top:8px;"><span class="ann-cta" style="color:#a86d69;" onclick="${e.cat?`goToCatalog('${escA(e.cat)}','${escA(e.name)}','${escA(e.desc)}')`:`goToPackages()`}">Terokai →</span></div>
+      <div style="text-align:center;margin-top:8px;"><span class="ann-cta" style="color:#a86d69;${e.cat?'':' opacity:0.45;cursor:default;'}" onclick="${e.cat?`goToCatalog('${escA(e.cat)}','${escA(e.name)}','${escA(e.desc)}')`:'void(0)'}">Terokai →</span></div>
     </div>`).join('');
 }
 function loadExplore(){
