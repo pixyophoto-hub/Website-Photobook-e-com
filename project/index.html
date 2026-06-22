@@ -843,6 +843,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
 });
 loadExplore();
+// load packages awal supaya catalog sedia bila user klik Terokai
+loadPackages().then(()=>{ loadCategories(); loadPostageCfg(); if(_isCatalogActive()) renderCatalog(_activeCatalogCat); });
 function heroCheckStatus(){
   const ref = document.getElementById('hero-status-ref').value.trim();
   if(!ref){ showToast('Masukkan nombor order dahulu.'); return; }
