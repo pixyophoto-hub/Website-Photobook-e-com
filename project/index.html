@@ -373,7 +373,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 <div class="page" id="page-catalog" style="padding:40px 32px 80px;">
   <!-- back + heading -->
   <div style="display:flex;align-items:center;gap:14px;margin-bottom:28px;">
-    <button onclick="goPage(_catalogBack||'servis')" style="background:none;border:1px solid #e3d8cb;border-radius:100px;padding:8px 16px;font-size:13px;font-weight:600;color:#6f6358;cursor:pointer;display:flex;align-items:center;gap:6px;transition:border-color .15s;" onmouseover="this.style.borderColor='#c98a86'" onmouseout="this.style.borderColor='#e3d8cb'">
+    <button onclick="goPage('servis');setTimeout(()=>{const el=document.getElementById('section-terokai');const nav=document.querySelector('.nav');if(el)window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-(nav?nav.offsetHeight:60),behavior:'smooth'});},80);" style="background:none;border:1px solid #e3d8cb;border-radius:100px;padding:8px 16px;font-size:13px;font-weight:600;color:#6f6358;cursor:pointer;display:flex;align-items:center;gap:6px;transition:border-color .15s;" onmouseover="this.style.borderColor='#c98a86'" onmouseout="this.style.borderColor='#e3d8cb'">
       <i class="ph ph-caret-left"></i> Kembali
     </button>
     <div>
