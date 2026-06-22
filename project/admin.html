@@ -239,18 +239,15 @@ tbody tr{border-top:1px solid #f0e8df;}
 
       <!-- ============ PACKAGES ============ -->
       <div class="view" id="view-settings">
-        <div class="h-title" style="margin-bottom:6px;">Tetapan</div>
-        <div style="font-size:13px;color:#8a7e72;margin-bottom:20px;">Urus pakej, harga &amp; flow kerja yang dipaparkan kepada pelanggan</div>
-
-        <!-- sub-tabs -->
-        <div style="display:flex;gap:6px;border-bottom:1px solid #ede4d8;margin-bottom:24px;max-width:820px;">
-          <div id="tab-flow" class="settings-tab active" onclick="goSettingsTab('flow')"><i class="ph ph-film-strip"></i> Flow Kerja</div>
-          <div id="tab-packages" class="settings-tab" onclick="goSettingsTab('packages')"><i class="ph ph-tag"></i> Harga</div>
-          <div id="tab-payment" class="settings-tab" onclick="goSettingsTab('payment')"><i class="ph ph-credit-card"></i> Pembayaran</div>
-          <div id="tab-medialinks" class="settings-tab" onclick="goSettingsTab('medialinks')"><i class="ph ph-share-network"></i> Hantar Gambar</div>
-          <div id="tab-announce" class="settings-tab" onclick="goSettingsTab('announce')"><i class="ph ph-megaphone"></i> Pengumuman</div>
-          <div id="tab-explore" class="settings-tab" onclick="goSettingsTab('explore')"><i class="ph ph-squares-four"></i> Terokai Pilihan</div>
-          <div id="tab-akaun" class="settings-tab" onclick="goSettingsTab('akaun')"><i class="ph ph-user-circle"></i> Akaun</div>
+        <div id="settings-page-header" style="margin-bottom:24px;">
+          <div class="h-title" id="settings-page-title" style="margin-bottom:4px;">Tetapan</div>
+          <div id="settings-page-sub" style="font-size:13px;color:#8a7e72;"></div>
+        </div>
+        <!-- hidden tab anchors (still needed by goSettingsTab logic) -->
+        <div style="display:none;">
+          <div id="tab-flow"></div><div id="tab-packages"></div><div id="tab-payment"></div>
+          <div id="tab-medialinks"></div><div id="tab-announce"></div><div id="tab-explore"></div>
+          <div id="tab-akaun"></div>
         </div>
 
         <!-- PANEL: Pengumuman -->
@@ -1255,11 +1252,26 @@ function renderNav(){
   document.getElementById('nav-list').innerHTML = mainItems + settingsToggle;
 }
 
+const SETTINGS_META = {
+  flow:       { title:'Flow Kerja',      sub:'Video langkah-langkah yang dipaparkan kepada pelanggan' },
+  packages:   { title:'Harga & Pakej',   sub:'Urus pakej, kategori dan harga' },
+  payment:    { title:'Pembayaran',      sub:'Konfigurasi HitPay dan tetapan bayaran' },
+  medialinks: { title:'Hantar Gambar',   sub:'Link untuk pelanggan hantar gambar' },
+  announce:   { title:'Pengumuman',      sub:'Bar pengumuman yang bergerak di laman pelanggan' },
+  explore:    { title:'Terokai Pilihan', sub:'Kad pilihan dalam seksyen Terokai Pilihan Kami' },
+  akaun:      { title:'Akaun Saya',      sub:'Tukar nama paparan dan kata laluan' },
+};
+
 let _activeSettingsTab = 'flow';
 function goSettings(tab){
   _activeSettingsTab = tab;
   _settingsOpen = true;
+  const meta = SETTINGS_META[tab] || {};
   goView('settings');
+  const titleEl = document.getElementById('settings-page-title');
+  const subEl   = document.getElementById('settings-page-sub');
+  if(titleEl) titleEl.textContent = meta.title || 'Tetapan';
+  if(subEl)   subEl.textContent   = meta.sub   || '';
   goSettingsTab(tab);
 }
 
