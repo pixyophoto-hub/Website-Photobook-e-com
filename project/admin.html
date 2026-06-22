@@ -1779,17 +1779,15 @@ function renderFlow(){
            <input type="file" accept="video/*" style="display:none;" onchange="uploadFlowVideo(${i}, this)">
          </label>`;
     return `
-    <div class="card" style="padding:20px;display:flex;gap:18px;align-items:flex-start;">
-      <div style="position:relative;width:90px;height:120px;border-radius:8px;flex:none;overflow:hidden;background:repeating-linear-gradient(45deg,#f0e7dc,#f0e7dc 9px,#eadfd1 9px,#eadfd1 18px);display:flex;align-items:center;justify-content:center;">
+    <div class="card" style="padding:12px 14px;display:flex;gap:12px;align-items:center;max-width:560px;">
+      <div style="position:relative;width:52px;height:52px;border-radius:7px;flex:none;overflow:hidden;background:repeating-linear-gradient(45deg,#f0e7dc,#f0e7dc 7px,#eadfd1 7px,#eadfd1 14px);display:flex;align-items:center;justify-content:center;">
         ${thumb}
-        <span style="position:absolute;top:8px;left:8px;font-family:'Courier New',monospace;font-size:10px;font-weight:700;color:#fffdfa;background:#c98a86;padding:3px 7px;border-radius:100px;z-index:1;">${f.n}</span>
+        <span style="position:absolute;top:3px;left:3px;font-family:'Courier New',monospace;font-size:9px;font-weight:700;color:#fffdfa;background:#c98a86;padding:2px 5px;border-radius:100px;z-index:1;">${f.n}</span>
       </div>
       <div style="flex:1;min-width:0;">
-        <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Caption Langkah ${f.n}</div>
-        <input type="text" id="flow-cap-${i}" value="${esc(f.cap)}" class="inp" style="width:100%;font-size:14px;font-weight:600;color:#2d2520;margin-bottom:12px;" placeholder="Tajuk langkah">
-        <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Video Proses <span style="color:#9a8d80;font-weight:500;">(MP4 / MOV / WEBM — opsyenal)</span></div>
+        <input type="text" id="flow-cap-${i}" value="${esc(f.cap)}" class="inp" style="width:100%;font-size:13px;font-weight:600;color:#2d2520;margin-bottom:6px;padding:6px 10px;" placeholder="Tajuk langkah">
         <div id="flow-up-${i}">${uploadBox}</div>
-        <div id="flow-prog-${i}" style="display:none;font-size:11px;color:#a86d69;font-weight:600;margin-top:6px;"></div>
+        <div id="flow-prog-${i}" style="display:none;font-size:11px;color:#a86d69;font-weight:600;margin-top:4px;"></div>
       </div>
     </div>`;
   }).join('');
