@@ -22,6 +22,11 @@ select,input,textarea{font-family:'Hanken Grotesk',sans-serif;}
 .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;margin-bottom:2px;cursor:pointer;color:#9a8d80;transition:background .15s,color .15s;}
 .nav-item:hover{background:#3d2f27;color:#cdbfb2;}
 .nav-item.active{background:#3d2f27;color:#f5ede4;}
+.nav-group-label{font-size:10px;font-family:'Courier New',monospace;letter-spacing:0.14em;text-transform:uppercase;color:#5a4a3e;padding:6px 12px 2px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+.nav-group-label:hover{color:#7a6a5e;}
+.nav-sub{padding-left:10px;}
+.nav-sub .nav-item{font-size:12px;padding:8px 12px;}
+.nav-sub .nav-item.active{background:#3d2f27;color:#c98a86;}
 .nav-badge{margin-left:auto;font-size:10px;font-weight:700;background:#c98a86;color:#fff;padding:2px 7px;border-radius:100px;}
 
 /* Main */
@@ -678,8 +683,25 @@ const NAV = [
   { id:'revenue',  label:'Pendapatan',    icon:'ph ph-chart-bar',     badge:false },
   { id:'editors',  label:'Urus Editor',   icon:'ph ph-users-three',   badge:false },
   { id:'reviews',  label:'Ulasan',        icon:'ph ph-star',          badge:false },
-  { id:'settings', label:'Tetapan',       icon:'ph ph-gear',          badge:false }
 ];
+const SETTINGS_GROUPS = [
+  { label:'Produk',      icon:'ph ph-package', items:[
+    { tab:'flow',     label:'Flow Kerja',      icon:'ph ph-film-strip' },
+    { tab:'packages', label:'Harga & Pakej',   icon:'ph ph-tag' },
+  ]},
+  { label:'Pembayaran',  icon:'ph ph-credit-card', items:[
+    { tab:'payment',    label:'Pembayaran',      icon:'ph ph-credit-card' },
+    { tab:'medialinks', label:'Hantar Gambar',   icon:'ph ph-share-network' },
+  ]},
+  { label:'Kandungan',   icon:'ph ph-layout', items:[
+    { tab:'announce', label:'Pengumuman',        icon:'ph ph-megaphone' },
+    { tab:'explore',  label:'Terokai Pilihan',   icon:'ph ph-squares-four' },
+  ]},
+  { label:'Akaun',       icon:'ph ph-user-circle', items:[
+    { tab:'akaun',    label:'Akaun Saya',        icon:'ph ph-user-circle' },
+  ]},
+];
+let _settingsOpen = true;
 const LABELS = { overview:'Overview', orders:'Senarai Order', revenue:'Pendapatan', editors:'Urus Editor', reviews:'Ulasan', settings:'Tetapan' };
 
 const STATUS = {
@@ -1200,13 +1222,45 @@ function statusPill(status){
 // NAV
 // ============================================================
 function renderNav(){
-  document.getElementById('nav-list').innerHTML = NAV.map(n => `
+  const mainItems = NAV.map(n => `
     <div class="nav-item ${n.id===currentView?'active':''}" onclick="goView('${n.id}')">
       <i style="font-size:16px;" class="${n.icon}"></i>
       <span class="nav-label" style="font-size:13px;font-weight:500;">${n.label}</span>
       ${n.badge?`<span class="nav-badge nav-label">${n.badgeVal}</span>`:''}
+    </div>`).join('');
+
+  const settingsActive = currentView === 'settings';
+  const groupsHtml = _settingsOpen ? SETTINGS_GROUPS.map(g => `
+    <div class="nav-label" style="margin-top:4px;">
+      <div class="nav-group-label" onclick="event.stopPropagation()">
+        <span style="display:flex;align-items:center;gap:7px;"><i class="${g.icon}" style="font-size:13px;"></i>${g.label}</span>
+      </div>
+      <div class="nav-sub">
+        ${g.items.map(it => `
+          <div class="nav-item ${settingsActive && _activeSettingsTab===it.tab ? 'active' : ''}" onclick="goSettings('${it.tab}')">
+            <i style="font-size:14px;" class="${it.icon}"></i>
+            <span class="nav-label" style="font-size:12px;font-weight:500;">${it.label}</span>
+          </div>`).join('')}
+      </div>
+    </div>`).join('') : '';
+
+  const settingsToggle = `
+    <div class="nav-item ${settingsActive?'active':''}" onclick="_settingsOpen=!_settingsOpen;renderNav()" style="margin-top:6px;">
+      <i style="font-size:16px;" class="ph ph-gear"></i>
+      <span class="nav-label" style="font-size:13px;font-weight:500;">Tetapan</span>
+      <i class="ph ${_settingsOpen?'ph-caret-up':'ph-caret-down'} nav-label" style="font-size:12px;margin-left:auto;"></i>
     </div>
-  `).join('');
+    ${groupsHtml}`;
+
+  document.getElementById('nav-list').innerHTML = mainItems + settingsToggle;
+}
+
+let _activeSettingsTab = 'flow';
+function goSettings(tab){
+  _activeSettingsTab = tab;
+  _settingsOpen = true;
+  goView('settings');
+  goSettingsTab(tab);
 }
 
 function goView(id){
