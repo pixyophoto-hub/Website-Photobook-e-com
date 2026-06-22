@@ -490,8 +490,14 @@ tbody tr{border-top:1px solid #f0e8df;}
               <i class="ph ph-package" style="color:#a86d69;font-size:16px;"></i>
               <div style="font-size:13px;font-weight:700;color:#2d2520;">Tetapan Penghantaran</div>
             </div>
-            <div style="font-size:12px;color:#8a7e72;margin-bottom:18px;">Kiraan postage automatik ikut berat item dalam troli.</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div style="font-size:12px;color:#8a7e72;margin-bottom:18px;">Kiraan postage automatik ikut berat item & zon penghantaran. Zon dikesan automatik dari poskod pelanggan.</div>
+
+            <!-- ZON: Semenanjung -->
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;">
+              <i class="ph ph-map-pin" style="color:#6f8466;font-size:14px;"></i>
+              <div style="font-size:12px;font-weight:700;color:#473f38;text-transform:uppercase;letter-spacing:0.03em;">Semenanjung Malaysia</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px;">
               <div>
                 <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Harga Asas (RM)</label>
                 <input id="post-base" type="number" step="0.5" min="0" class="inp" style="width:100%;box-sizing:border-box;" placeholder="cth: 8">
@@ -508,9 +514,34 @@ tbody tr{border-top:1px solid #f0e8df;}
                 <div style="font-size:11px;color:#8a7e72;margin-top:3px;">Setiap kg melebihi had</div>
               </div>
             </div>
+
+            <!-- ZON: Sabah/Sarawak -->
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;">
+              <i class="ph ph-map-pin" style="color:#a86d69;font-size:14px;"></i>
+              <div style="font-size:12px;font-weight:700;color:#473f38;text-transform:uppercase;letter-spacing:0.03em;">Sabah / Sarawak / Labuan</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px;">
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Harga Asas (RM)</label>
+                <input id="post-east-base" type="number" step="0.5" min="0" class="inp" style="width:100%;box-sizing:border-box;" placeholder="cth: 15">
+                <div style="font-size:11px;color:#8a7e72;margin-top:3px;">Caj minimum / berat dalam had</div>
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Had Berat (kg)</label>
+                <input id="post-east-threshold" type="number" step="0.1" min="0" class="inp" style="width:100%;box-sizing:border-box;" placeholder="cth: 1.0">
+                <div style="font-size:11px;color:#8a7e72;margin-top:3px;">Bawah had → harga asas sahaja</div>
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Tambahan per kg (RM)</label>
+                <input id="post-east-per-kg" type="number" step="0.5" min="0" class="inp" style="width:100%;box-sizing:border-box;" placeholder="cth: 10">
+                <div style="font-size:11px;color:#8a7e72;margin-top:3px;">Setiap kg melebihi had</div>
+              </div>
+            </div>
+
             <div style="background:#f5f0eb;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#6f6358;">
-              <b>Contoh kiraan:</b> Berat total 2.3kg, had 1.5kg, asas RM8, tambahan RM2/kg<br>
-              → RM 8 + (0.8kg × RM 2) = <b>RM 9.60</b>
+              <b>Contoh (Crystal Album 2.3kg):</b><br>
+              Semenanjung — had 1.5kg, asas RM8, +RM2/kg → RM 8 + (0.8 × RM 2) = <b>RM 9.60</b><br>
+              Sabah/Sarawak — had 1.0kg, asas RM15, +RM10/kg → RM 15 + (1.3 × RM 10) = <b>RM 28.00</b>
             </div>
             <div style="display:flex;justify-content:flex-end;">
               <button class="btn-primary" style="font-size:13px;padding:9px 18px;border-radius:8px;" onclick="savePostage()"><i class="ph ph-floppy-disk"></i> Simpan Tetapan</button>
@@ -2180,9 +2211,13 @@ function saveMediaLinks(){
 function loadPostage(){
   fetch('/api/postage', { headers: authHeaders() })
     .then(r=>r.json()).then(d=>{
-      document.getElementById('post-base').value      = d.base      ?? '';
-      document.getElementById('post-threshold').value = d.threshold ?? '';
-      document.getElementById('post-per-kg').value    = d.per_kg    ?? '';
+      const e = d.east || {};
+      document.getElementById('post-base').value           = d.base      ?? '';
+      document.getElementById('post-threshold').value      = d.threshold ?? '';
+      document.getElementById('post-per-kg').value         = d.per_kg    ?? '';
+      document.getElementById('post-east-base').value      = e.base      ?? '';
+      document.getElementById('post-east-threshold').value = e.threshold ?? '';
+      document.getElementById('post-east-per-kg').value    = e.per_kg    ?? '';
     }).catch(()=>{});
 }
 function savePostage(){
@@ -2190,6 +2225,11 @@ function savePostage(){
     base:      parseFloat(document.getElementById('post-base').value)      || 0,
     threshold: parseFloat(document.getElementById('post-threshold').value) || 1.5,
     per_kg:    parseFloat(document.getElementById('post-per-kg').value)    || 0,
+    east: {
+      base:      parseFloat(document.getElementById('post-east-base').value)      || 0,
+      threshold: parseFloat(document.getElementById('post-east-threshold').value) || 1.0,
+      per_kg:    parseFloat(document.getElementById('post-east-per-kg').value)    || 0,
+    },
   };
   fetch('/api/postage', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body: JSON.stringify(body) })
     .then(r=>r.json()).then(res=>showToast(res.ok ? 'Tetapan penghantaran disimpan' : 'Gagal simpan'));

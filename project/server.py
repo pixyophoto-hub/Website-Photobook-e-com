@@ -354,7 +354,7 @@ class Handler(SimpleHTTPRequestHandler):
                                "name": u["name"] if u else None,
                                "role": u.get("role") if u else None})
         if self.path == "/api/postage":
-            return self._json(load_data().get("postage", {"base":8,"threshold":1.5,"per_kg":2}))
+            return self._json(load_data().get("postage", {"base":8,"threshold":1.5,"per_kg":2,"east":{"base":15,"threshold":1.0,"per_kg":10}}))
         if self.path == "/api/media-links":
             return self._json(load_data().get("media_links", {}))
         if self.path == "/api/hitpay-config":
@@ -627,7 +627,17 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
             b = self._read_body()
             d = load_data()
-            d["postage"] = {"base": float(b.get("base", 8)), "threshold": float(b.get("threshold", 1.5)), "per_kg": float(b.get("per_kg", 2))}
+            e = b.get("east", {}) or {}
+            d["postage"] = {
+                "base": float(b.get("base", 8)),
+                "threshold": float(b.get("threshold", 1.5)),
+                "per_kg": float(b.get("per_kg", 2)),
+                "east": {
+                    "base": float(e.get("base", 15)),
+                    "threshold": float(e.get("threshold", 1.0)),
+                    "per_kg": float(e.get("per_kg", 10)),
+                },
+            }
             save_data(d)
             return self._json({"ok": True})
         if self.path == "/api/media-links":

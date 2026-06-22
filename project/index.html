@@ -516,7 +516,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
           <div style="font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#6f6358;margin-bottom:18px;">Ringkasan Pesanan</div>
           <div class="summary-row"><span>Subtotal</span><span id="s-subtotal" style="font-weight:600;color:#473f38;"></span></div>
           <div class="summary-row" style="color:#6f8466;"><span id="s-discount-label">Diskaun</span><span id="s-discount" style="font-weight:600;"></span></div>
-          <div id="s-postage-row" class="summary-row" style="border-bottom:1px solid #e3d8cb;color:#6f8466;"><span>Penghantaran</span><span id="s-postage" style="font-weight:600;">Percuma</span></div>
+          <div id="s-postage-row" class="summary-row" style="border-bottom:1px solid #e3d8cb;color:#6f8466;"><span id="s-postage-label">Penghantaran</span><span id="s-postage" style="font-weight:600;">Percuma</span></div>
           <!-- Promo -->
           <div style="display:flex;gap:8px;margin:4px 0 16px;">
             <input type="text" id="promo-input" placeholder="KOD BAUCAR / PROMO" class="inp" style="flex:1;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;padding:9px 12px;">
@@ -1089,8 +1089,17 @@ function updateCartLabel() {
 // ============================================================
 // CHECKOUT
 // ============================================================
+// Kesan zon dari poskod: East = Sabah/Sarawak/Labuan (87-91, 93-98)
+function isEastMsiaPoskod(poskod) {
+  const p = parseInt(String(poskod || '').substring(0, 2), 10);
+  return (p >= 87 && p <= 91) || (p >= 93 && p <= 98);
+}
+
 function calcPostage(items) {
-  const cfg = window._postageCfg || { base: 0, threshold: 1.5, per_kg: 0 };
+  const root = window._postageCfg || { base: 0, threshold: 1.5, per_kg: 0 };
+  const poskodEl = document.getElementById('ship-poskod');
+  const poskod = poskodEl ? poskodEl.value : '';
+  const cfg = (isEastMsiaPoskod(poskod) && root.east) ? root.east : root;
   if (!cfg.base) return 0;
   const totalWeight = items.reduce((s, {pkg, qty}) => s + (parseFloat(pkg.weight) || 0) * qty, 0);
   if (totalWeight <= 0) return cfg.base;
@@ -1149,6 +1158,13 @@ function renderCheckout() {
   if(postEl) postEl.textContent = postage > 0 ? money(postage) : 'Percuma';
   const postRow = document.getElementById('s-postage-row');
   if(postRow) postRow.style.color = postage > 0 ? '#473f38' : '#6f8466';
+  const postLbl = document.getElementById('s-postage-label');
+  if(postLbl){
+    const pk = (document.getElementById('ship-poskod')||{}).value || '';
+    postLbl.textContent = pk.length >= 2
+      ? (isEastMsiaPoskod(pk) ? 'Penghantaran (Sabah/Sarawak)' : 'Penghantaran (Semenanjung)')
+      : 'Penghantaran';
+  }
   document.getElementById('s-total').textContent = money(total);
   document.getElementById('pay-btn').textContent = 'Buat Bayaran · ' + money(total);
 
@@ -1202,8 +1218,9 @@ const _NEGERI_MAP = {
 };
 function onPoskodInput(val) {
   const negeri = document.getElementById('ship-negeri');
-  if (val.length < 5) { negeri.value = ''; return; }
-  negeri.value = _NEGERI_MAP[val.substring(0,2)] || '';
+  if (val.length < 5) { negeri.value = ''; }
+  else { negeri.value = _NEGERI_MAP[val.substring(0,2)] || ''; }
+  if (typeof renderCheckout === 'function') renderCheckout();
 }
 
 function applyPromo() {
