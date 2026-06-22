@@ -830,7 +830,7 @@ let ANNOUNCE = [];
 let _annIdx = 0, _annTimer = null;
 function annHtml(a){
   const emoji = a.emoji ? escA(a.emoji) + ' ' : '';
-  const cta = a.cta ? ` <span class="ann-cta" onclick="document.getElementById('section-terokai').scrollIntoView({behavior:'smooth'})">${escA(a.cta)}</span>` : '';
+  const cta = a.cta ? ` <span class="ann-cta" onclick="(function(){const el=document.getElementById('section-terokai');if(!el)return;const nav=document.querySelector('.nav');const offset=nav?nav.offsetHeight:60;window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-offset,behavior:'smooth'});})();">${escA(a.cta)}</span>` : '';
   return emoji + escA(a.text) + cta;
 }
 function renderAnnounce(){ const el=document.getElementById('announce-text'); if(el && ANNOUNCE.length) el.innerHTML = annHtml(ANNOUNCE[_annIdx]); }
