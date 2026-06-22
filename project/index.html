@@ -239,7 +239,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
   </div>
 
   <!-- Terokai Pilihan -->
-  <div class="card" style="margin-bottom:32px;padding:40px 36px;">
+  <div id="section-terokai" class="card" style="margin-bottom:32px;padding:40px 36px;">
     <div class="explore-grid">
       <div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(34px,4.5vw,48px);font-weight:600;line-height:1.05;color:#2d2520;">Terokai <span style="font-style:italic;color:#c98a86;">Pilihan</span> Kami</div>
@@ -819,7 +819,7 @@ let ANNOUNCE = [];
 let _annIdx = 0, _annTimer = null;
 function annHtml(a){
   const emoji = a.emoji ? escA(a.emoji) + ' ' : '';
-  const cta = a.cta ? ` <span class="ann-cta" onclick="document.getElementById('servis').scrollIntoView({behavior:'smooth'})">${escA(a.cta)}</span>` : '';
+  const cta = a.cta ? ` <span class="ann-cta" onclick="document.getElementById('section-terokai').scrollIntoView({behavior:'smooth'})">${escA(a.cta)}</span>` : '';
   return emoji + escA(a.text) + cta;
 }
 function renderAnnounce(){ const el=document.getElementById('announce-text'); if(el && ANNOUNCE.length) el.innerHTML = annHtml(ANNOUNCE[_annIdx]); }
