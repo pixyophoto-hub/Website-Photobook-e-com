@@ -479,12 +479,14 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 
           <!-- Delivery -->
           <div style="font-size:13px;font-weight:700;color:#473f38;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;">Maklumat Penghantaran</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;" class="mobile-grid">
-            <input type="text" id="ship-name" placeholder="Nama penuh" class="inp" style="padding:9px 12px;font-size:13px;">
-            <input type="tel" id="ship-phone" placeholder="No. Telefon (WhatsApp)" class="inp" style="padding:9px 12px;font-size:13px;">
-            <input type="email" id="ship-email" placeholder="Email" class="inp" style="padding:9px 12px;font-size:13px;">
-            <input type="text" id="ship-poskod" placeholder="Poskod" class="inp" style="padding:9px 12px;font-size:13px;">
-            <input type="text" id="ship-alamat" placeholder="Alamat penuh" class="inp" style="grid-column:1/span 2;padding:9px 12px;font-size:13px;">
+          <div style="max-width:480px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+              <input type="text" id="ship-name" placeholder="Nama penuh" class="inp" style="padding:9px 12px;font-size:13px;">
+              <input type="tel" id="ship-phone" placeholder="No. Telefon" class="inp" style="padding:9px 12px;font-size:13px;">
+              <input type="email" id="ship-email" placeholder="Email" class="inp" style="padding:9px 12px;font-size:13px;">
+              <input type="text" id="ship-poskod" placeholder="Poskod" class="inp" style="padding:9px 12px;font-size:13px;">
+            </div>
+            <textarea id="ship-alamat" placeholder="Alamat penuh" class="inp" rows="3" style="width:100%;resize:none;padding:9px 12px;font-size:13px;font-family:inherit;line-height:1.5;margin-bottom:16px;box-sizing:border-box;"></textarea>
           </div>
 
           <!-- Cara Hantar Gambar -->
