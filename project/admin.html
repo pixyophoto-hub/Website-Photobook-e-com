@@ -242,6 +242,16 @@ tbody tr{border-top:1px solid #f0e8df;}
         <div style="display:flex;flex-direction:column;gap:12px;max-width:820px;" id="announce-list"></div>
       </div>
 
+      <!-- ============ EXPLORE / TEROKAI PILIHAN ============ -->
+      <div class="view" id="view-explore">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <div><div class="h-title">Terokai Pilihan</div><div style="font-size:13px;color:#8a7e72;margin-top:2px;" id="explore-count-label">0 kad</div></div>
+          <button class="btn-primary" style="display:flex;align-items:center;gap:8px;font-size:13px;padding:10px 18px;border-radius:8px;" onclick="showExploreModal()"><i class="ph ph-plus"></i> Tambah Kad</button>
+        </div>
+        <div style="font-size:13px;color:#8a7e72;margin-bottom:20px;max-width:680px;">Kad ini dipaparkan dalam seksyen "Terokai Pilihan Kami" (carousel) di laman pelanggan.</div>
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:820px;" id="explore-list"></div>
+      </div>
+
       <!-- ============ PACKAGES ============ -->
       <div class="view" id="view-settings">
         <div class="h-title" style="margin-bottom:6px;">Tetapan</div>
@@ -590,6 +600,43 @@ tbody tr{border-top:1px solid #f0e8df;}
   </div>
 </div>
 
+<!-- Modal Tambah / Edit Kad Terokai -->
+<div id="explore-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(45,37,32,.55);align-items:center;justify-content:center;">
+  <div style="width:460px;max-width:94vw;background:#fffdfa;border-radius:14px;padding:28px 26px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+    <div style="font-size:16px;font-weight:700;color:#2d2520;margin-bottom:18px;"><i class="ph ph-squares-four" style="color:#a86d69;margin-right:6px;"></i><span id="explore-modal-title">Tambah Kad</span></div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Nama</div>
+      <input id="ex-name" class="inp" style="width:100%;" placeholder="cth: Album Hardcover">
+    </div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Penerangan Ringkas</div>
+      <input id="ex-desc" class="inp" style="width:100%;" placeholder="cth: Kemas, tahan lama & premium">
+    </div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Ikon</div>
+      <select id="ex-icon" class="inp" style="width:100%;">
+        <option value="ph ph-book-bookmark">📕 Buku (hardcover)</option>
+        <option value="ph ph-book-open">📖 Buku terbuka (softcover)</option>
+        <option value="ph ph-diamond">💎 Berlian (crystal)</option>
+        <option value="ph ph-gift">🎁 Hadiah (add-on)</option>
+        <option value="ph ph-image">🖼️ Gambar</option>
+        <option value="ph ph-camera">📷 Kamera</option>
+        <option value="ph ph-heart">❤️ Hati</option>
+        <option value="ph ph-star">⭐ Bintang</option>
+        <option value="ph ph-package">📦 Pakej</option>
+      </select>
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">URL Gambar <span style="color:#9a8d80;font-weight:500;">— pilihan, ganti ikon jika diisi</span></div>
+      <input id="ex-img" class="inp" style="width:100%;" placeholder="cth: hero.png atau https://...">
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button class="btn-ghost" style="padding:10px 18px;" onclick="closeExploreModal()">Batal</button>
+      <button id="ex-modal-save-btn" class="btn-primary" style="font-size:13px;padding:10px 20px;border-radius:7px;"><i class="ph ph-floppy-disk"></i> Simpan</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================================
 // DATA
@@ -601,9 +648,10 @@ const NAV = [
   { id:'editors',  label:'Urus Editor',   icon:'ph ph-users-three',   badge:false },
   { id:'reviews',  label:'Ulasan',        icon:'ph ph-star',          badge:false },
   { id:'announce', label:'Pengumuman',    icon:'ph ph-megaphone',     badge:false },
+  { id:'explore',  label:'Terokai Pilihan',icon:'ph ph-squares-four', badge:false },
   { id:'settings', label:'Tetapan',       icon:'ph ph-gear',          badge:false }
 ];
-const LABELS = { overview:'Overview', orders:'Senarai Order', revenue:'Pendapatan', editors:'Urus Editor', reviews:'Ulasan', announce:'Pengumuman', settings:'Tetapan' };
+const LABELS = { overview:'Overview', orders:'Senarai Order', revenue:'Pendapatan', editors:'Urus Editor', reviews:'Ulasan', announce:'Pengumuman', explore:'Terokai Pilihan', settings:'Tetapan' };
 
 const STATUS = {
   'Hantar Gambar':{bg:'#fef3f2',color:'#c0392b'},
@@ -915,6 +963,90 @@ function removeAnnounce(i){
   ANNOUNCEMENTS.splice(i, 1);
   renderAnnounceList();
   persistAnnouncements('Pengumuman dibuang');
+}
+
+// ============================================================
+// TEROKAI PILIHAN / EXPLORE
+// ============================================================
+let EXPLORE = [];
+let _exploreEditIdx = null;
+
+function loadExplore(){
+  fetch('/api/explore', { headers: authHeaders() })
+    .then(r => r.json())
+    .then(list => { if(Array.isArray(list)) EXPLORE = list; renderExploreList(); })
+    .catch(() => renderExploreList());
+}
+
+function persistExplore(msg){
+  fetch('/api/explore', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body:JSON.stringify(EXPLORE) })
+    .then(r => r.json())
+    .then(res => { if(msg) showToast(res.ok ? msg : 'Gagal simpan'); })
+    .catch(() => showToast('Gagal sambung ke server'));
+}
+
+function renderExploreList(){
+  const el = document.getElementById('explore-list');
+  if(!el) return;
+  document.getElementById('explore-count-label').textContent = EXPLORE.length + ' kad';
+  if(!EXPLORE.length){
+    el.innerHTML = '<div class="card" style="padding:28px;text-align:center;color:#9a8d80;">Tiada kad lagi. Tekan "Tambah Kad".</div>';
+    return;
+  }
+  el.innerHTML = EXPLORE.map((e,i)=>`
+    <div class="card" style="padding:16px 20px;display:flex;gap:14px;align-items:center;">
+      <div style="width:46px;height:46px;border-radius:10px;background:#f6efe6;display:flex;align-items:center;justify-content:center;color:#a86d69;font-size:22px;flex:none;overflow:hidden;">
+        ${e.img?`<img src="${esc(e.img)}" style="width:100%;height:100%;object-fit:cover;">`:`<i class="${esc(e.icon||'ph ph-image')}"></i>`}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:700;color:#2d2520;">${esc(e.name)}</div>
+        <div style="font-size:12px;color:#9a8d80;">${esc(e.desc)}</div>
+      </div>
+      <div style="display:flex;gap:8px;flex:none;">
+        <button class="icon-btn" onclick="showExploreModal(${i})" title="Sunting"><i class="ph ph-pencil-simple"></i></button>
+        <button class="icon-btn" onclick="removeExplore(${i})" title="Buang"><i class="ph ph-trash"></i></button>
+      </div>
+    </div>`).join('');
+}
+
+function showExploreModal(editIdx){
+  _exploreEditIdx = (editIdx !== undefined) ? editIdx : null;
+  const isEdit = _exploreEditIdx !== null;
+  document.getElementById('explore-modal-title').textContent = isEdit ? 'Edit Kad' : 'Tambah Kad';
+  document.getElementById('ex-modal-save-btn').onclick = saveExplore;
+  const e = isEdit ? EXPLORE[_exploreEditIdx] : { name:'', desc:'', icon:'ph ph-book-bookmark', img:'' };
+  document.getElementById('ex-name').value = e.name || '';
+  document.getElementById('ex-desc').value = e.desc || '';
+  document.getElementById('ex-icon').value = e.icon || 'ph ph-book-bookmark';
+  document.getElementById('ex-img').value = e.img || '';
+  document.getElementById('explore-modal').style.display = 'flex';
+  document.getElementById('ex-name').focus();
+}
+
+function closeExploreModal(){
+  document.getElementById('explore-modal').style.display = 'none';
+  _exploreEditIdx = null;
+}
+
+function saveExplore(){
+  const e = {
+    name: document.getElementById('ex-name').value.trim(),
+    desc: document.getElementById('ex-desc').value.trim(),
+    icon: document.getElementById('ex-icon').value,
+    img:  document.getElementById('ex-img').value.trim(),
+  };
+  if(!e.name){ showToast('Masukkan nama kad.'); return; }
+  if(_exploreEditIdx !== null) EXPLORE[_exploreEditIdx] = e;
+  else EXPLORE.push(e);
+  closeExploreModal();
+  renderExploreList();
+  persistExplore(_exploreEditIdx !== null ? 'Kad dikemaskini' : 'Kad ditambah');
+}
+
+function removeExplore(i){
+  EXPLORE.splice(i, 1);
+  renderExploreList();
+  persistExplore('Kad dibuang');
 }
 
 const KPI = [
@@ -1586,7 +1718,7 @@ function initAdmin(){
   loadData().then(()=>{
     renderFlow();
     if(!_adminReady){
-      renderNav(); renderRevenue(); loadEditors(); loadOrders(); loadReviews(); loadAnnouncements();
+      renderNav(); renderRevenue(); loadEditors(); loadOrders(); loadReviews(); loadAnnouncements(); loadExplore();
       _adminReady = true;
     }
     renderPackages();
