@@ -477,12 +477,6 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
           </div>
           <div id="cart-lines"></div>
 
-          <!-- Promo -->
-          <div style="display:flex;gap:10px;margin:20px 0 28px;">
-            <input type="text" id="promo-input" placeholder="Kod baucar / promo" class="inp" style="flex:1;letter-spacing:0.06em;text-transform:uppercase;">
-            <button class="btn-secondary" onclick="applyPromo()">Guna</button>
-          </div>
-
           <!-- Delivery -->
           <div style="font-size:15px;font-weight:700;color:#473f38;margin-bottom:14px;">Maklumat Penghantaran</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;" class="mobile-grid">
@@ -523,6 +517,12 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
           <div class="summary-row"><span>Subtotal</span><span id="s-subtotal" style="font-weight:600;color:#473f38;"></span></div>
           <div class="summary-row" style="color:#6f8466;"><span id="s-discount-label">Diskaun</span><span id="s-discount" style="font-weight:600;"></span></div>
           <div id="s-postage-row" class="summary-row" style="border-bottom:1px solid #e3d8cb;color:#6f8466;"><span>Penghantaran</span><span id="s-postage" style="font-weight:600;">Percuma</span></div>
+          <!-- Promo -->
+          <div style="display:flex;gap:8px;margin:4px 0 16px;">
+            <input type="text" id="promo-input" placeholder="KOD BAUCAR / PROMO" class="inp" style="flex:1;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;padding:9px 12px;">
+            <button class="btn-secondary" onclick="applyPromo()" style="font-size:13px;padding:9px 14px;white-space:nowrap;">Guna</button>
+          </div>
+
           <div class="summary-total">
             <span style="font-size:14px;color:#473f38;font-weight:600;">Jumlah</span>
             <span id="s-total" style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#423b36;"></span>
