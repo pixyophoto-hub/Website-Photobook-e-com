@@ -238,17 +238,6 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 
   </div>
 
-  <!-- Testimoni -->
-  <div style="margin-bottom:36px;">
-    <div style="text-align:center;margin-bottom:34px;">
-      <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#a99c8e;margin-bottom:12px;">Testimoni</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(28px,4vw,42px);font-weight:500;color:#2d2520;">Apa <span style="font-style:italic;color:#c98a86;">kata mereka</span>?</div>
-    </div>
-    <div class="review-marquee">
-      <div class="review-track" id="review-track"></div>
-    </div>
-  </div>
-
   <!-- Terokai Pilihan -->
   <div class="card" style="margin-bottom:32px;padding:40px 36px;">
     <div class="explore-grid">
@@ -264,13 +253,19 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
     </div>
   </div>
 
-  <!-- Pilih Pakej -->
-  <div class="card" id="pkg-section">
-    <div style="padding:34px 32px 36px;">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:500;margin-bottom:20px;">Pilih Pakej Anda</div>
-      <div id="pkg-list"></div>
+  <!-- Testimoni -->
+  <div style="margin-bottom:36px;">
+    <div style="text-align:center;margin-bottom:34px;">
+      <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#a99c8e;margin-bottom:12px;">Testimoni</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(28px,4vw,42px);font-weight:500;color:#2d2520;">Apa <span style="font-style:italic;color:#c98a86;">kata mereka</span>?</div>
+    </div>
+    <div class="review-marquee">
+      <div class="review-track" id="review-track"></div>
     </div>
   </div>
+
+  <!-- pkg-section hidden, accessible via Terokai catalog page -->
+  <div id="pkg-section" style="display:none;"><div id="pkg-list"></div></div>
 </div>
 
 <!-- ============================================================ -->
@@ -370,6 +365,24 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 
     </div>
   </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: CATALOG (paparan kategori khas dari Terokai) -->
+<!-- ============================================================ -->
+<div class="page" id="page-catalog" style="padding:40px 32px 80px;">
+  <!-- back + heading -->
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:28px;">
+    <button onclick="goPage(_catalogBack||'servis')" style="background:none;border:1px solid #e3d8cb;border-radius:100px;padding:8px 16px;font-size:13px;font-weight:600;color:#6f6358;cursor:pointer;display:flex;align-items:center;gap:6px;transition:border-color .15s;" onmouseover="this.style.borderColor='#c98a86'" onmouseout="this.style.borderColor='#e3d8cb'">
+      <i class="ph ph-caret-left"></i> Kembali
+    </button>
+    <div>
+      <div id="catalog-label" style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:500;color:#2d2520;line-height:1.1;"></div>
+      <div id="catalog-sublabel" style="font-size:12px;color:#9a8d80;margin-top:2px;"></div>
+    </div>
+  </div>
+  <!-- grid -->
+  <div id="catalog-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;"></div>
 </div>
 
 <!-- ============================================================ -->
@@ -669,7 +682,58 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 // ============================================================
 // ANNOUNCEMENT BAR (slider berputar)
 // ============================================================
-function goToPackages(){ goPage('servis'); setTimeout(()=>document.getElementById('pkg-section').scrollIntoView({behavior:'smooth'}),50); }
+function goToPackages(cat){ if(cat) activeCat = cat; goPage('servis'); setTimeout(()=>document.getElementById('pkg-section').scrollIntoView({behavior:'smooth'}),50); if(cat) setTimeout(renderPkgList, 80); }
+
+let _catalogBack = 'servis';
+let _activeCatalogCat = null;
+function goToCatalog(cat, label, desc){
+  _catalogBack = 'servis';
+  _activeCatalogCat = cat || null;
+  document.getElementById('catalog-label').textContent = label || cat || 'Semua Pakej';
+  document.getElementById('catalog-sublabel').textContent = desc || '';
+  renderCatalog(_activeCatalogCat);
+  goPage('catalog');
+}
+
+function renderCatalog(cat){
+  const grid = document.getElementById('catalog-grid');
+  if(!grid) return;
+  const items = cat ? PKG.filter(p=>(p.category||'')=== cat) : PKG;
+  if(!items.length){
+    grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:#9a8d80;">Tiada pakej dalam kategori ini.</div>';
+    return;
+  }
+  grid.innerHTML = items.map(p=>{
+    const q = state.cart[p.id]||0;
+    const ctrl = q > 0
+      ? `<div style="display:flex;align-items:center;justify-content:center;gap:0;border:1.5px solid #c98a86;border-radius:100px;overflow:hidden;margin-top:14px;">
+           <button onclick="removeFromCart('${p.id}')" style="width:40px;height:40px;border:none;background:#fff0ee;color:#c98a86;font-size:22px;font-weight:700;cursor:pointer;">−</button>
+           <span style="min-width:34px;text-align:center;font-size:14px;font-weight:700;color:#473f38;">${q}</span>
+           <button onclick="addToCart('${p.id}')" style="width:40px;height:40px;border:none;background:#c98a86;color:#fff;font-size:22px;font-weight:700;cursor:pointer;">+</button>
+         </div>`
+      : `<button class="btn-primary" style="width:100%;border-radius:100px;padding:12px;margin-top:14px;font-size:14px;" onclick="addToCart('${p.id}')">+ Tambah</button>`;
+    return `
+    <div style="background:#fffdfa;border:1px solid #ede4d8;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="height:180px;background:repeating-linear-gradient(45deg,#f0e7dc,#f0e7dc 11px,#eadfd1 11px,#eadfd1 22px);display:flex;align-items:center;justify-content:center;color:#c2ad9b;font-size:40px;">
+        <i class="ph ph-image"></i>
+      </div>
+      <div style="padding:18px 20px 20px;flex:1;display:flex;flex-direction:column;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#2d2520;line-height:1.2;">${esc(p.name)}</div>
+        <div style="font-size:12px;color:#9a8d80;margin:6px 0 10px;line-height:1.5;">${esc(p.desc||'')}${p.note?' — '+esc(p.note):''}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+          ${p.pages?`<span class="tag">${String(p.pages).replace(/\D/g,'')||p.pages} muka surat</span>`:''}
+          ${p.material?`<span class="tag">${esc(p.material)}</span>`:''}
+          ${p.size?`<span class="tag">${esc(p.size)}</span>`:''}
+        </div>
+        <div style="margin-top:auto;">
+          ${p.strike?`<div style="font-size:12px;color:#b0a498;text-decoration:line-through;">RM ${Number(p.strike).toFixed(2)}</div>`:''}
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#2d2520;">${money(p.price)}</div>
+          ${ctrl}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 // ============================================================
 // REVIEW MARQUEE (carousel bergerak — boleh urus di admin)
@@ -731,7 +795,7 @@ function renderExplore(){
       <div class="explore-thumb">${exploreIcon(e)}</div>
       <div style="font-size:15px;font-weight:700;color:#2d2520;margin-top:14px;text-align:center;">${escA(e.name)}</div>
       <div style="font-size:12px;color:#9a8d80;text-align:center;margin-top:2px;">${escA(e.desc)}</div>
-      <div style="text-align:center;margin-top:8px;"><span class="ann-cta" style="color:#a86d69;" onclick="goToPackages()">Terokai →</span></div>
+      <div style="text-align:center;margin-top:8px;"><span class="ann-cta" style="color:#a86d69;" onclick="${e.cat?`goToCatalog('${escA(e.cat)}','${escA(e.name)}','${escA(e.desc)}')`:`goToPackages()`}">Terokai →</span></div>
     </div>`).join('');
 }
 function loadExplore(){
@@ -874,7 +938,7 @@ function showToast(msg) {
 // ============================================================
 // NAVIGATION
 // ============================================================
-const pages = ['servis','upload','checkout','status','hubungi'];
+const pages = ['servis','upload','catalog','checkout','status','hubungi'];
 
 function goPage(id) {
   pages.forEach(p => {
@@ -955,11 +1019,13 @@ function renderPkgList() {
   el.innerHTML = tabs + body;
 }
 
+function _isCatalogActive(){ return document.getElementById('page-catalog').classList.contains('active'); }
+
 function addToCart(pkgId) {
   state.cart[pkgId] = (state.cart[pkgId] || 0) + 1;
   state.selPkg = pkgId;
   updateCartLabel();
-  renderPkgList();
+  if(_isCatalogActive()) renderCatalog(_activeCatalogCat); else renderPkgList();
   renderCheckout();
   const pkg = PKG.find(p => p.id === pkgId);
   if(state.cart[pkgId] === 1) showToast((pkg ? pkg.name : '') + ' ditambah ke troli ✓');
@@ -970,7 +1036,7 @@ function removeFromCart(pkgId) {
   state.cart[pkgId]--;
   if(state.cart[pkgId] <= 0) delete state.cart[pkgId];
   updateCartLabel();
-  renderPkgList();
+  if(_isCatalogActive()) renderCatalog(_activeCatalogCat); else renderPkgList();
   renderCheckout();
 }
 

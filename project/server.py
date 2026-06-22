@@ -100,10 +100,10 @@ DEFAULT_ANNOUNCEMENTS = [
 ]
 
 DEFAULT_EXPLORE = [
-    {"name": "Album Hardcover",     "desc": "Kemas, tahan lama & premium", "icon": "ph ph-book-bookmark"},
-    {"name": "Photobook Softcover", "desc": "Ringan & bergaya",            "icon": "ph ph-book-open"},
-    {"name": "Crystal Album",       "desc": "Kulit kristal mewah",         "icon": "ph ph-diamond"},
-    {"name": "Add-on & Hadiah",     "desc": "Tote bag, mug & lain-lain",   "icon": "ph ph-gift"},
+    {"name": "Album Hardcover",     "desc": "Kemas, tahan lama & premium", "icon": "ph ph-book-bookmark", "cat": "HARDCOVER"},
+    {"name": "Photobook Softcover", "desc": "Ringan & bergaya",            "icon": "ph ph-book-open",      "cat": "SOFTCOVER"},
+    {"name": "Crystal Album",       "desc": "Kulit kristal mewah",         "icon": "ph ph-diamond",        "cat": "CRYSTAL ALBUM"},
+    {"name": "Add-on & Hadiah",     "desc": "Tote bag, mug & lain-lain",   "icon": "ph ph-gift",           "cat": ""},
 ]
 
 DEFAULT_DATA = {

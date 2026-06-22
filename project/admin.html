@@ -619,6 +619,12 @@ tbody tr{border-top:1px solid #f0e8df;}
       <input id="ex-icon" class="inp" style="width:100%;font-size:18px;" placeholder="cth: 📕 atau 🎁">
       <div style="font-size:11px;color:#8a7e72;margin-top:4px;">Taip atau tampal mana-mana emoji. Contoh: 📕 📖 💎 🎁 🖼️ 📷 ❤️ ⭐ 📦</div>
     </div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Pautan ke Kategori Pakej <span style="color:#9a8d80;font-weight:500;">— pilihan</span></div>
+      <select id="ex-cat" class="inp" style="width:100%;">
+        <option value="">— Tiada (pergi ke semua pakej) —</option>
+      </select>
+    </div>
     <div style="margin-bottom:20px;">
       <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Gambar <span style="color:#9a8d80;font-weight:500;">— pilihan, ganti ikon jika diisi</span></div>
       <input type="hidden" id="ex-img">
@@ -992,16 +998,27 @@ function exploreIconMark(e){
   return `<span>${esc(ic || '📦')}</span>`;                          // emoji
 }
 
+let _exDragIdx = null;
+
 function renderExploreList(){
   const el = document.getElementById('explore-list');
   if(!el) return;
   document.getElementById('explore-count-label').textContent = EXPLORE.length + ' kad';
+  el.innerHTML = '';
   if(!EXPLORE.length){
     el.innerHTML = '<div class="card" style="padding:28px;text-align:center;color:#9a8d80;">Tiada kad lagi. Tekan "Tambah Kad".</div>';
     return;
   }
-  el.innerHTML = EXPLORE.map((e,i)=>`
-    <div class="card" style="padding:16px 20px;display:flex;gap:14px;align-items:center;">
+  EXPLORE.forEach((e, i) => {
+    const row = document.createElement('div');
+    row.className = 'card';
+    row.draggable = true;
+    row.dataset.idx = i;
+    row.style.cssText = 'padding:16px 20px;display:flex;gap:14px;align-items:center;cursor:grab;transition:opacity .15s,box-shadow .15s;';
+    row.innerHTML = `
+      <div style="color:#cdbfb2;flex:none;cursor:grab;padding:0 4px 0 0;" title="Seret untuk susun semula">
+        <i class="ph ph-dots-six-vertical" style="font-size:18px;"></i>
+      </div>
       <div style="width:46px;height:46px;border-radius:10px;background:#f6efe6;display:flex;align-items:center;justify-content:center;color:#a86d69;font-size:22px;flex:none;overflow:hidden;">
         ${exploreIconMark(e)}
       </div>
@@ -1012,8 +1029,31 @@ function renderExploreList(){
       <div style="display:flex;gap:8px;flex:none;">
         <button class="icon-btn" onclick="showExploreModal(${i})" title="Sunting"><i class="ph ph-pencil-simple"></i></button>
         <button class="icon-btn" onclick="removeExplore(${i})" title="Buang"><i class="ph ph-trash"></i></button>
-      </div>
-    </div>`).join('');
+      </div>`;
+    row.addEventListener('dragstart', ev => {
+      _exDragIdx = i;
+      ev.dataTransfer.effectAllowed = 'move';
+      setTimeout(() => row.style.opacity = '0.4', 0);
+    });
+    row.addEventListener('dragend', () => { row.style.opacity = ''; row.style.boxShadow = ''; });
+    row.addEventListener('dragover', ev => {
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = 'move';
+      row.style.boxShadow = _exDragIdx < i ? 'inset 0 -3px 0 #c98a86' : 'inset 0 3px 0 #c98a86';
+    });
+    row.addEventListener('dragleave', () => { row.style.boxShadow = ''; });
+    row.addEventListener('drop', ev => {
+      ev.preventDefault();
+      row.style.boxShadow = '';
+      const from = _exDragIdx, to = i;
+      if(from === null || from === to) return;
+      const moved = EXPLORE.splice(from, 1)[0];
+      EXPLORE.splice(to, 0, moved);
+      persistExplore(null);
+      renderExploreList();
+    });
+    el.appendChild(row);
+  });
 }
 
 function showExploreModal(editIdx){
@@ -1021,10 +1061,16 @@ function showExploreModal(editIdx){
   const isEdit = _exploreEditIdx !== null;
   document.getElementById('explore-modal-title').textContent = isEdit ? 'Edit Kad' : 'Tambah Kad';
   document.getElementById('ex-modal-save-btn').onclick = saveExplore;
-  const e = isEdit ? EXPLORE[_exploreEditIdx] : { name:'', desc:'', icon:'📦', img:'' };
+  const e = isEdit ? EXPLORE[_exploreEditIdx] : { name:'', desc:'', icon:'📦', img:'', cat:'' };
   document.getElementById('ex-name').value = e.name || '';
   document.getElementById('ex-desc').value = e.desc || '';
   document.getElementById('ex-icon').value = e.icon || 'ph ph-book-bookmark';
+  // populate category dropdown from existing packages
+  const cats = [...new Set(PACKAGES.map(p=>p.category||'').filter(Boolean))];
+  const catSel = document.getElementById('ex-cat');
+  catSel.innerHTML = '<option value="">— Tiada (pergi ke semua pakej) —</option>' +
+    cats.map(c=>`<option value="${c}"${(e.cat||'')==c?' selected':''}>${c}</option>`).join('');
+  catSel.value = e.cat || '';
   const imgVal = e.img || '';
   document.getElementById('ex-img').value = imgVal;
   const thumb = document.getElementById('ex-img-thumb');
@@ -1072,6 +1118,7 @@ function saveExplore(){
     desc: document.getElementById('ex-desc').value.trim(),
     icon: document.getElementById('ex-icon').value,
     img:  document.getElementById('ex-img').value.trim(),
+    cat:  document.getElementById('ex-cat').value,
   };
   if(!e.name){ showToast('Masukkan nama kad.'); return; }
   if(_exploreEditIdx !== null) EXPLORE[_exploreEditIdx] = e;
