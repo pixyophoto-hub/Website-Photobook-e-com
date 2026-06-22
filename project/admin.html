@@ -252,17 +252,27 @@ tbody tr{border-top:1px solid #f0e8df;}
           <div id="tab-akaun"></div>
         </div>
 
-        <!-- PANEL: Pengumuman -->
-        <div id="settings-announce" style="display:none;">
+        <!-- WRAPPER: Kandungan group — 2 kolum sebelah2 -->
+        <div id="settings-kandungan-wrap" style="display:none;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+        <div id="settings-announce">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;max-width:820px;">
             <div style="font-size:13px;color:#8a7e72;" id="announce-count-label">0 pengumuman</div>
             <button class="btn-primary" style="display:flex;align-items:center;gap:8px;font-size:13px;padding:9px 16px;border-radius:8px;" onclick="showAnnounceModal()"><i class="ph ph-plus"></i> Tambah Pengumuman</button>
           </div>
           <div style="font-size:12px;color:#8a7e72;margin-bottom:16px;max-width:680px;">Mesej dipaparkan sebagai bar berputar di paling atas laman pelanggan. Hanya yang "Aktif" dipaparkan.</div>
           <div style="display:flex;flex-direction:column;gap:12px;max-width:820px;" id="announce-list"></div>
-        </div>
+        </div><!-- /settings-announce -->
 
-        <!-- PANEL: Terokai Pilihan -->
+        <div id="settings-explore">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <div style="font-size:13px;color:#8a7e72;" id="explore-count-label">0 kad</div>
+            <button class="btn-primary" style="display:flex;align-items:center;gap:8px;font-size:13px;padding:9px 16px;border-radius:8px;" onclick="showExploreModal()"><i class="ph ph-plus"></i> Tambah Kad</button>
+          </div>
+          <div style="font-size:12px;color:#8a7e72;margin-bottom:16px;">Kad dipaparkan dalam seksyen "Terokai Pilihan Kami" (carousel) di laman pelanggan.</div>
+          <div style="display:flex;flex-direction:column;gap:12px;" id="explore-list"></div>
+        </div><!-- /settings-explore -->
+        </div><!-- /settings-kandungan-wrap -->
+
         <!-- PANEL: Akaun -->
         <div id="settings-akaun" style="display:none;max-width:480px;">
           <div style="font-size:13px;font-weight:700;color:#2d2520;margin-bottom:18px;">Maklumat Akaun</div>
@@ -285,14 +295,6 @@ tbody tr{border-top:1px solid #f0e8df;}
           <button class="btn-primary" style="padding:11px 24px;font-size:13px;border-radius:8px;" onclick="saveAkaun()"><i class="ph ph-floppy-disk"></i> Simpan Perubahan</button>
         </div>
 
-        <div id="settings-explore" style="display:none;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;max-width:820px;">
-            <div style="font-size:13px;color:#8a7e72;" id="explore-count-label">0 kad</div>
-            <button class="btn-primary" style="display:flex;align-items:center;gap:8px;font-size:13px;padding:9px 16px;border-radius:8px;" onclick="showExploreModal()"><i class="ph ph-plus"></i> Tambah Kad</button>
-          </div>
-          <div style="font-size:12px;color:#8a7e72;margin-bottom:16px;max-width:680px;">Kad dipaparkan dalam seksyen "Terokai Pilihan Kami" (carousel) di laman pelanggan.</div>
-          <div style="display:flex;flex-direction:column;gap:12px;max-width:820px;" id="explore-list"></div>
-        </div>
 
         <!-- PANEL: Pakej & Harga -->
         <div id="settings-packages" style="display:none;">
@@ -1252,10 +1254,12 @@ function goSettingsGroup(groupId){
   const subEl   = document.getElementById('settings-page-sub');
   if(titleEl) titleEl.textContent = group.label;
   if(subEl)   subEl.textContent   = '';
-  // pembayaran group uses a shared grid wrapper
-  const wrap = document.getElementById('settings-pembayaran-wrap');
-  if(wrap) wrap.style.display = group.id === 'pembayaran' ? 'grid' : 'none';
-  const allTabs = ['flow','packages','announce','explore','akaun'];
+  // group wrappers (grid side-by-side)
+  const wrapPembayaran = document.getElementById('settings-pembayaran-wrap');
+  if(wrapPembayaran) wrapPembayaran.style.display = group.id === 'pembayaran' ? 'grid' : 'none';
+  const wrapKandungan = document.getElementById('settings-kandungan-wrap');
+  if(wrapKandungan) wrapKandungan.style.display = group.id === 'kandungan' ? 'grid' : 'none';
+  const allTabs = ['flow','packages','akaun'];
   allTabs.forEach(t => {
     const el = document.getElementById('settings-'+t);
     if(el) el.style.display = group.tabs.includes(t) ? 'block' : 'none';
