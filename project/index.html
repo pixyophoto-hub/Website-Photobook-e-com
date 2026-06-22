@@ -1489,6 +1489,7 @@ if(window.location.search.indexOf('payment=return') === -1) {
   Promise.all([loadPackages(), loadCategories(), loadPostageCfg()]).then(()=>{
     if(!activeCat && CATEGORIES.length) activeCat = CATEGORIES[0];
     renderPkgList(); renderCheckout(); renderStatus();
+    if(_isCatalogActive()) renderCatalog(_activeCatalogCat);
   });
 }
 </script>
