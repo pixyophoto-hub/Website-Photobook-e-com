@@ -239,7 +239,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
   </div>
 
   <!-- Terokai Pilihan -->
-  <div id="section-terokai" class="card" style="margin-bottom:32px;padding:40px 36px;">
+  <div id="section-terokai" class="card" style="margin-bottom:32px;padding:64px 48px;">
     <div class="explore-grid">
       <div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(34px,4.5vw,48px);font-weight:600;line-height:1.05;color:#2d2520;">Terokai <span style="font-style:italic;color:#c98a86;">Pilihan</span> Kami</div>
@@ -803,8 +803,19 @@ function loadExplore(){
 }
 function exploreScroll(d){
   const t = document.getElementById('explore-track');
-  if(t) t.scrollBy({ left: d * 260, behavior:'smooth' });
+  if(!t) return;
+  const maxScroll = t.scrollWidth - t.clientWidth;
+  if(d > 0 && t.scrollLeft >= maxScroll - 4) { t.scrollTo({left:0, behavior:'smooth'}); }
+  else t.scrollBy({ left: d * 260, behavior:'smooth' });
 }
+let _exploreAutoTimer = setInterval(()=>exploreScroll(1), 3000);
+document.addEventListener('DOMContentLoaded',()=>{
+  const t = document.getElementById('explore-track');
+  if(t){
+    t.addEventListener('mouseenter',()=>clearInterval(_exploreAutoTimer));
+    t.addEventListener('mouseleave',()=>{ _exploreAutoTimer = setInterval(()=>exploreScroll(1), 3000); });
+  }
+});
 loadExplore();
 function heroCheckStatus(){
   const ref = document.getElementById('hero-status-ref').value.trim();
