@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PixyoPrint · Album & Photobook Atelier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+::selection{background:#f3e0dc;}
+body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;min-height:100vh;}
+
+/* Nav */
+.nav{display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid #efe6da;background:#fffdfa;position:sticky;top:0;z-index:100;}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;letter-spacing:0.02em;cursor:pointer;text-decoration:none;color:#423b36;}
+.nav-links{display:flex;gap:22px;align-items:center;font-size:13px;color:#8a7e72;}
+.nav-link{cursor:pointer;transition:color .15s;}
+.nav-link:hover{color:#423b36;}
+.nav-link.active{color:#a86d69;font-weight:600;}
+.nav-cart{display:flex;align-items:center;gap:7px;padding:8px 16px;border:1px solid #c98a86;background:#c98a86;color:#fff;border-radius:100px;font-weight:600;font-size:13px;white-space:nowrap;cursor:pointer;transition:background .15s;}
+.nav-cart:hover{background:#b9786f;border-color:#b9786f;}
+
+/* Pages */
+.page{display:none;min-height:calc(100vh - 61px);}
+.page.active{display:block;}
+
+/* Sections */
+.section-label{font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8a7e72;margin-bottom:18px;}
+.card{background:#fffdfa;border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden;}
+
+/* Buttons */
+.btn-primary{border:none;background:#c98a86;color:#fff;font-family:inherit;font-size:14px;font-weight:600;padding:13px 26px;border-radius:8px;cursor:pointer;transition:background .15s;}
+.btn-primary:hover{background:#b9786f;}
+.btn-secondary{border:1px solid #d8c8bc;background:#fffdfa;color:#6f6358;font-family:inherit;font-size:13px;font-weight:600;padding:11px 20px;border-radius:7px;cursor:pointer;transition:all .15s;}
+.btn-secondary:hover{border-color:#c98a86;color:#a86d69;}
+
+/* Inputs */
+.inp{width:100%;border:1px solid #e3d8cb;border-radius:7px;padding:11px 13px;font-family:inherit;font-size:13px;color:#473f38;background:#fffdfa;transition:border-color .15s;outline:none;}
+.inp:focus{border-color:#c98a86;}
+
+/* Tags */
+.tag{font-size:11px;color:#6f6358;background:#f5efe6;padding:5px 11px;border-radius:100px;}
+
+/* Video placeholder */
+.vid-placeholder{position:relative;aspect-ratio:3/4;border-radius:8px;overflow:hidden;background:repeating-linear-gradient(45deg,#f0e7dc,#f0e7dc 11px,#eadfd1 11px,#eadfd1 22px);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.vid-badge{position:absolute;top:12px;left:12px;font-family:'Courier New',monospace;font-size:11px;font-weight:700;color:#fffdfa;background:#c98a86;padding:4px 9px;border-radius:100px;}
+.vid-play{width:46px;height:46px;border-radius:50%;background:rgba(255,253,250,.92);display:flex;align-items:center;justify-content:center;color:#a86d69;font-size:20px;box-shadow:0 2px 8px rgba(0,0,0,.12);}
+
+/* Package row */
+.pkg-row{display:flex;align-items:center;gap:22px;padding:18px;border:1px solid #ece2d6;border-radius:12px;margin-bottom:14px;transition:border-color .2s;}
+.pkg-row:hover{border-color:#c9a09c;}
+.pkg-thumb{width:130px;height:130px;border-radius:8px;flex:none;background:repeating-linear-gradient(45deg,#f0e7dc,#f0e7dc 10px,#eadfd1 10px,#eadfd1 20px);}
+.pkg-name{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#423b36;line-height:1.15;}
+.pkg-desc{font-size:14px;color:#8a7e72;margin:6px 0 12px;line-height:1.6;max-width:420px;}
+.pkg-price{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#423b36;}
+
+/* Step circle */
+.step-circle{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;margin-bottom:14px;}
+
+/* Upload cards */
+.upload-card{border:1px solid #e3d8cb;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;}
+.upload-card-body{padding:24px 24px 20px;display:flex;flex-direction:column;align-items:flex-start;flex:1;}
+.upload-card-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+.upload-card-num{font-size:11px;font-family:'Courier New',monospace;letter-spacing:0.18em;text-transform:uppercase;margin-bottom:6px;}
+.upload-card-title{font-size:20px;font-weight:700;color:#473f38;margin-bottom:8px;}
+.upload-card-desc{font-size:13px;color:#8a7e72;line-height:1.65;margin-bottom:20px;}
+.upload-card-step{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:#6f6358;line-height:1.5;margin-bottom:7px;}
+.upload-card-footer{padding:0 24px 24px;}
+
+/* Tips box */
+.tips-box{flex:none;width:280px;border:1px solid #dde6d8;border-radius:10px;background:#f4f8f1;padding:16px 18px;}
+.tips-title{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#6f8466;margin-bottom:12px;}
+.tips-item{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:#6f6358;line-height:1.5;margin-bottom:9px;}
+
+/* Checkout */
+.cart-line{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #efe6da;}
+.cart-thumb{width:56px;height:56px;border-radius:6px;flex:none;background:repeating-linear-gradient(45deg,#f0e7dc,#f0e7dc 8px,#eadfd1 8px,#eadfd1 16px);}
+.pay-option{position:relative;display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid #ece2d6;border-radius:8px;margin-bottom:8px;cursor:pointer;transition:border-color .15s;}
+.pay-option:hover{border-color:#c9a09c;}
+.pay-ring{width:18px;height:18px;border-radius:50%;border:1.5px solid #d8c8bc;display:flex;align-items:center;justify-content:center;flex:none;transition:border-color .15s;}
+.pay-dot{width:10px;height:10px;border-radius:50%;background:#c98a86;display:none;}
+.pay-option.selected .pay-ring{border-color:#c98a86;}
+.pay-option.selected .pay-dot{display:block;}
+.pay-border{display:none;position:absolute;inset:-1px;border:2px solid #c98a86;border-radius:8px;pointer-events:none;}
+.pay-option.selected .pay-border{display:block;}
+
+/* Summary panel */
+.summary-panel{flex:none;width:330px;padding:30px 28px;background:#fbf7f1;position:sticky;top:24px;max-height:calc(100vh - 48px);overflow-y:auto;align-self:flex-start;}
+.summary-row{display:flex;justify-content:space-between;font-size:13px;color:#6f6358;padding:7px 0;}
+.summary-total{display:flex;justify-content:space-between;align-items:baseline;padding:16px 0 18px;}
+
+/* Order status */
+.stepper{display:flex;align-items:flex-start;gap:0;padding:26px 24px 30px;}
+.stage-wrap{flex:1;display:flex;flex-direction:column;align-items:center;min-width:0;}
+.stage-row{display:flex;align-items:center;width:100%;}
+.stage-line{flex:1;height:2px;}
+.stage-circle{width:34px;height:34px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+.stage-title{font-size:12px;font-weight:600;color:#473f38;margin-top:10px;text-align:center;line-height:1.25;}
+.stage-sub{font-size:10px;color:#9a8d80;text-align:center;margin-top:2px;line-height:1.2;}
+
+/* Toast */
+.toast{position:fixed;bottom:28px;right:28px;background:#473f38;color:#fff;font-size:13px;font-weight:600;padding:13px 20px;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.18);z-index:999;opacity:0;transform:translateY(12px);transition:all .25s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+
+/* Proof thumbs */
+.proof-thumb{flex:1;height:48px;border-radius:5px;}
+
+/* Mobile nav bottom */
+@media(max-width:768px){
+  .nav-links .nav-link:not(.nav-link-mobile){display:none;}
+  .nav{padding:14px 20px;}
+  .page-inner{padding:20px 16px;}
+  .hide-mobile{display:none!important;}
+  .mobile-grid{grid-template-columns:1fr!important;}
+  .mobile-stack{flex-direction:column!important;}
+  .mobile-full{width:100%!important;}
+  .checkout-layout{flex-direction:column!important;}
+  .summary-panel{width:100%!important;}
+}
+
+/* Proof preview */
+.proof-preview{position:relative;height:210px;border-radius:8px;background:repeating-linear-gradient(45deg,#f0e7dc,#f0e7dc 11px,#eadfd1 11px,#eadfd1 22px);display:flex;align-items:center;justify-content:center;}
+
+/* Timeline */
+.tl-row{display:flex;gap:12px;}
+.tl-dot-col{display:flex;flex-direction:column;align-items:center;flex:none;}
+.tl-dot{width:11px;height:11px;border-radius:50%;margin-top:3px;}
+.tl-line{width:2px;flex:1;background:#e7dccf;min-height:22px;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" onclick="goPage('servis')" style="display:flex;align-items:center;"><img src="logo-dark.png?v=2" alt="PixyoPrint" style="height:26px;display:block;"></a>
+  <div class="nav-links">
+    <span class="nav-link active" id="nl-servis" onclick="goPage('servis')">Servis</span>
+    <span class="nav-link" id="nl-upload" onclick="goPage('upload')">Hantar Gambar</span>
+    <span class="nav-link" id="nl-status" onclick="goPage('status')">Status Tempahan</span>
+    <span class="nav-link" id="nl-hubungi" onclick="goPage('hubungi')">Hubungi</span>
+    <span class="nav-link" onclick="openLogin()" style="display:flex;align-items:center;gap:5px;"><i class="ph ph-user-circle"></i> Log Masuk</span>
+    <button class="nav-cart" onclick="goPage('checkout')">
+      <i class="ph ph-shopping-cart"></i> <span id="nav-cart-label">Troli · 0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- LOGIN MODAL -->
+<div id="login-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(45,37,32,.55);align-items:center;justify-content:center;padding:20px;">
+  <div style="width:360px;max-width:100%;background:#fffdfa;border-radius:14px;padding:32px 28px;box-shadow:0 20px 60px rgba(0,0,0,.3);position:relative;">
+    <i class="ph ph-x" style="position:absolute;top:16px;right:18px;font-size:18px;color:#b5a596;cursor:pointer;" onclick="closeLogin()"></i>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#423b36;">Log Masuk Admin</div>
+    <div style="font-size:13px;color:#8a7e72;margin-top:4px;margin-bottom:22px;">Akses panel pengurusan PixyoPrint</div>
+    <form onsubmit="submitLogin(event)">
+      <div style="font-size:12px;font-weight:600;color:#6f6358;margin-bottom:6px;">Email</div>
+      <input type="email" id="li-email" class="inp" style="margin-bottom:14px;" value="admin@pixyoprint.com" placeholder="email@pixyoprint.com" required>
+      <div style="font-size:12px;font-weight:600;color:#6f6358;margin-bottom:6px;">Kata Laluan</div>
+      <input type="password" id="li-pass" class="inp" style="margin-bottom:6px;" value="admin123" placeholder="••••••••" required>
+      <div id="login-error" style="display:none;font-size:12px;color:#c0392b;background:#fef3f2;border-radius:7px;padding:9px 12px;margin:8px 0 4px;"></div>
+      <button type="submit" class="btn-primary" style="width:100%;font-size:14px;padding:13px;margin-top:14px;">Log Masuk</button>
+    </form>
+    <div style="font-size:11px;color:#9a8d80;text-align:center;margin-top:16px;line-height:1.5;">Demo: <strong>admin@pixyoprint.com</strong> / <strong>admin123</strong></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ============================================================ -->
+<!-- PAGE: SERVIS -->
+<!-- ============================================================ -->
+<div class="page active" id="page-servis" style="padding:40px 32px 80px;">
+
+  <!-- Flow Kerja -->
+  <div class="card" style="margin-bottom:32px;">
+    <div style="padding:34px 32px 8px;">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:500;">Flow Kerja Kami</div>
+        <div style="font-size:13px;color:#9a8d80;">Dari gambar mentah → album siap susun</div>
+      </div>
+      <div style="font-size:14px;color:#8a7e72;margin-bottom:22px;max-width:560px;line-height:1.6;">Tengok proses kami dalam 4 video pendek. Setiap langkah disemak manual oleh designer sebelum cetak.</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;" class="mobile-grid" id="flow-grid"></div>
+    </div>
+
+  </div>
+
+  <!-- Pilih Pakej -->
+  <div class="card">
+    <div style="padding:34px 32px 36px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:500;margin-bottom:20px;">Pilih Pakej Anda</div>
+      <div id="pkg-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: UPLOAD GAMBAR -->
+<!-- ============================================================ -->
+<div class="page" id="page-upload" style="padding:40px 32px 80px;">
+  <div class="card">
+
+    <!-- nav -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid #efe6da;">
+      <img src="logo-dark.png?v=2" alt="PixyoPrint" style="height:22px;display:block;">
+      <div style="font-size:12px;color:#9a8d80;">Hantar gambar majlis anda — kami yang susun</div>
+    </div>
+
+    <!-- intro + tips -->
+    <div style="display:flex;align-items:stretch;justify-content:space-between;gap:24px;padding:32px 32px 8px;" class="mobile-stack">
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:500;line-height:1.1;">Cara Hantar Gambar</div>
+        <div style="font-size:14px;color:#8a7e72;margin:10px 0 0;line-height:1.6;max-width:480px;">Pilih mana-mana cara di bawah untuk menghantar gambar majlis anda. Tekan butang — editor kami akan terima terus bersama butiran order anda.</div>
+      </div>
+      <div class="tips-box mobile-full" style="width:auto;flex:1;">
+        <div class="tips-title">Tips Gambar Terbaik</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;">
+          <div class="tips-item" style="margin-bottom:0;"><span style="color:#6f8466;flex:none;"><i class="ph-bold ph-check"></i></span><span>Pastikan kualiti terbaik (HD), Jelas dan Terang.</span></div>
+          <div class="tips-item" style="margin-bottom:0;"><span style="color:#6f8466;flex:none;"><i class="ph-bold ph-check"></i></span><span>Hantar gambar ikut bilangan yang ditetapkan</span></div>
+          <div class="tips-item" style="margin-bottom:0;"><span style="color:#6f8466;flex:none;"><i class="ph-bold ph-check"></i></span><span>Hasil akhir gambar album ditentukan oleh kualiti gambar yang diberi</span></div>
+          <div class="tips-item" style="margin-bottom:0;"><span style="color:#6f8466;flex:none;"><i class="ph-bold ph-check"></i></span><span>Medium terbaik adalah melalui Link Google Drive.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 pilihan -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;padding:28px 32px 36px;" class="mobile-grid" id="upload-cards">
+
+      <!-- WhatsApp -->
+      <div class="upload-card">
+        <div class="upload-card-body">
+          <div class="upload-card-icon" style="background:#e8f5e4;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" fill="#25D366"></path><path d="M12 2C6.477 2 2 6.477 2 12c0 1.882.513 3.638 1.405 5.14L2 22l4.979-1.383A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" stroke="#25D366" stroke-width="1.5" fill="none"></path></svg>
+          </div>
+          <div class="upload-card-num" style="color:#9aae90;">Pilihan 01</div>
+          <div class="upload-card-title">WhatsApp</div>
+          <div class="upload-card-desc">Tekan butang → nombor WhatsApp editor dibuka automatik bersama <strong style="color:#6f6358;">butiran order</strong> anda → drop gambar terus dalam chat.</div>
+          <div class="upload-card-step"><span style="color:#25D366;font-weight:700;flex:none;">1</span><span>Link buka WhatsApp dengan mesej order tersedia</span></div>
+          <div class="upload-card-step"><span style="color:#25D366;font-weight:700;flex:none;">2</span><span>Hantar gambar terus dalam chat</span></div>
+          <div class="upload-card-step"><span style="color:#25D366;font-weight:700;flex:none;">3</span><span>Editor sahkan terima dalam masa 1 jam</span></div>
+        </div>
+        <div class="upload-card-footer">
+          <a href="#" onclick="if(_mediaLinks.whatsapp){window.open(_mediaLinks.whatsapp,'_blank','noopener')}else{showToast('⚠ Link WhatsApp belum ditetapkan dalam tetapan admin.')};return false;" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#25D366;color:#fff;font-family:inherit;font-size:14px;font-weight:600;padding:13px;border-radius:8px;text-decoration:none;transition:background .15s;" onmouseover="this.style.background='#1db954'" onmouseout="this.style.background='#25D366'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.882.513 3.638 1.405 5.14L2 22l4.979-1.383A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" fill="#fff" opacity=".3"></path><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" fill="#fff"></path></svg>
+            Hantar via WhatsApp
+          </a>
+        </div>
+      </div>
+
+      <!-- Telegram -->
+      <div class="upload-card">
+        <div class="upload-card-body">
+          <div class="upload-card-icon" style="background:#e3f2fd;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#29B6F6" opacity=".15"></circle><path d="M5.5 11.5l11-4.5-3 11-3-3.5-2.5 2V14l-2.5-2.5z" stroke="#0288D1" stroke-width="1.4" stroke-linejoin="round" fill="none"></path><path d="M10 13.5l5.5-5.5" stroke="#0288D1" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          </div>
+          <div class="upload-card-num" style="color:#6fb3d2;">Pilihan 02</div>
+          <div class="upload-card-title">Telegram</div>
+          <div class="upload-card-desc">Tekan butang → channel Telegram editor dibuka dengan <strong style="color:#6f6358;">butiran order</strong> → hantar semua gambar terus dalam chat.</div>
+          <div class="upload-card-step"><span style="color:#0288D1;font-weight:700;flex:none;">1</span><span>Link buka Telegram dengan mesej order tersedia</span></div>
+          <div class="upload-card-step"><span style="color:#0288D1;font-weight:700;flex:none;">2</span><span>Hantar gambar tanpa had saiz fail</span></div>
+          <div class="upload-card-step"><span style="color:#0288D1;font-weight:700;flex:none;">3</span><span>Editor sahkan terima dalam masa 1 jam</span></div>
+        </div>
+        <div class="upload-card-footer">
+          <a href="#" onclick="if(_mediaLinks.telegram){window.open(_mediaLinks.telegram,'_blank','noopener')}else{showToast('⚠ Link Telegram belum ditetapkan dalam tetapan admin.')};return false;" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#0288D1;color:#fff;font-family:inherit;font-size:14px;font-weight:600;padding:13px;border-radius:8px;text-decoration:none;transition:background .15s;" onmouseover="this.style.background='#0277bd'" onmouseout="this.style.background='#0288D1'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5.5 11.5l11-4.5-3 11-3-3.5-2.5 2V14l-2.5-2.5z" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" fill="none"></path><path d="M10 13.5l5.5-5.5" stroke="#fff" stroke-width="1.4" stroke-linecap="round"></path></svg>
+            Hantar via Telegram
+          </a>
+        </div>
+      </div>
+
+      <!-- Google Drive -->
+      <div class="upload-card">
+        <div class="upload-card-body">
+          <div class="upload-card-icon" style="background:#fff3e0;">
+            <svg width="28" height="25" viewBox="0 0 24 20.8" xmlns="http://www.w3.org/2000/svg"><path d="M12 0L0 20.8H12z" fill="#34A853"/><path d="M12 0L24 20.8H12z" fill="#FBBC04"/><path d="M4 14H20L24 20.8H0z" fill="#4285F4"/></svg>
+          </div>
+          <div class="upload-card-num" style="color:#d4956a;">Pilihan 03</div>
+          <div class="upload-card-title">Google Drive</div>
+          <div class="upload-card-desc">Tekan butang → hantar link folder Google Drive ke <strong style="color:#6f6358;">WhatsApp editor</strong> → sesuai untuk fail bersaiz besar atau ratusan gambar.</div>
+          <div class="upload-card-step"><span style="color:#FBBC04;font-weight:700;flex:none;">1</span><span>Muat naik gambar ke folder GD anda</span></div>
+          <div class="upload-card-step"><span style="color:#34A853;font-weight:700;flex:none;">2</span><span>Salin link folder & hantar ke WhatsApp editor</span></div>
+          <div class="upload-card-step"><span style="color:#4285F4;font-weight:700;flex:none;">3</span><span>Editor muat turun & mulakan layout</span></div>
+        </div>
+        <div class="upload-card-footer">
+          <a href="#" onclick="if(_mediaLinks.gdrive){window.open(_mediaLinks.gdrive,'_blank','noopener')}else{showToast('⚠ Link Google Drive belum ditetapkan dalam tetapan admin.')};return false;" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#FBBC04;color:#473f38;font-family:inherit;font-size:14px;font-weight:600;padding:13px;border-radius:8px;text-decoration:none;transition:background .15s;" onmouseover="this.style.background='#f0a500'" onmouseout="this.style.background='#FBBC04'">
+            <svg width="18" height="16" viewBox="0 0 24 20.8" xmlns="http://www.w3.org/2000/svg"><path d="M12 0L0 20.8H12z" fill="#34A853"/><path d="M12 0L24 20.8H12z" fill="#FBBC04"/><path d="M4 14H20L24 20.8H0z" fill="#4285F4"/></svg>
+            Kongsi Link Google Drive
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: CHECKOUT -->
+<!-- ============================================================ -->
+<div class="page" id="page-checkout" style="padding:40px 32px 80px;">
+
+  <!-- Success banner (hidden by default) -->
+  <div id="checkout-success" style="display:none;">
+    <div class="card" style="margin-bottom:24px;">
+      <div style="display:flex;align-items:center;gap:18px;padding:22px 32px;background:#dde6d8;border-bottom:1px solid #c8d8bc;">
+        <div style="width:42px;height:42px;border-radius:50%;background:#6f8466;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none;"><i class="ph-bold ph-check"></i></div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#3a4f35;">Bayaran berjaya! Terima kasih.</div>
+          <div style="font-size:13px;color:#6f8466;margin-top:2px;">Order #LB-2026-0142 · Designer anda akan mula bekerja selepas gambar diterima.</div>
+        </div>
+        <button onclick="resetCheckout()" style="margin-left:auto;flex:none;border:1px solid #9aae90;background:transparent;color:#6f8466;font-family:inherit;font-size:12px;font-weight:600;padding:8px 14px;border-radius:6px;cursor:pointer;" onmouseover="this.style.background='#c8d8bc'" onmouseout="this.style.background='transparent'"><i class="ph ph-arrow-left"></i> Kembali</button>
+      </div>
+      <!-- Post-checkout upload options -->
+      <div style="display:flex;align-items:stretch;justify-content:space-between;gap:24px;padding:32px 32px 8px;" class="mobile-stack">
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:500;line-height:1.1;">Langkah Seterusnya: Hantar Gambar</div>
+          <div style="font-size:14px;color:#8a7e72;margin:10px 0 0;line-height:1.6;max-width:480px;">Pilih mana-mana cara di bawah untuk menghantar gambar majlis anda. Tekan butang — editor kami akan terima terus bersama butiran order anda.</div>
+        </div>
+        <div class="tips-box mobile-full" style="width:auto;flex:1;">
+          <div class="tips-title">Tips Gambar Terbaik</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;">
+            <div class="tips-item" style="margin-bottom:0;"><span style="color:#6f8466;flex:none;"><i class="ph-bold ph-check"></i></span><span>Hantar gambar resolusi tinggi / asal kamera</span></div>
+            <div class="tips-item" style="margin-bottom:0;"><span style="color:#6f8466;flex:none;"><i class="ph-bold ph-check"></i></span><span>Hantar gambar ikut bilangan yang ditetapkan</span></div>
+            <div class="tips-item" style="margin-bottom:0;"><span style="color:#6f8466;flex:none;"><i class="ph-bold ph-check"></i></span><span>Hasil akhir gambar album ditentukan oleh kualiti gambar yang diberi</span></div>
+            <div class="tips-item" style="margin-bottom:0;"><span style="color:#6f8466;flex:none;"><i class="ph-bold ph-check"></i></span><span>Pastikan kualiti terbaik HD, tidak kabur dan bertindih.</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;padding:28px 32px 36px;" class="mobile-grid">
+        <div class="upload-card">
+          <div class="upload-card-body">
+            <div class="upload-card-icon" style="background:#e8f5e4;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" fill="#25D366"></path><path d="M12 2C6.477 2 2 6.477 2 12c0 1.882.513 3.638 1.405 5.14L2 22l4.979-1.383A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" stroke="#25D366" stroke-width="1.5" fill="none"></path></svg></div>
+            <div class="upload-card-num" style="color:#9aae90;">Pilihan 01</div>
+            <div class="upload-card-title">WhatsApp</div>
+            <div class="upload-card-step"><span style="color:#25D366;font-weight:700;flex:none;">1</span><span>Link buka WhatsApp dengan mesej order tersedia</span></div>
+            <div class="upload-card-step"><span style="color:#25D366;font-weight:700;flex:none;">2</span><span>Hantar gambar terus dalam chat</span></div>
+            <div class="upload-card-step"><span style="color:#25D366;font-weight:700;flex:none;">3</span><span>Editor sahkan terima dalam masa 1 jam</span></div>
+          </div>
+          <div class="upload-card-footer"><a href="#" onclick="if(_mediaLinks.whatsapp){window.open(_mediaLinks.whatsapp,'_blank','noopener')}else{showToast('⚠ Link WhatsApp belum ditetapkan dalam tetapan admin.')};return false;" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#25D366;color:#fff;font-family:inherit;font-size:14px;font-weight:600;padding:13px;border-radius:8px;text-decoration:none;">Hantar via WhatsApp</a></div>
+        </div>
+        <div class="upload-card">
+          <div class="upload-card-body">
+            <div class="upload-card-icon" style="background:#e3f2fd;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#29B6F6" opacity=".15"></circle><path d="M5.5 11.5l11-4.5-3 11-3-3.5-2.5 2V14l-2.5-2.5z" stroke="#0288D1" stroke-width="1.4" stroke-linejoin="round" fill="none"></path><path d="M10 13.5l5.5-5.5" stroke="#0288D1" stroke-width="1.4" stroke-linecap="round"></path></svg></div>
+            <div class="upload-card-num" style="color:#6fb3d2;">Pilihan 02</div>
+            <div class="upload-card-title">Telegram</div>
+            <div class="upload-card-step"><span style="color:#0288D1;font-weight:700;flex:none;">1</span><span>Link buka Telegram dengan mesej order tersedia</span></div>
+            <div class="upload-card-step"><span style="color:#0288D1;font-weight:700;flex:none;">2</span><span>Hantar gambar tanpa had saiz fail</span></div>
+            <div class="upload-card-step"><span style="color:#0288D1;font-weight:700;flex:none;">3</span><span>Editor sahkan terima dalam masa 1 jam</span></div>
+          </div>
+          <div class="upload-card-footer"><a href="#" onclick="if(_mediaLinks.telegram){window.open(_mediaLinks.telegram,'_blank','noopener')}else{showToast('⚠ Link Telegram belum ditetapkan dalam tetapan admin.')};return false;" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#0288D1;color:#fff;font-family:inherit;font-size:14px;font-weight:600;padding:13px;border-radius:8px;text-decoration:none;">Hantar via Telegram</a></div>
+        </div>
+        <div class="upload-card">
+          <div class="upload-card-body">
+            <div class="upload-card-icon" style="background:#fff3e0;"><svg width="28" height="25" viewBox="0 0 24 20.8" xmlns="http://www.w3.org/2000/svg"><path d="M12 0L0 20.8H12z" fill="#34A853"/><path d="M12 0L24 20.8H12z" fill="#FBBC04"/><path d="M4 14H20L24 20.8H0z" fill="#4285F4"/></svg></div>
+            <div class="upload-card-num" style="color:#d4956a;">Pilihan 03</div>
+            <div class="upload-card-title">Google Drive</div>
+            <div class="upload-card-step"><span style="color:#FBBC04;font-weight:700;flex:none;">1</span><span>Muat naik gambar ke folder GD anda</span></div>
+            <div class="upload-card-step"><span style="color:#34A853;font-weight:700;flex:none;">2</span><span>Salin link folder & hantar ke WhatsApp editor</span></div>
+            <div class="upload-card-step"><span style="color:#4285F4;font-weight:700;flex:none;">3</span><span>Editor muat turun & mulakan layout</span></div>
+          </div>
+          <div class="upload-card-footer"><a href="#" onclick="if(_mediaLinks.gdrive){window.open(_mediaLinks.gdrive,'_blank','noopener')}else{showToast('⚠ Link Google Drive belum ditetapkan dalam tetapan admin.')};return false;" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#FBBC04;color:#473f38;font-family:inherit;font-size:14px;font-weight:600;padding:13px;border-radius:8px;text-decoration:none;">Kongsi Link Google Drive</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkout form -->
+  <div id="checkout-form">
+    <div class="card" style="overflow:visible;">
+      <!-- breadcrumb -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid #efe6da;">
+        <img src="logo-dark.png?v=2" alt="PixyoPrint" style="height:22px;display:block;">
+        <div style="font-size:12px;color:#9a8d80;"><span>Troli</span> <span style="color:#cfc3b6;">›</span> <span style="color:#a86d69;font-weight:600;">Bayaran</span> <span style="color:#cfc3b6;">›</span> <span>Selesai</span></div>
+      </div>
+
+      <div style="display:flex;gap:0;align-items:flex-start;" class="checkout-layout">
+        <!-- left -->
+        <div style="flex:1;padding:30px 32px;border-right:1px solid #efe6da;">
+
+          <!-- Cart items -->
+          <div style="font-size:15px;font-weight:700;color:#473f38;margin-bottom:14px;">Item dalam Troli</div>
+          <div id="cart-lines"></div>
+
+          <!-- Promo -->
+          <div style="display:flex;gap:10px;margin:20px 0 28px;">
+            <input type="text" id="promo-input" placeholder="Kod baucar / promo" class="inp" style="flex:1;letter-spacing:0.06em;text-transform:uppercase;">
+            <button class="btn-secondary" onclick="applyPromo()">Guna</button>
+          </div>
+
+          <!-- Delivery -->
+          <div style="font-size:15px;font-weight:700;color:#473f38;margin-bottom:14px;">Maklumat Penghantaran</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;" class="mobile-grid">
+            <input type="text" placeholder="Nama penuh" class="inp" style="grid-column:1/span 2;">
+            <input type="text" placeholder="No. telefon" class="inp">
+            <input type="text" placeholder="Poskod" class="inp">
+            <input type="text" placeholder="Alamat penuh" class="inp" style="grid-column:1/span 2;">
+            <div style="grid-column:1/span 2;display:flex;align-items:flex-start;gap:8px;background:#fdf6ec;border:1px solid #f0dfc0;border-radius:8px;padding:10px 12px;margin-top:2px;">
+              <i class="ph ph-info" style="color:#b8860b;font-size:15px;flex:none;margin-top:1px;"></i>
+              <div style="font-size:12px;color:#7a6030;line-height:1.5;">
+                Sila pastikan alamat penghantaran <strong>lengkap dan tepat</strong> sebelum membuat bayaran. Alamat yang tidak lengkap boleh menyebabkan kelewatan penghantaran.<br>
+                <span style="color:#a86d69;">Boleh hubungi kami untuk ubah alamat selepas bayaran dibuat.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cara Hantar Gambar -->
+          <div style="font-size:15px;font-weight:700;color:#473f38;margin-bottom:6px;">Cara Hantar Gambar</div>
+          <div style="font-size:12px;color:#8a7e72;margin-bottom:16px;">Pilih medium yang anda akan gunakan untuk menghantar gambar majlis.</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:28px;">
+            <label id="medium-wa" style="display:flex;flex-direction:column;padding:18px 16px;border:1.5px solid #e3d8cb;border-radius:12px;cursor:pointer;transition:border-color .15s,background .15s;background:#fffdfa;position:relative;">
+              <input type="checkbox" style="position:absolute;opacity:0;width:0;height:0;" onchange="toggleMedium('medium-wa',this.checked)">
+              <div style="width:44px;height:44px;border-radius:10px;background:#e8f5e1;display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.979-1.418A9.954 9.954 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" fill="#25D366"/><path d="M17 14.5c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.6-.92-2.2-.24-.57-.49-.49-.67-.5h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.09 4.49.71.31 1.27.49 1.7.63.71.22 1.36.19 1.87.12.57-.08 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.19-.57-.34z" fill="#fff"/></svg>
+              </div>
+              <div style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.12em;color:#a86d69;font-weight:700;margin-bottom:4px;">PILIHAN 01</div>
+              <div style="font-size:14px;font-weight:700;color:#2d2520;">WhatsApp</div>
+            </label>
+            <label id="medium-tg" style="display:flex;flex-direction:column;padding:18px 16px;border:1.5px solid #e3d8cb;border-radius:12px;cursor:pointer;transition:border-color .15s,background .15s;background:#fffdfa;position:relative;">
+              <input type="checkbox" style="position:absolute;opacity:0;width:0;height:0;" onchange="toggleMedium('medium-tg',this.checked)">
+              <div style="width:44px;height:44px;border-radius:10px;background:#deeef8;display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#29B6F6"/><path d="M17.5 7.5l-2.3 10.5c-.17.77-.63.96-1.28.6l-3.5-2.58-1.69 1.63c-.19.18-.34.34-.7.34l.25-3.57 6.44-5.82c.28-.25-.06-.39-.43-.14L6.5 13.24 3.07 12.2c-.77-.24-.79-.77.16-1.14l13.2-5.08c.64-.24 1.2.16.07 1.52z" fill="#fff"/></svg>
+              </div>
+              <div style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.12em;color:#7a9bb5;font-weight:700;margin-bottom:4px;">PILIHAN 02</div>
+              <div style="font-size:14px;font-weight:700;color:#2d2520;">Telegram</div>
+            </label>
+            <label id="medium-gd" style="display:flex;flex-direction:column;padding:18px 16px;border:1.5px solid #e3d8cb;border-radius:12px;cursor:pointer;transition:border-color .15s,background .15s;background:#fffdfa;position:relative;">
+              <input type="checkbox" style="position:absolute;opacity:0;width:0;height:0;" onchange="toggleMedium('medium-gd',this.checked)">
+              <div style="width:44px;height:44px;border-radius:10px;background:#fef3e2;display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+                <svg width="28" height="25" viewBox="0 0 24 20.8" xmlns="http://www.w3.org/2000/svg"><path d="M12 0L0 20.8H12z" fill="#34A853"/><path d="M12 0L24 20.8H12z" fill="#FBBC04"/><path d="M4 14H20L24 20.8H0z" fill="#4285F4"/></svg>
+              </div>
+              <div style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.12em;color:#c9a04a;font-weight:700;margin-bottom:4px;">PILIHAN 03</div>
+              <div style="font-size:14px;font-weight:700;color:#2d2520;">Google Drive</div>
+            </label>
+          </div>
+
+          <!-- Payment -->
+          <div style="font-size:15px;font-weight:700;color:#473f38;margin-bottom:14px;">Kaedah Bayaran</div>
+          <div id="pay-methods"></div>
+        </div>
+
+        <!-- Right summary -->
+        <div class="summary-panel">
+          <div style="font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#6f6358;margin-bottom:18px;">Ringkasan Pesanan</div>
+          <div class="summary-row"><span>Subtotal</span><span id="s-subtotal" style="font-weight:600;color:#473f38;"></span></div>
+          <div class="summary-row" style="color:#6f8466;"><span id="s-discount-label">Diskaun</span><span id="s-discount" style="font-weight:600;"></span></div>
+          <div class="summary-row" style="border-bottom:1px solid #e3d8cb;"><span>Penghantaran</span><span style="font-weight:600;color:#6f8466;">Percuma</span></div>
+          <div class="summary-total">
+            <span style="font-size:14px;color:#473f38;font-weight:600;">Jumlah</span>
+            <span id="s-total" style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#423b36;"></span>
+          </div>
+          <button class="btn-primary" style="width:100%;font-size:15px;padding:15px;" onclick="doPay()" id="pay-btn">Buat Bayaran</button>
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-size:11px;color:#9a8d80;">
+            <span><i class="ph ph-lock-simple"></i> Selamat & disulitkan</span>
+            <span style="width:3px;height:3px;border-radius:50%;background:#cfc3b6;"></span>
+            <span>FPX · Kad · e-Wallet</span>
+          </div>
+          <div style="margin-top:18px;padding:14px;background:#fffdfa;border:1px solid #efe6da;border-radius:8px;font-size:12px;color:#8a7e72;line-height:1.6;">
+            <span style="color:#6f8466;font-weight:600;"><i class="ph-bold ph-check"></i> Jaminan susun semula.</span> Tak puas hati dengan layout? Kami susun semula percuma sehingga anda berpuas hati.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: STATUS TEMPAHAN -->
+<!-- ============================================================ -->
+<div class="page" id="page-status" style="padding:40px 32px 80px;">
+  <div class="card">
+    <!-- header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 32px;border-bottom:1px solid #efe6da;" class="mobile-stack">
+      <div style="display:flex;align-items:center;gap:10px;"><img src="logo-dark.png?v=2" alt="PixyoPrint" style="height:22px;display:block;"><span style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#9a8d80;">· Akaun Saya</span></div>
+      <div style="display:flex;gap:10px;">
+        <input type="text" value="LB-2026-0142" class="inp" style="width:160px;">
+        <button class="btn-secondary" onclick="lookupOrder()">Semak</button>
+      </div>
+    </div>
+
+    <!-- order meta -->
+    <div style="display:flex;align-items:center;gap:18px;padding:24px 32px 8px;" class="mobile-stack">
+      <div style="width:62px;height:62px;border-radius:8px;flex:none;background:repeating-linear-gradient(45deg,#f0e7dc,#f0e7dc 9px,#eadfd1 9px,#eadfd1 18px);"></div>
+      <div style="flex:1;">
+        <div id="order-pkg-name" style="font-family:'Cormorant Garamond',serif;font-size:23px;font-weight:600;color:#423b36;line-height:1.1;"></div>
+        <div style="font-size:13px;color:#9a8d80;margin-top:3px;">Order #LB-2026-0142 · Ditempah 18 Jun 2026</div>
+      </div>
+      <div style="text-align:right;flex:none;">
+        <div style="font-size:11px;font-family:'Courier New',monospace;letter-spacing:0.14em;text-transform:uppercase;color:#a89a8d;">Status</div>
+        <div id="order-status-title" style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#a86d69;"></div>
+        <div id="order-status-step" style="font-size:12px;color:#9aae90;font-weight:600;"></div>
+      </div>
+    </div>
+
+    <!-- stepper -->
+    <div class="stepper" id="stepper"></div>
+
+    <!-- detail + timeline -->
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:0;border-top:1px solid #efe6da;" class="mobile-grid">
+      <div style="padding:28px 32px;border-right:1px solid #efe6da;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+          <div id="detail-title" style="font-size:16px;font-weight:700;color:#473f38;"></div>
+          <span id="detail-eta" style="font-size:11px;font-weight:600;color:#6f8466;background:#dde6d8;padding:4px 11px;border-radius:100px;"></span>
+        </div>
+        <div id="detail-note" style="font-size:14px;color:#8a7e72;line-height:1.6;margin-bottom:20px;max-width:520px;"></div>
+
+        <!-- proof preview -->
+        <div class="proof-preview">
+          <span style="font-family:'Courier New',monospace;font-size:12px;color:#a99c8e;">proof · spread 03 dari 20</span>
+          <span style="position:absolute;top:12px;left:12px;background:#fffdfa;color:#a86d69;font-size:11px;font-weight:600;padding:5px 11px;border-radius:100px;">Draf untuk semakan</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <div class="proof-thumb" style="background:repeating-linear-gradient(45deg,#f3e6e3,#f3e6e3 8px,#ecd7d2 8px,#ecd7d2 16px);"></div>
+          <div class="proof-thumb" style="background:repeating-linear-gradient(45deg,#ecebe4,#ecebe4 8px,#e3e2d8 8px,#e3e2d8 16px);"></div>
+          <div class="proof-thumb" style="background:repeating-linear-gradient(45deg,#f0e7dc,#f0e7dc 8px,#eadfd1 8px,#eadfd1 16px);"></div>
+          <div class="proof-thumb" style="background:repeating-linear-gradient(45deg,#f3e6e3,#f3e6e3 8px,#ecd7d2 8px,#ecd7d2 16px);"></div>
+        </div>
+
+        <!-- decision buttons -->
+        <div id="decision-btns" style="display:none;">
+          <div style="display:flex;gap:10px;margin-top:22px;">
+            <button class="btn-secondary" style="flex:1;padding:14px;font-size:14px;" onclick="amendOrder()"><i class="ph ph-pencil-simple"></i> Mohon Pindaan</button>
+            <button class="btn-primary" style="flex:1;padding:14px;font-size:14px;" onclick="proceedOrder()"><i class="ph-bold ph-check"></i> Sahkan & Teruskan Cetak</button>
+          </div>
+          <div style="font-size:12px;color:#9a8d80;text-align:center;margin-top:10px;">Pindaan: 2 pusingan percuma · selepas sahkan, layout dikunci untuk cetak.</div>
+        </div>
+      </div>
+
+      <!-- timeline -->
+      <div style="padding:28px 28px;background:#fbf7f1;">
+        <div style="font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#6f6358;margin-bottom:18px;">Log Aktiviti</div>
+        <div id="timeline"></div>
+        <div style="margin-top:6px;padding:14px;background:#fffdfa;border:1px solid #efe6da;border-radius:8px;font-size:12px;color:#8a7e72;line-height:1.6;">
+          Ada soalan? <span style="color:#a86d69;font-weight:600;cursor:pointer;" onclick="goPage('hubungi')">Hubungi designer anda</span> terus dari sini.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: HUBUNGI -->
+<!-- ============================================================ -->
+<div class="page" id="page-hubungi" style="padding:40px 32px 80px;">
+  <div class="card" style="max-width:640px;margin:0 auto;padding:40px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:500;margin-bottom:8px;">Hubungi Kami</div>
+    <div style="font-size:14px;color:#8a7e72;margin-bottom:28px;line-height:1.6;">Ada soalan tentang pakej, proses atau order anda? Kami sedia membantu.</div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <a href="#" onclick="if(_mediaLinks.whatsapp){window.open(_mediaLinks.whatsapp,'_blank','noopener')}else{showToast('⚠ Link WhatsApp belum ditetapkan dalam tetapan admin.')};return false;" style="display:flex;align-items:center;gap:14px;padding:18px;border:1px solid #e3d8cb;border-radius:12px;text-decoration:none;color:#473f38;transition:border-color .15s;" onmouseover="this.style.borderColor='#c9a09c'" onmouseout="this.style.borderColor='#e3d8cb'">
+        <div style="width:48px;height:48px;border-radius:12px;background:#e8f5e4;display:flex;align-items:center;justify-content:center;flex:none;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" fill="#25D366"></path><path d="M12 2C6.477 2 2 6.477 2 12c0 1.882.513 3.638 1.405 5.14L2 22l4.979-1.383A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" stroke="#25D366" stroke-width="1.5" fill="none"></path></svg>
+        </div>
+        <div>
+          <div style="font-size:15px;font-weight:700;">WhatsApp</div>
+          <div style="font-size:13px;color:#8a7e72;margin-top:2px;">+601X-XXXXXXX · Balas dalam masa 1 jam</div>
+        </div>
+        <i class="ph ph-arrow-right" style="margin-left:auto;color:#c9a09c;"></i>
+      </a>
+      <a href="#" onclick="if(_mediaLinks.telegram){window.open(_mediaLinks.telegram,'_blank','noopener')}else{showToast('⚠ Link Telegram belum ditetapkan dalam tetapan admin.')};return false;" style="display:flex;align-items:center;gap:14px;padding:18px;border:1px solid #e3d8cb;border-radius:12px;text-decoration:none;color:#473f38;transition:border-color .15s;" onmouseover="this.style.borderColor='#c9a09c'" onmouseout="this.style.borderColor='#e3d8cb'">
+        <div style="width:48px;height:48px;border-radius:12px;background:#e3f2fd;display:flex;align-items:center;justify-content:center;flex:none;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#29B6F6" opacity=".15"></circle><path d="M5.5 11.5l11-4.5-3 11-3-3.5-2.5 2V14l-2.5-2.5z" stroke="#0288D1" stroke-width="1.4" stroke-linejoin="round" fill="none"></path><path d="M10 13.5l5.5-5.5" stroke="#0288D1" stroke-width="1.4" stroke-linecap="round"></path></svg>
+        </div>
+        <div>
+          <div style="font-size:15px;font-weight:700;">Telegram</div>
+          <div style="font-size:13px;color:#8a7e72;margin-top:2px;">@pixyoprint · Hantar mesej terus</div>
+        </div>
+        <i class="ph ph-arrow-right" style="margin-left:auto;color:#c9a09c;"></i>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let PKG = [
+  { id: 'design', name: 'Design Sahaja',    desc: 'Susun layout digital · fail siap cetak',   price: 280, strike: 320, category: 'Digital',       pages: '40 muka surat' },
+  { id: 'print',  name: 'Design + Cetak',   desc: 'Layout + album bercetak 12"×12"',           price: 680, strike: 780, category: 'Cetak & Album', pages: '40 muka surat' },
+  { id: 'full',   name: 'Pakej Penuh',      desc: 'Design + Cetak + Penghantaran',             price: 880, strike: 990, category: 'Cetak & Album', pages: '40 muka surat' }
+];
+
+function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+function loadPackages(){
+  return fetch('/api/packages').then(r=>r.json()).then(list=>{
+    if(Array.isArray(list) && list.length){
+      PKG = list.map(p => ({
+        id: slug(p.name),
+        name: p.name,
+        desc: p.desc,
+        price: Number(p.price) || 0,
+        strike: Number(p.strike) || 0,
+        category: p.category || 'Lain-lain',
+        pages: p.pages || '40 muka surat',
+        note: p.note || '',
+        material: p.material || '',
+        size: p.size || ''
+      }));
+      if(!PKG.find(p=>p.id===state.selPkg)) state.selPkg = PKG[0].id;
+    }
+  }).catch(()=>{});
+}
+
+let CATEGORIES = [];
+let activeCat = ''; // akan diset ke kategori pertama selepas data dimuatkan
+function loadCategories(){
+  return fetch('/api/categories').then(r=>r.json()).then(list=>{
+    if(Array.isArray(list)) CATEGORIES = list;
+  }).catch(()=>{});
+}
+function setCat(c){ activeCat = c; renderPkgList(); }
+
+const ORDER_STAGES = [
+  { title: 'Hantar Gambar',    sub: 'Gambar diterima',    ts: '18 Jun · 10:24 pg' },
+  { title: 'Order',            sub: 'Pesanan disahkan',   ts: '18 Jun · 2:10 ptg' },
+  { title: 'Editing',          sub: 'Sedang disusun',     ts: '19 Jun · 9:00 pg' },
+  { title: 'Reviewing',        sub: 'Proof disemak',      ts: '20 Jun · 4:45 ptg' },
+  { title: 'Amend / Proceed',  sub: 'Tindakan anda',      ts: 'Menunggu anda' },
+  { title: 'Printing',         sub: 'Sedang dicetak',     ts: '—' },
+  { title: 'Delivery',         sub: 'Penghantaran',       ts: '—' }
+];
+const ORDER_NOTES = [
+  'Kami sedang menyemak kualiti gambar yang anda hantar.',
+  'Pesanan anda telah disahkan dan masuk barisan editing.',
+  'Designer sedang menyusun layout album anda mengikut aliran cerita majlis.',
+  'Proof draf telah siap dan sedang disemak oleh QC kami.',
+  'Sila semak proof di bawah, kemudian mohon pindaan atau sahkan untuk teruskan ke cetak.',
+  'Album anda sedang dicetak dan dijilid dengan teliti.',
+  'Album anda dalam perjalanan ke alamat penghantaran.'
+];
+const ORDER_ETA = ['1 hari','—','2–3 hari','1 hari','Tindakan anda','3–4 hari','2 hari'];
+
+let state = {
+  selPkg: 'print',
+  cart: {},   // {pkgId: qty}
+  pay: 'fpx',
+  orderStage: 4,
+  promoActive: false,
+  promoCode: '',
+  promoRate: 0,
+  promoType: 'pct'  // 'pct' atau 'rm'
+};
+
+// ============================================================
+// UTILS
+// ============================================================
+function money(n) { return 'RM ' + Number(n).toLocaleString('en-MY',{minimumFractionDigits:2}); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+const pages = ['servis','upload','checkout','status','hubungi'];
+
+function goPage(id) {
+  pages.forEach(p => {
+    document.getElementById('page-'+p).classList.remove('active');
+    const nl = document.getElementById('nl-'+p);
+    if(nl) nl.classList.remove('active');
+  });
+  document.getElementById('page-'+id).classList.add('active');
+  const nl = document.getElementById('nl-'+id);
+  if(nl) nl.classList.add('active');
+  window.scrollTo(0,0);
+
+  if(id === 'checkout') renderCheckout();
+  if(id === 'status') renderStatus();
+}
+
+// ============================================================
+// PACKAGES (servis page)
+// ============================================================
+function renderPkgList() {
+  const el = document.getElementById('pkg-list');
+
+  // kategori yang ada pakej, disusun ikut turutan CATEGORIES (admin), kemudian baki
+  const present = [];
+  PKG.forEach(p => { const c = p.category || 'Lain-lain'; if(!present.includes(c)) present.push(c); });
+  const ordered = CATEGORIES.filter(c => present.includes(c)).concat(present.filter(c => !CATEGORIES.includes(c)));
+
+  // pastikan activeCat sah
+  if(activeCat !== 'all' && !ordered.includes(activeCat)) activeCat = ordered[0] || 'all';
+
+  const row = p => `
+    <div class="pkg-row">
+      <div class="pkg-thumb"></div>
+      <div style="flex:1;">
+        <div class="pkg-name">${p.name}</div>
+        <div class="pkg-desc">${p.desc}${p.note ? ' — ' + p.note : ''}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;">
+          ${p.pages ? `<span class="tag">${String(p.pages).replace(/\D/g,'') || p.pages} muka surat</span>` : ''}
+          ${p.material ? `<span class="tag">${p.material}</span>` : ''}
+          ${p.size ? `<span class="tag">${p.size}</span>` : ''}
+        </div>
+      </div>
+      <div style="flex:none;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:12px;">
+        <div class="pkg-price">${money(p.price)}</div>
+        ${(()=>{ const q=state.cart[p.id]||0; return q>0
+          ? `<div style="display:flex;align-items:center;border:1.5px solid #c98a86;border-radius:100px;overflow:hidden;">
+               <button onclick="removeFromCart('${p.id}')" style="width:36px;height:36px;border:none;background:#fff0ee;color:#c98a86;font-size:20px;font-weight:700;cursor:pointer;line-height:1;transition:background .15s;" onmouseover="this.style.background='#fde0dc'" onmouseout="this.style.background='#fff0ee'">−</button>
+               <span style="min-width:30px;text-align:center;font-size:13px;font-weight:700;color:#473f38;padding:0 2px;">${q}</span>
+               <button onclick="addToCart('${p.id}')" style="width:36px;height:36px;border:none;background:#c98a86;color:#fff;font-size:20px;font-weight:700;cursor:pointer;line-height:1;transition:background .15s;" onmouseover="this.style.background='#b9786f'" onmouseout="this.style.background='#c98a86'">+</button>
+             </div>`
+          : `<button class="btn-primary" style="border-radius:100px;padding:9px 20px;" onclick="addToCart('${p.id}')">+ Tambah</button>`; })()}
+      </div>
+    </div>`;
+
+  // bar tab kategori (mendatar, kiri ke kanan)
+  const chip = (label, val) => `<span onclick="setCat('${val.replace(/'/g,"\\'")}')" style="cursor:pointer;padding:8px 16px;border-radius:100px;font-size:13px;font-weight:600;white-space:nowrap;border:1px solid ${activeCat===val?'#c98a86':'#e3d8cb'};background:${activeCat===val?'#c98a86':'#fffdfa'};color:${activeCat===val?'#fff':'#6f6358'};transition:all .15s;">${label}</span>`;
+  const tabs = ordered.length > 1
+    ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px;">
+         ${ordered.map(c => chip(c, c)).join('')}
+         ${chip('SEMUA','all')}
+       </div>`
+    : '';
+
+  // kategori untuk dipaparkan
+  const shownCats = activeCat === 'all' ? ordered : [activeCat];
+  const showHeaders = shownCats.length > 1;
+
+  const body = shownCats.map(cat => {
+    const items = PKG.filter(p => (p.category || 'Lain-lain') === cat);
+    return `
+      ${showHeaders ? `<div style="display:flex;align-items:center;gap:10px;margin:8px 0 14px;">
+        <span style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#a86d69;font-weight:700;"><i class="ph ph-tag"></i> ${cat}</span>
+        <span style="flex:1;height:1px;background:#ece2d6;"></span>
+      </div>` : ''}
+      ${items.map(row).join('')}`;
+  }).join('');
+
+  el.innerHTML = tabs + body;
+}
+
+function addToCart(pkgId) {
+  state.cart[pkgId] = (state.cart[pkgId] || 0) + 1;
+  state.selPkg = pkgId;
+  updateCartLabel();
+  renderPkgList();
+  renderCheckout();
+  const pkg = PKG.find(p => p.id === pkgId);
+  if(state.cart[pkgId] === 1) showToast((pkg ? pkg.name : '') + ' ditambah ke troli ✓');
+}
+
+function removeFromCart(pkgId) {
+  if(!state.cart[pkgId]) return;
+  state.cart[pkgId]--;
+  if(state.cart[pkgId] <= 0) delete state.cart[pkgId];
+  updateCartLabel();
+  renderPkgList();
+  renderCheckout();
+}
+
+function updateCartLabel() {
+  const total = Object.values(state.cart).reduce((a,b)=>a+b, 0);
+  document.getElementById('nav-cart-label').textContent = 'Troli · ' + total;
+}
+
+// ============================================================
+// CHECKOUT
+// ============================================================
+function getCheckoutTotals() {
+  const items = [];
+  for(const [pkgId, qty] of Object.entries(state.cart)){
+    const pkg = PKG.find(p => p.id === pkgId);
+    if(pkg && qty > 0) items.push({pkg, qty});
+  }
+  const subtotal = items.reduce((s,{pkg,qty})=>s + pkg.price*qty, 0);
+  const discount = state.promoActive
+    ? (state.promoType === 'rm' ? Math.min(state.promoRate, subtotal) : subtotal * (state.promoRate / 100))
+    : 0;
+  const total = subtotal - discount;
+  return { items, subtotal, discount, total };
+}
+
+function renderCheckout() {
+  const { items, subtotal, discount, total } = getCheckoutTotals();
+  const lines = document.getElementById('cart-lines');
+  if(!items.length) {
+    lines.innerHTML = '<div style="font-size:13px;color:#8a7e72;padding:16px 0;">Tiada item dalam troli. <span style="color:#a86d69;cursor:pointer;font-weight:600;" onclick="goPage(\'servis\')">Lihat pakej</span></div>';
+  } else {
+    lines.innerHTML = items.map(({pkg,qty}) => `
+      <div class="cart-line">
+        <div class="cart-thumb"></div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:600;color:#473f38;">${pkg.name}</div>
+          <div style="font-size:12px;color:#9a8d80;margin-top:2px;">${pkg.pages ? String(pkg.pages).replace(/\D/g,'')+ ' muka surat' : ''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="display:flex;align-items:center;border:1.5px solid #e3d8cb;border-radius:100px;overflow:hidden;">
+            <button onclick="removeFromCart('${pkg.id}')" style="width:30px;height:30px;border:none;background:#fff0ee;color:#c98a86;font-size:17px;font-weight:700;cursor:pointer;line-height:1;">−</button>
+            <span style="min-width:24px;text-align:center;font-size:13px;font-weight:700;color:#473f38;">${qty}</span>
+            <button onclick="addToCart('${pkg.id}')" style="width:30px;height:30px;border:none;background:#c98a86;color:#fff;font-size:17px;font-weight:700;cursor:pointer;line-height:1;">+</button>
+          </div>
+          <div style="font-size:14px;font-weight:700;color:#473f38;min-width:72px;text-align:right;">${money(pkg.price*qty)}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // summary
+  document.getElementById('s-subtotal').textContent = money(subtotal);
+  document.getElementById('s-discount-label').textContent = state.promoActive
+    ? `Diskaun (${state.promoCode} −${state.promoType==='rm'?'RM '+state.promoRate:state.promoRate+'%'})`
+    : 'Diskaun';
+  document.getElementById('s-discount').textContent = discount > 0 ? '−' + money(discount) : '−';
+  document.getElementById('s-total').textContent = money(total);
+  document.getElementById('pay-btn').textContent = 'Buat Bayaran · ' + money(total);
+
+  // payment methods
+  const pmEl = document.getElementById('pay-methods');
+  const methods = [
+    { id:'fpx',     name:'FPX Online Banking', note:"Maybank, CIMB, Bank Islam & lain-lain", tag:'FPX' },
+    { id:'card',    name:'Kad Kredit / Debit',  note:'Visa · Mastercard',                     tag:'CARD' },
+    { id:'ewallet', name:'e-Wallet',            note:"Touch 'n Go · GrabPay · Boost",         tag:'E-WALLET' }
+  ];
+  pmEl.innerHTML = methods.map(m => `
+    <div class="pay-option ${state.pay===m.id?'selected':''}" onclick="selectPay('${m.id}')">
+      <div class="pay-border"></div>
+      <div class="pay-ring"><div class="pay-dot"></div></div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:#473f38;">${m.name}</div><div style="font-size:12px;color:#9a8d80;">${m.note}</div></div>
+      <div style="font-family:'Courier New',monospace;font-size:11px;color:#b5a596;letter-spacing:0.05em;">${m.tag}</div>
+    </div>
+  `).join('');
+}
+
+function selectPay(id) {
+  state.pay = id;
+  renderCheckout();
+}
+
+let _mediaLinks = { whatsapp:'', telegram:'', gdrive:'' };
+fetch('/api/media-links').then(r=>r.json()).then(d=>{ _mediaLinks = d; }).catch(()=>{});
+
+function toggleMedium(id, checked) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.style.borderColor = checked ? '#c98a86' : '#e3d8cb';
+  el.style.background  = checked ? '#fdf6f5' : '#fffdfa';
+  if(checked) {
+    const linkMap = { 'medium-wa': _mediaLinks.whatsapp, 'medium-tg': _mediaLinks.telegram, 'medium-gd': _mediaLinks.gdrive };
+    const url = linkMap[id];
+    if(url) window.open(url, '_blank', 'noopener');
+  }
+}
+
+function applyPromo() {
+  const val = document.getElementById('promo-input').value.trim().toUpperCase();
+  if(!val) { showToast('Masukkan kod baucar dahulu.'); return; }
+  fetch('/api/vouchers').then(r=>r.json()).then(list => {
+    const v = list.find(v => v.code.toUpperCase() === val && v.active);
+    if(v) {
+      state.promoActive = true;
+      state.promoCode = v.code.toUpperCase();
+      state.promoRate = Number(v.discount) || 0;
+      state.promoType = v.type === 'rm' ? 'rm' : 'pct';
+      const label = v.type === 'rm' ? `RM ${v.discount} diskaun` : `${v.discount}% diskaun`;
+      showToast(`Baucar ${v.code} digunakan — ${label}!`);
+    } else {
+      state.promoActive = false;
+      state.promoCode = '';
+      state.promoRate = 0;
+      showToast('Kod baucar tidak sah atau tidak aktif.');
+    }
+    renderCheckout();
+  }).catch(()=>{ showToast('Gagal semak baucar.'); });
+}
+
+function doPay() {
+  if(!Object.keys(state.cart).length) { showToast('Pilih pakej dahulu.'); return; }
+
+  // Semak pilihan hantar gambar
+  const mediumSelected = ['medium-wa','medium-tg','medium-gd'].some(id => {
+    const el = document.getElementById(id);
+    return el && el.querySelector('input[type=checkbox]')?.checked;
+  });
+  if(!mediumSelected) {
+    // Highlight section Cara Hantar Gambar
+    const cards = document.querySelectorAll('#medium-wa,#medium-tg,#medium-gd');
+    cards.forEach(c => { c.style.borderColor = '#c0392b'; c.style.background = '#fff5f5'; });
+    setTimeout(() => cards.forEach(c => { c.style.borderColor = '#e3d8cb'; c.style.background = '#fffdfa'; }), 2500);
+    showToast('⚠ Pilih cara hantar gambar dahulu sebelum bayar.');
+    document.getElementById('medium-wa')?.scrollIntoView({ behavior:'smooth', block:'center' });
+    return;
+  }
+
+  const { items, total } = getCheckoutTotals();
+  if(total <= 0) { showToast('Jumlah bayaran tidak sah.'); return; }
+
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true;
+  btn.textContent = 'Memproses...';
+
+  const name  = document.querySelector('[placeholder="Nama penuh"]')?.value.trim() || '';
+  const phone = document.querySelector('[placeholder="No. telefon"]')?.value.trim() || '';
+
+  fetch('/api/pay', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      total,
+      name,
+      email: '',
+      items: items.map(({pkg, qty}) => ({ name: pkg.name, price: pkg.price, qty }))
+    })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if(res.ok && res.url) {
+      sessionStorage.setItem('pixyo_ref', res.reference);
+      window.location.href = res.url;
+    } else {
+      showToast('Gagal: ' + (res.error || 'Cuba semula'));
+      btn.disabled = false;
+      btn.textContent = 'Buat Bayaran · RM ' + total.toFixed(2);
+    }
+  })
+  .catch(() => {
+    showToast('Gagal sambung ke server.');
+    btn.disabled = false;
+    btn.textContent = 'Buat Bayaran · RM ' + total.toFixed(2);
+  });
+}
+
+function resetCheckout() {
+  document.getElementById('checkout-success').style.display = 'none';
+  document.getElementById('checkout-form').style.display = 'block';
+  goPage('servis');
+}
+
+// ============================================================
+// ORDER STATUS
+// ============================================================
+function renderStatus() {
+  const cur = state.orderStage;
+  const pkg = PKG.find(p => p.id === state.selPkg) || PKG[1];
+
+  document.getElementById('order-pkg-name').textContent = 'Album Kahwin — ' + pkg.name;
+  document.getElementById('order-status-title').textContent = ORDER_STAGES[cur].title;
+  document.getElementById('order-status-step').textContent = 'Langkah ' + (cur+1) + ' / 7';
+  document.getElementById('detail-title').textContent = ORDER_STAGES[cur].title;
+  document.getElementById('detail-eta').textContent = 'Anggaran: ' + ORDER_ETA[cur];
+  document.getElementById('detail-note').textContent = ORDER_NOTES[cur];
+  document.getElementById('decision-btns').style.display = cur === 4 ? 'block' : 'none';
+
+  // stepper
+  const stepperEl = document.getElementById('stepper');
+  stepperEl.innerHTML = ORDER_STAGES.map((s, i) => {
+    const status = i < cur ? 'done' : (i === cur ? 'active' : 'pending');
+    const circleBg = status==='done'?'#9aae90':(status==='active'?'#c98a86':'#fffdfa');
+    const circleColor = status==='pending'?'#b5a596':'#fffdfa';
+    const circleBorder = status==='pending'?'2px solid #e3d8cb':'2px solid transparent';
+    const leftColor = i===0?'transparent':(cur>=i?'#9aae90':'#e7dccf');
+    const rightColor = i===ORDER_STAGES.length-1?'transparent':(cur>=i+1?'#9aae90':'#e7dccf');
+    const mark = status==='done'?'✓':String(i+1);
+    return `
+      <div class="stage-wrap">
+        <div class="stage-row">
+          <div class="stage-line" style="background:${leftColor};"></div>
+          <div class="stage-circle" style="background:${circleBg};color:${circleColor};border:${circleBorder};" onclick="setStage(${i})">${mark}</div>
+          <div class="stage-line" style="background:${rightColor};"></div>
+        </div>
+        <div class="stage-title">${s.title}</div>
+        <div class="stage-sub">${s.sub}</div>
+      </div>
+    `;
+  }).join('');
+
+  // timeline
+  const tlEl = document.getElementById('timeline');
+  tlEl.innerHTML = ORDER_STAGES.map((s, i) => {
+    const status = i < cur ? 'done' : (i === cur ? 'active' : 'pending');
+    const dotBg = status==='done'?'#9aae90':(status==='active'?'#c98a86':'#e3d8cb');
+    const tsColor = status==='pending'?'#b5a596':(status==='active'?'#a86d69':'#6f8466');
+    return `
+      <div class="tl-row">
+        <div class="tl-dot-col">
+          <div class="tl-dot" style="background:${dotBg};"></div>
+          ${i < ORDER_STAGES.length-1 ? '<div class="tl-line"></div>' : ''}
+        </div>
+        <div style="padding-bottom:14px;">
+          <div style="font-size:13px;font-weight:600;color:#473f38;line-height:1.2;">${s.title}</div>
+          <div style="font-size:11px;margin-top:2px;color:${tsColor};">${s.ts}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function setStage(i) {
+  state.orderStage = i;
+  renderStatus();
+}
+
+function lookupOrder() { showToast('Order #LB-2026-0142 ditemui.'); }
+
+function amendOrder() {
+  state.orderStage = 2;
+  renderStatus();
+  showToast('Permintaan pindaan dihantar. Designer akan semak semula.');
+}
+
+function proceedOrder() {
+  if(state.orderStage < 6) {
+    state.orderStage = Math.min(6, state.orderStage + 1);
+    renderStatus();
+  }
+}
+
+// ============================================================
+// FLOW KERJA (boleh diubah dari Admin → Flow Kerja)
+// ============================================================
+const DEFAULT_FLOW = [
+  { n:'01', cap:'Pilih pakej & tema',    url:'' },
+  { n:'02', cap:'Hantar gambar majlis',  url:'' },
+  { n:'03', cap:'Designer susun layout', url:'' },
+  { n:'04', cap:'Semak & terima album',  url:'' }
+];
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function drawFlow(flow){
+  document.getElementById('flow-grid').innerHTML = flow.map(f=>{
+    const media = f.url
+      ? `<div class="vid-placeholder" style="overflow:hidden;" onclick="playFlowVid(this)">
+           <video src="${esc(f.url)}" preload="metadata" playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></video>
+           <span class="vid-badge" style="z-index:2;">${esc(f.n)}</span>
+           <div class="vid-play" style="z-index:2;"><i class="ph-fill ph-play"></i></div>
+         </div>`
+      : `<div class="vid-placeholder"><span class="vid-badge">${esc(f.n)}</span><div class="vid-play"><i class="ph-fill ph-play"></i></div></div>`;
+    return `<div>${media}<div style="font-size:13px;font-weight:600;color:#6f6358;margin-top:10px;line-height:1.4;">${esc(f.cap)}</div></div>`;
+  }).join('');
+}
+function playFlowVid(box){
+  const v = box.querySelector('video');
+  if(!v) return;
+  const overlay = box.querySelector('.vid-play');
+  v.setAttribute('controls','');
+  if(overlay) overlay.style.display='none';
+  v.play();
+}
+function renderFlowGrid(){
+  fetch('/api/flow')
+    .then(r=>r.json())
+    .then(flow=>{ drawFlow(Array.isArray(flow) && flow.length ? flow : DEFAULT_FLOW); })
+    .catch(()=>{ drawFlow(DEFAULT_FLOW); });
+}
+
+// ============================================================
+// LOGIN (admin)
+// ============================================================
+function openLogin(){ document.getElementById('login-modal').style.display='flex'; }
+function closeLogin(){ document.getElementById('login-modal').style.display='none'; document.getElementById('login-error').style.display='none'; }
+function submitLogin(ev){
+  if(ev) ev.preventDefault();
+  const email = document.getElementById('li-email').value.trim();
+  const pass  = document.getElementById('li-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display='none';
+  fetch('/api/login',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password:pass}) })
+    .then(r=>r.json())
+    .then(res=>{
+      if(res.ok){
+        sessionStorage.setItem('pixyo_token', res.token);
+        sessionStorage.setItem('pixyo_name', res.name);
+        window.location.href = '/admin.html';
+      } else {
+        errEl.textContent = res.error || 'Log masuk gagal';
+        errEl.style.display='block';
+      }
+    })
+    .catch(()=>{ errEl.textContent='Gagal sambung ke server'; errEl.style.display='block'; });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+// ── Detect balik dari HitPay ──────────────────────────────
+(function checkHitPayReturn() {
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('payment') !== 'return') return;
+  const ref    = params.get('ref') || sessionStorage.getItem('pixyo_ref') || '';
+  const status = params.get('status') || '';
+  // Buang query string dari URL supaya bersih
+  history.replaceState(null, '', window.location.pathname);
+
+  Promise.all([loadPackages(), loadCategories()]).then(()=>{
+    if(!activeCat && CATEGORIES.length) activeCat = CATEGORIES[0];
+    renderPkgList(); renderCheckout(); renderStatus();
+    goPage('checkout');
+
+    if(status === 'completed') {
+      // Bayaran berjaya
+      state.cart = {}; updateCartLabel(); renderPkgList();
+      document.getElementById('checkout-form').style.display = 'none';
+      document.getElementById('checkout-success').style.display = 'block';
+      sessionStorage.removeItem('pixyo_ref');
+    } else {
+      // Bayaran gagal/dibatalkan
+      showToast('Bayaran tidak berjaya atau dibatalkan. Cuba semula.');
+    }
+  });
+  renderFlowGrid();
+  return;
+})();
+
+if(window.location.search.indexOf('payment=return') === -1) {
+  renderFlowGrid();
+  renderPkgList();
+  renderCheckout();
+  renderStatus();
+  Promise.all([loadPackages(), loadCategories()]).then(()=>{
+    if(!activeCat && CATEGORIES.length) activeCat = CATEGORIES[0];
+    renderPkgList(); renderCheckout(); renderStatus();
+  });
+}
+</script>
+</body>
+</html>
