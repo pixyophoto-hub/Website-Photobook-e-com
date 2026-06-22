@@ -786,10 +786,11 @@ loadReviews();
 // ============================================================
 let EXPLORE = [];
 function exploreIcon(e){
-  if(e.img) return `<img src="${escA(e.img)}" alt="${escA(e.name)}">`;
-  const ic = (e.icon||'').trim();
-  if(ic.indexOf('ph') === 0) return `<i class="${escA(ic)}"></i>`;  // ikon Phosphor lama
-  return `<span>${escA(ic || '📦')}</span>`;                         // emoji
+  if(e.img) return `<img src="${escA(e.img)}" alt="${escA(e.name)}" style="width:100%;height:100%;object-fit:cover;">`;
+  return `<div style="width:100%;height:100%;background:linear-gradient(135deg,#e8ddd4 0%,#d6c9bc 50%,#c9b8a8 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+    <i class="ph ph-books" style="font-size:36px;color:#a08878;"></i>
+    <span style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:#a08878;text-transform:uppercase;">${escA(e.name)}</span>
+  </div>`;
 }
 function renderExplore(){
   const t = document.getElementById('explore-track');
