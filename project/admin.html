@@ -620,8 +620,17 @@ tbody tr{border-top:1px solid #f0e8df;}
       <div style="font-size:11px;color:#8a7e72;margin-top:4px;">Taip atau tampal mana-mana emoji. Contoh: 📕 📖 💎 🎁 🖼️ 📷 ❤️ ⭐ 📦</div>
     </div>
     <div style="margin-bottom:20px;">
-      <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">URL Gambar <span style="color:#9a8d80;font-weight:500;">— pilihan, ganti ikon jika diisi</span></div>
-      <input id="ex-img" class="inp" style="width:100%;" placeholder="cth: hero.png atau https://...">
+      <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Gambar <span style="color:#9a8d80;font-weight:500;">— pilihan, ganti ikon jika diisi</span></div>
+      <input type="hidden" id="ex-img">
+      <div id="ex-img-preview" style="display:none;margin-bottom:8px;">
+        <img id="ex-img-thumb" src="" style="height:60px;border-radius:7px;border:1px solid #e3d8cb;object-fit:cover;">
+        <button type="button" onclick="clearExImg()" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:11px;font-weight:600;margin-left:8px;vertical-align:middle;">Buang</button>
+      </div>
+      <label class="btn-ghost" style="cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-size:13px;padding:9px 16px;">
+        <i class="ph ph-image"></i> Upload Gambar
+        <input type="file" accept="image/*" style="display:none;" onchange="uploadExImg(this)">
+      </label>
+      <span id="ex-img-status" style="font-size:11px;color:#9a8d80;margin-left:10px;"></span>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:10px;">
       <button class="btn-ghost" style="padding:10px 18px;" onclick="closeExploreModal()">Batal</button>
@@ -1016,9 +1025,40 @@ function showExploreModal(editIdx){
   document.getElementById('ex-name').value = e.name || '';
   document.getElementById('ex-desc').value = e.desc || '';
   document.getElementById('ex-icon').value = e.icon || 'ph ph-book-bookmark';
-  document.getElementById('ex-img').value = e.img || '';
+  const imgVal = e.img || '';
+  document.getElementById('ex-img').value = imgVal;
+  const thumb = document.getElementById('ex-img-thumb');
+  const preview = document.getElementById('ex-img-preview');
+  if(imgVal){ thumb.src = imgVal; preview.style.display='block'; } else { preview.style.display='none'; }
+  document.getElementById('ex-img-status').textContent = '';
   document.getElementById('explore-modal').style.display = 'flex';
   document.getElementById('ex-name').focus();
+}
+
+function uploadExImg(input){
+  const file = input.files[0]; if(!file) return;
+  const status = document.getElementById('ex-img-status');
+  status.textContent = 'Memuat naik…';
+  const fd = new FormData(); fd.append('file', file);
+  fetch('/api/upload',{ method:'POST', headers: authHeaders(), body: fd })
+    .then(r=>r.json())
+    .then(res=>{
+      if(res.url){
+        document.getElementById('ex-img').value = res.url;
+        const thumb = document.getElementById('ex-img-thumb');
+        thumb.src = res.url;
+        document.getElementById('ex-img-preview').style.display = 'block';
+        status.textContent = '';
+      } else { status.textContent = 'Gagal muat naik'; }
+    })
+    .catch(()=>{ status.textContent = 'Gagal muat naik'; });
+  input.value = '';
+}
+
+function clearExImg(){
+  document.getElementById('ex-img').value = '';
+  document.getElementById('ex-img-preview').style.display = 'none';
+  document.getElementById('ex-img-thumb').src = '';
 }
 
 function closeExploreModal(){
