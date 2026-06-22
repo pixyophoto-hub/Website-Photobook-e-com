@@ -188,34 +188,24 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 
   <!-- Hero -->
   <div class="card" style="margin-bottom:32px;overflow:hidden;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;" class="mobile-grid">
-      <!-- kiri -->
-      <div style="padding:56px 44px;display:flex;flex-direction:column;justify-content:center;">
-        <div style="align-self:flex-start;font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#a86d69;background:#f6e7e3;padding:7px 16px;border-radius:100px;margin-bottom:26px;">● Album &amp; Photobook Atelier</div>
-        <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(40px,5vw,60px);font-weight:500;line-height:1.05;color:#2d2520;margin-bottom:22px;">Setiap gambar <span style="font-style:italic;color:#c98a86;">layak</span> disusun dengan indah.</h1>
-        <p style="font-size:15px;color:#8a7e72;line-height:1.7;max-width:440px;margin-bottom:32px;">Kami susun layout album kahwin &amp; photobook anda secara manual — dari gambar mentah ke spread yang bercerita, siap dalam 7 hari.</p>
-        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-          <button class="btn-primary" style="display:flex;align-items:center;gap:10px;" onclick="document.getElementById('pkg-section').scrollIntoView({behavior:'smooth'})">Tempah Sekarang <i class="ph ph-arrow-right"></i></button>
-          <span style="display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:#6f6358;cursor:pointer;" onclick="document.getElementById('flow-grid').scrollIntoView({behavior:'smooth'})"><i class="ph ph-images"></i> Lihat Portfolio</span>
-        </div>
+    <div style="display:grid;grid-template-columns:1.15fr 0.85fr;gap:0;" class="mobile-grid">
+      <!-- kiri: gambar (faded) -->
+      <div style="position:relative;min-height:520px;overflow:hidden;background:#efe7dd;">
+        <img src="hero.png" alt="Keluarga menikmati photobook PixyoPrint" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+        <!-- fade hanya di tepi kanan supaya sebati dengan tulisan; muka keluarga kekal jelas -->
+        <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,253,250,0) 0%,rgba(255,253,250,0) 66%,rgba(255,253,250,1) 100%);"></div>
       </div>
-      <!-- kanan -->
-      <div style="position:relative;min-height:520px;background:repeating-linear-gradient(45deg,#ece2d6,#ece2d6 14px,#e3d7c8 14px,#e3d7c8 28px);display:flex;align-items:center;justify-content:center;">
-        <div style="text-align:center;color:#a99c8e;">
-          <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,253,250,.9);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:#a86d69;font-size:22px;"><i class="ph ph-image"></i></div>
-          <span style="font-family:'Courier New',monospace;font-size:12px;letter-spacing:0.08em;">hero · album spread</span>
-        </div>
-        <div style="position:absolute;top:22px;right:22px;background:#fffdfa;border-radius:12px;padding:10px 16px;box-shadow:0 4px 14px rgba(0,0,0,.1);text-align:center;">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#2d2520;line-height:1;">7 Hari</div>
-          <div style="font-size:10px;color:#9a8d80;margin-top:2px;">siap album</div>
-        </div>
-        <div style="position:absolute;bottom:22px;left:22px;right:22px;background:#fffdfa;border-radius:12px;padding:14px 16px;box-shadow:0 4px 14px rgba(0,0,0,.1);display:flex;align-items:center;gap:12px;">
-          <div style="width:42px;height:42px;border-radius:50%;background:#c98a86;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex:none;">AH</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:14px;font-weight:700;color:#2d2520;">Aisyah &amp; Haziq</div>
-            <div style="color:#c98a86;font-size:13px;letter-spacing:2px;">★★★★★</div>
+      <!-- kanan: tulisan -->
+      <div style="padding:56px 44px;display:flex;flex-direction:column;justify-content:center;">
+        <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(40px,5vw,60px);font-weight:500;line-height:1.05;color:#2d2520;margin-bottom:22px;">Setiap gambar <span style="font-style:italic;color:#c98a86;">layak</span> disusun dengan indah.</h1>
+        <p style="font-size:15px;color:#8a7e72;line-height:1.7;max-width:440px;margin-bottom:32px;">Kami bantu susun layout album &amp; photobook anda secara manual — dari gambar di telefon, komputer dan laptop diterjemah kepada helaian cinta yang bercerita.</p>
+        <!-- Semak status order -->
+        <div style="max-width:440px;">
+          <div style="font-size:12px;font-weight:600;color:#6f6358;margin-bottom:8px;"><i class="ph ph-magnifying-glass" style="color:#a86d69;"></i> Semak status order anda</div>
+          <div style="display:flex;gap:10px;">
+            <input id="hero-status-ref" type="text" placeholder="Masukkan nombor order" class="inp" style="flex:1;height:50px;border-radius:10px;" onkeydown="if(event.key==='Enter')heroCheckStatus()">
+            <button class="btn-primary" style="height:50px;padding:0 26px;font-size:15px;border-radius:10px;white-space:nowrap;" onclick="heroCheckStatus()">Semak</button>
           </div>
-          <div style="font-size:11px;color:#9a8d80;text-align:right;flex:none;">40 muka surat</div>
         </div>
       </div>
     </div>
@@ -687,6 +677,14 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 // ANNOUNCEMENT BAR (slider berputar)
 // ============================================================
 function goToPackages(){ goPage('servis'); setTimeout(()=>document.getElementById('pkg-section').scrollIntoView({behavior:'smooth'}),50); }
+function heroCheckStatus(){
+  const ref = document.getElementById('hero-status-ref').value.trim();
+  if(!ref){ showToast('Masukkan nombor order dahulu.'); return; }
+  goPage('status');
+  const inp = document.getElementById('status-ref');
+  if(inp) inp.value = ref;
+  lookupOrder();
+}
 const ANNOUNCE = [
   '🌷 <b>Tote Bag percuma</b> untuk setiap order RM79 &amp; ke atas. <span class="ann-cta" onclick="goToPackages()">Tempah Sekarang</span>',
   '✨ Guna kod <b>FIFA10</b> untuk diskaun 10% semasa checkout. <span class="ann-cta" onclick="goToPackages()">Tempah</span>',
