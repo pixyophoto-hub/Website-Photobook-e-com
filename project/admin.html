@@ -484,9 +484,14 @@ tbody tr{border-top:1px solid #f0e8df;}
       <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Nama Penuh</div>
       <input id="ed-name" class="inp" style="width:100%;" placeholder="cth: Ain Ahmad">
     </div>
-    <div style="margin-bottom:20px;">
-      <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Email</div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Email <span style="color:#9a8d80;font-weight:500;">(untuk log masuk)</span></div>
       <input id="ed-email" type="email" class="inp" style="width:100%;" placeholder="cth: ain@pixyoprint.com">
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Kata Laluan</div>
+      <input id="ed-password" type="text" class="inp" style="width:100%;" placeholder="Tetapkan kata laluan untuk editor">
+      <div id="ed-password-hint" style="font-size:11px;color:#8a7e72;margin-top:4px;">Editor guna email + kata laluan ini untuk log masuk di <strong>editor.html</strong>.</div>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:10px;">
       <button class="btn-ghost" style="padding:10px 18px;" onclick="closeEditorModal()">Batal</button>
@@ -559,10 +564,14 @@ function loadEditors(){
     }).catch(() => { renderEditors(); });
 }
 
-function persistEditors(msg){
+function persistEditors(msg, reload){
   fetch('/api/editors', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body:JSON.stringify(EDITORS) })
     .then(r => r.json())
-    .then(res => { if(msg) showToast(res.ok ? msg : 'Gagal simpan editor'); })
+    .then(res => {
+      if(msg) showToast(res.ok ? msg : 'Gagal simpan editor');
+      // Reload dari server — buang kata laluan dari memori & segar semula paparan
+      if(reload && res.ok) loadEditors(); else renderEditors();
+    })
     .catch(() => showToast('Gagal sambung ke server'));
 }
 
@@ -575,13 +584,20 @@ function showEditorModal(editIdx){
   document.getElementById('editor-modal-icon').style.cssText = 'color:#a86d69;margin-right:6px;';
   document.getElementById('editor-modal-title').textContent = isEdit ? 'Edit Editor' : 'Tambah Editor';
   document.getElementById('ed-modal-save-btn').onclick = isEdit ? saveEditEditor : saveNewEditor;
+  const pwInput = document.getElementById('ed-password');
+  const pwHint  = document.getElementById('ed-password-hint');
+  pwInput.value = '';
   if(isEdit){
     const e = EDITORS[_editorEditIdx];
     document.getElementById('ed-name').value = e.name || '';
     document.getElementById('ed-email').value = e.email || '';
+    pwInput.placeholder = 'Kosongkan jika tidak tukar';
+    pwHint.innerHTML = 'Isi hanya jika mahu tukar kata laluan editor.';
   } else {
     document.getElementById('ed-name').value = '';
     document.getElementById('ed-email').value = '';
+    pwInput.placeholder = 'Tetapkan kata laluan untuk editor';
+    pwHint.innerHTML = 'Editor guna email + kata laluan ini untuk log masuk di <strong>editor.html</strong>.';
   }
   document.getElementById('editor-modal').style.display = 'flex';
   document.getElementById('ed-name').focus();
@@ -595,24 +611,27 @@ function closeEditorModal(){
 function saveNewEditor(){
   const name = document.getElementById('ed-name').value.trim();
   const email = document.getElementById('ed-email').value.trim();
+  const password = document.getElementById('ed-password').value.trim();
   if(!name){ showToast('Masukkan nama editor.'); return; }
+  if(!email){ showToast('Masukkan email editor (untuk log masuk).'); return; }
+  if(!password){ showToast('Tetapkan kata laluan untuk editor.'); return; }
   const color = EDITOR_COLORS[EDITORS.length % EDITOR_COLORS.length];
-  EDITORS.push({ id: 'ed_' + Date.now(), name, email, color });
+  EDITORS.push({ id: 'ed_' + Date.now(), name, email, color, password });
   closeEditorModal();
-  renderEditors();
-  persistEditors(`Editor ${name} ditambah`);
+  persistEditors(`Editor ${name} ditambah`, true);
 }
 
 function saveEditEditor(){
   if(_editorEditIdx === null) return;
   const name = document.getElementById('ed-name').value.trim();
   const email = document.getElementById('ed-email').value.trim();
+  const password = document.getElementById('ed-password').value.trim();
   if(!name){ showToast('Masukkan nama editor.'); return; }
   EDITORS[_editorEditIdx].name = name;
   EDITORS[_editorEditIdx].email = email;
+  if(password) EDITORS[_editorEditIdx].password = password;  // tukar hanya jika diisi
   closeEditorModal();
-  renderEditors();
-  persistEditors(`Editor ${name} dikemaskini`);
+  persistEditors(`Editor ${name} dikemaskini`, true);
 }
 
 function removeEditor(i){

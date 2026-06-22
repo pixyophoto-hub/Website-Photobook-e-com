@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PixyoPrint · Portal Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#f2ede6;font-family:'Hanken Grotesk',sans-serif;color:#2d2520;}
+select,input{font-family:'Hanken Grotesk',sans-serif;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;background:#2d2520;color:#f5ede4;}
+.wrap{max-width:860px;margin:0 auto;padding:28px 20px 60px;}
+.card{background:#fffdfa;border-radius:12px;border:1px solid #ede4d8;padding:20px 22px;margin-bottom:16px;}
+.inp{border:1px solid #e3d8cb;border-radius:7px;padding:9px 13px;font-size:13px;color:#473f38;background:#fffdfa;outline:none;}
+.inp:focus{border-color:#c98a86;}
+.btn{border:none;background:#c98a86;color:#fff;font-family:inherit;font-weight:600;cursor:pointer;border-radius:8px;transition:background .15s;}
+.btn:hover{background:#b9786f;}
+.pill{font-size:11px;font-weight:600;padding:4px 10px;border-radius:100px;display:inline-block;}
+.tag{font-size:10px;color:#6f6358;background:#f0e8df;padding:2px 8px;border-radius:100px;}
+.toast{position:fixed;bottom:28px;right:28px;background:#2d2520;color:#fff;font-size:13px;font-weight:600;padding:13px 20px;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.18);z-index:999;opacity:0;transform:translateY(12px);transition:all .25s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-overlay" style="display:none;position:fixed;inset:0;z-index:1000;background:linear-gradient(135deg,#2d2520,#3d2f27);align-items:center;justify-content:center;">
+  <div style="width:360px;max-width:92vw;background:#fffdfa;border-radius:14px;padding:34px 30px;box-shadow:0 20px 60px rgba(0,0,0,.35);">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;">Portal Editor</div>
+    <div style="font-size:11px;font-family:'Courier New',monospace;letter-spacing:0.18em;text-transform:uppercase;color:#a89a8d;margin-top:6px;margin-bottom:24px;">PixyoPrint · Log Masuk</div>
+    <form onsubmit="doLogin(event)">
+      <div style="font-size:12px;font-weight:600;color:#6f6358;margin-bottom:6px;">Email</div>
+      <input type="email" id="login-email" class="inp" style="width:100%;margin-bottom:14px;" placeholder="email@pixyoprint.com" required>
+      <div style="font-size:12px;font-weight:600;color:#6f6358;margin-bottom:6px;">Kata Laluan</div>
+      <input type="password" id="login-pass" class="inp" style="width:100%;" placeholder="••••••••" required>
+      <div id="login-error" style="display:none;font-size:12px;color:#c0392b;background:#fef3f2;border-radius:7px;padding:9px 12px;margin:10px 0 0;"></div>
+      <button type="submit" class="btn" style="width:100%;font-size:14px;padding:13px;margin-top:16px;">Log Masuk</button>
+    </form>
+  </div>
+</div>
+
+<!-- PORTAL -->
+<div id="portal" style="display:none;">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <i class="ph-fill ph-pen-nib" style="font-size:20px;color:#c98a86;"></i>
+      <span style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;">Portal Editor</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <span id="ed-name" style="font-size:13px;color:#cdbfb2;"></span>
+      <i class="ph ph-sign-out" style="font-size:18px;cursor:pointer;color:#9a8d80;" title="Log keluar" onclick="logout()"></i>
+    </div>
+  </div>
+  <div class="wrap">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;">Order Ditugaskan Kepada Saya</div>
+      <span id="order-count" style="font-size:13px;color:#8a7e72;"></span>
+    </div>
+    <div id="order-list"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const WORKFLOW = ['Hantar Gambar','Order','Editing','Reviewing','Amend','Printing','Delivery','Siap'];
+const STATUS_COLOR = {
+  'Menunggu Bayaran':{bg:'#fdecea',color:'#c0392b'},
+  'Hantar Gambar':{bg:'#fef3f2',color:'#c0392b'},
+  'Order':{bg:'#fef9ec',color:'#b7860a'},
+  'Editing':{bg:'#eef4fb',color:'#2471a3'},
+  'Reviewing':{bg:'#f0eafb',color:'#7d3c98'},
+  'Amend':{bg:'#fdf2e4',color:'#ca6f1e'},
+  'Printing':{bg:'#eafaf1',color:'#1e8449'},
+  'Delivery':{bg:'#dde6d8',color:'#4a5e3a'},
+  'Siap':{bg:'#dde6d8',color:'#4a5e3a'}
+};
+
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function authHeaders(){ const t = sessionStorage.getItem('pixyo_token'); return t ? { 'Authorization':'Bearer '+t } : {}; }
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+function showLogin(){ document.getElementById('login-overlay').style.display='flex'; document.getElementById('portal').style.display='none'; }
+function showPortal(){ document.getElementById('login-overlay').style.display='none'; document.getElementById('portal').style.display='block'; }
+
+function statusPill(s){
+  const c = STATUS_COLOR[s] || {bg:'#f0e8df',color:'#6f6358'};
+  return `<span class="pill" style="background:${c.bg};color:${c.color};">${esc(s)}</span>`;
+}
+
+function mapStatus(s){
+  if(s === 'completed') return 'Hantar Gambar';
+  if(s === 'pending')   return 'Menunggu Bayaran';
+  return s;
+}
+
+function doLogin(ev){
+  ev.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const err   = document.getElementById('login-error');
+  err.style.display='none';
+  fetch('/api/login',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password:pass}) })
+    .then(r=>r.json())
+    .then(res=>{
+      if(res.ok){
+        if(res.role !== 'editor'){
+          err.textContent = 'Akaun ini bukan akaun editor. Guna admin.html untuk admin.';
+          err.style.display='block';
+          return;
+        }
+        sessionStorage.setItem('pixyo_token', res.token);
+        sessionStorage.setItem('pixyo_name', res.name);
+        initPortal();
+      } else {
+        err.textContent = res.error || 'Log masuk gagal';
+        err.style.display='block';
+      }
+    })
+    .catch(()=>{ err.textContent='Gagal sambung ke server'; err.style.display='block'; });
+}
+
+function logout(){
+  fetch('/api/logout',{ method:'POST', headers:authHeaders() }).catch(()=>{});
+  sessionStorage.removeItem('pixyo_token');
+  sessionStorage.removeItem('pixyo_name');
+  showLogin();
+}
+
+function initPortal(){
+  showPortal();
+  const name = sessionStorage.getItem('pixyo_name') || '';
+  document.getElementById('ed-name').textContent = name;
+  loadMyOrders();
+}
+
+function loadMyOrders(){
+  fetch('/api/orders', { headers: authHeaders() })
+    .then(r=>r.json())
+    .then(d=>{
+      const list = document.getElementById('order-list');
+      const orders = (d.ok && d.orders) ? d.orders : [];
+      document.getElementById('order-count').textContent = orders.length + ' order';
+      if(!orders.length){
+        list.innerHTML = `<div class="card" style="text-align:center;padding:40px;color:#9a8d80;">
+          <i class="ph ph-tray" style="font-size:34px;color:#cdbfb2;display:block;margin-bottom:10px;"></i>
+          Tiada order ditugaskan kepada anda buat masa ini.</div>`;
+        return;
+      }
+      list.innerHTML = orders.map(renderOrderCard).join('');
+    })
+    .catch(()=>showToast('Gagal muat order'));
+}
+
+function renderOrderCard(o){
+  const status = mapStatus(o.status);
+  const items = (o.items||[]).map(i=>{
+    const tags = [i.pages,i.material,i.size].filter(Boolean)
+      .map(t=>`<span class="tag">${esc(t)}</span>`).join(' ');
+    const qty = Number(i.qty)>1 ? ' ×'+Number(i.qty) : '';
+    return `<div style="padding:8px 0;border-top:1px solid #f4efe7;">
+      <div style="font-size:13px;font-weight:600;color:#2d2520;">${esc(i.name)}${qty}</div>
+      ${i.desc?`<div style="font-size:11px;color:#9a8d80;margin-top:2px;">${esc(i.desc)}</div>`:''}
+      ${tags?`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;">${tags}</div>`:''}
+    </div>`;
+  }).join('');
+
+  const waNum = (o.phone||'').replace(/[^0-9]/g,'');
+  const waLink = waNum ? `<a href="https://wa.me/${esc(waNum)}" target="_blank" rel="noopener" style="color:#1e8449;text-decoration:none;font-weight:600;"><i class="ph ph-whatsapp-logo"></i> ${esc(o.phone)}</a>` : '<span style="color:#9a8d80;">—</span>';
+
+  const opts = WORKFLOW.map(s=>`<option${s===status?' selected':''}>${esc(s)}</option>`).join('');
+  const isPaid = o.status !== 'pending';
+
+  return `<div class="card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;">
+      <div>
+        <div style="font-size:11px;letter-spacing:.08em;color:#a86d69;font-weight:700;">#${esc(o.reference)}</div>
+        <div style="font-size:16px;font-weight:700;margin-top:2px;">${esc(o.name||'—')}</div>
+        <div style="font-size:12px;color:#9a8d80;margin-top:2px;">${esc(o.email||'')}</div>
+      </div>
+      <div style="text-align:right;">
+        ${statusPill(status)}
+        <div style="font-size:11px;color:#9a8d80;margin-top:6px;">${esc(o.created_at||'')}</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px;">
+      <div style="background:#faf8f5;border-radius:8px;padding:10px 12px;">
+        <div style="font-size:10px;color:#9a8d80;font-weight:600;margin-bottom:3px;">HUBUNGI (WHATSAPP)</div>
+        <div style="font-size:13px;">${waLink}</div>
+      </div>
+      <div style="background:#faf8f5;border-radius:8px;padding:10px 12px;">
+        <div style="font-size:10px;color:#9a8d80;font-weight:600;margin-bottom:3px;">CARA HANTAR GAMBAR</div>
+        <div style="font-size:13px;font-weight:600;">${esc(o.medium||'—')}</div>
+      </div>
+    </div>
+
+    <div style="background:#faf8f5;border-radius:8px;padding:6px 12px 12px;margin:10px 0;">
+      <div style="font-size:10px;color:#9a8d80;font-weight:600;padding-top:8px;">ITEM TEMPAHAN</div>
+      ${items || '<div style="font-size:12px;color:#9a8d80;padding:8px 0;">— tiada item —</div>'}
+    </div>
+
+    ${isPaid ? `<div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:12px;color:#6f6358;font-weight:600;">Kemaskini status:</span>
+      <select class="inp" style="flex:1;" onchange="updateStatus('${esc(o.reference)}', this.value)">${opts}</select>
+    </div>` : `<div style="font-size:12px;color:#c0392b;background:#fdecea;border-radius:7px;padding:8px 12px;">Menunggu pembayaran pelanggan — belum boleh dikemaskini.</div>`}
+  </div>`;
+}
+
+function updateStatus(ref, status){
+  fetch('/api/orders/'+encodeURIComponent(ref), {
+    method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()},
+    body:JSON.stringify({status})
+  })
+    .then(r=>r.json())
+    .then(res=>{
+      if(res.ok){ showToast(`Status #${ref} dikemaskini → ${status}`); loadMyOrders(); }
+      else showToast(res.error==='forbidden' ? 'Order ini bukan milik anda.' : 'Gagal kemaskini status');
+    })
+    .catch(()=>showToast('Gagal sambung ke server'));
+}
+
+// Boot
+if(sessionStorage.getItem('pixyo_token')){
+  fetch('/api/me',{ headers:authHeaders() }).then(r=>r.json()).then(res=>{
+    if(res.ok && res.role === 'editor'){ initPortal(); }
+    else { sessionStorage.removeItem('pixyo_token'); showLogin(); }
+  }).catch(()=>showLogin());
+} else {
+  showLogin();
+}
+</script>
+</body>
+</html>

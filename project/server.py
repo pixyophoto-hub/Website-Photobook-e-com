@@ -270,10 +270,16 @@ class Handler(SimpleHTTPRequestHandler):
             return {}
 
     def _user(self):
+        """Pulang sesi {name, role, email} atau None."""
         h = self.headers.get("Authorization", "")
         if h.startswith("Bearer "):
             return SESSIONS.get(h[7:])
         return None
+
+    def _is_admin(self):
+        """Pulang sesi jika pengguna admin, jika tidak None."""
+        u = self._user()
+        return u if (u and u.get("role") == "admin") else None
 
     # --- routes ----------------------------------------------------
     def do_GET(self):
@@ -287,11 +293,13 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(load_data().get("vouchers", []))
         if self.path == "/api/me":
             u = self._user()
-            return self._json({"ok": bool(u), "name": u})
+            return self._json({"ok": bool(u),
+                               "name": u["name"] if u else None,
+                               "role": u.get("role") if u else None})
         if self.path == "/api/media-links":
             return self._json(load_data().get("media_links", {}))
         if self.path == "/api/hitpay-config":
-            if not self._user():
+            if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
             cfg = load_data().get("hitpay", {})
             # Mask API key dan salt — hantar sebahagian sahaja untuk paparan
@@ -304,12 +312,18 @@ class Handler(SimpleHTTPRequestHandler):
                 "sandbox": cfg.get("sandbox", True),
             })
         if self.path == "/api/orders":
-            if not self._user():
+            u = self._user()
+            if not u:
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
             orders = load_data().get("orders", [])
+            # Editor hanya nampak order yang ditugaskan kepadanya
+            if u.get("role") == "editor":
+                first = u["name"].split(" ")[0]
+                orders = [o for o in orders
+                          if o.get("editor") in (first, u["name"])]
             return self._json({"ok": True, "orders": list(reversed(orders))})
         if self.path == "/api/editors":
-            if not self._user():
+            if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
             return self._json({"ok": True, "editors": load_data().get("editors", [])})
 
@@ -366,7 +380,9 @@ class Handler(SimpleHTTPRequestHandler):
                         u["password"] = hash_password(password)
                         save_data(data)
                     token = secrets.token_hex(32)
-                    SESSIONS[token] = u["name"]
+                    SESSIONS[token] = {"name": u["name"],
+                                       "role": u.get("role", ""),
+                                       "email": u.get("email", "")}
                     return self._json({"ok": True, "token": token,
                                        "name": u["name"], "role": u.get("role")})
             _LOGIN_ATTEMPTS[client_ip] = [att_count + 1, now]
@@ -378,7 +394,7 @@ class Handler(SimpleHTTPRequestHandler):
                 SESSIONS.pop(h[7:], None)
             return self._json({"ok": True})
         if self.path == "/api/upload":
-            if not self._user():
+            if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
             length = int(self.headers.get("Content-Length", 0) or 0)
             if not length:
@@ -528,7 +544,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_PUT(self):
         if self.path == "/api/media-links":
-            if not self._user():
+            if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
             b = self._read_body()
             d = load_data()
@@ -539,7 +555,7 @@ class Handler(SimpleHTTPRequestHandler):
             save_data(d)
             return self._json({"ok": True})
         if self.path == "/api/hitpay-config":
-            if not self._user():
+            if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
             b = self._read_body()
             d = load_data()
@@ -554,29 +570,76 @@ class Handler(SimpleHTTPRequestHandler):
             save_data(d)
             return self._json({"ok": True})
         if self.path == "/api/editors":
-            if not self._user():
+            if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
+            new_editors = self._read_body()
+            if not isinstance(new_editors, list):
+                return self._json({"ok": False, "error": "format tidak sah"}, 400)
             d = load_data()
-            d["editors"] = self._read_body()
+            # Sesi editor sedia ada (untuk kekalkan kata laluan)
+            editor_users = {str(u.get("email", "")).lower(): u
+                            for u in d.get("users", []) if u.get("role") == "editor"}
+            cleaned = []
+            for ed in new_editors:
+                email = str(ed.get("email", "")).strip()
+                pw    = str(ed.get("password", "")).strip()
+                # Rekod editor disimpan TANPA kata laluan
+                cleaned.append({
+                    "id":    ed.get("id"),
+                    "name":  ed.get("name", ""),
+                    "email": email,
+                    "color": ed.get("color", ""),
+                })
+                if not email:
+                    continue
+                key = email.lower()
+                if key in editor_users:
+                    u = editor_users[key]
+                    u["name"] = ed.get("name", u.get("name"))
+                    if pw:  # tukar kata laluan hanya jika diberi
+                        u["password"] = hash_password(pw)
+                else:
+                    # Akaun login editor baharu (role: editor)
+                    d.setdefault("users", []).append({
+                        "email":    email,
+                        "name":     ed.get("name", ""),
+                        "role":     "editor",
+                        "password": hash_password(pw) if pw else hash_password(secrets.token_hex(12)),
+                    })
+            # Buang akaun editor yang tiada lagi dalam senarai
+            keep = {str(ed.get("email", "")).strip().lower()
+                    for ed in new_editors if ed.get("email")}
+            d["users"] = [u for u in d.get("users", [])
+                          if u.get("role") != "editor"
+                          or str(u.get("email", "")).lower() in keep]
+            d["editors"] = cleaned
             save_data(d)
             return self._json({"ok": True})
         if self.path.startswith("/api/orders/"):
-            if not self._user():
+            u = self._user()
+            if not u:
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
             ref = self.path[len("/api/orders/"):]
             b = self._read_body()
             d = load_data()
             for order in d.get("orders", []):
                 if order.get("reference") == ref:
-                    if "editor" in b: order["editor"] = b["editor"]
-                    if "status" in b: order["status"] = b["status"]
+                    if u.get("role") == "editor":
+                        # Editor hanya boleh kemaskini status order miliknya sendiri
+                        first = u["name"].split(" ")[0]
+                        if order.get("editor") not in (first, u["name"]):
+                            return self._json({"ok": False, "error": "forbidden"}, 403)
+                        if "status" in b: order["status"] = b["status"]
+                    else:
+                        if "editor" in b: order["editor"] = b["editor"]
+                        if "status" in b: order["status"] = b["status"]
                     break
             save_data(d)
             return self._json({"ok": True})
         key_map = {"/api/flow": "flow", "/api/packages": "packages",
                    "/api/categories": "categoryOrder", "/api/vouchers": "vouchers"}
         if self.path in key_map:
-            if not self._user():
+            if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
             d = load_data()
             d[key_map[self.path]] = self._read_body()

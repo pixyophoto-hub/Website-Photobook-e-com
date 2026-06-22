@@ -1067,7 +1067,7 @@ function submitLogin(ev){
       if(res.ok){
         sessionStorage.setItem('pixyo_token', res.token);
         sessionStorage.setItem('pixyo_name', res.name);
-        window.location.href = '/admin.html';
+        window.location.href = (res.role === 'editor') ? '/editor.html' : '/admin.html';
       } else {
         errEl.textContent = res.error || 'Log masuk gagal';
         errEl.style.display='block';
