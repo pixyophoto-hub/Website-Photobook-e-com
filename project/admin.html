@@ -682,23 +682,13 @@ const NAV = [
   { id:'reviews',  label:'Ulasan',        icon:'ph ph-star',          badge:false },
 ];
 const SETTINGS_GROUPS = [
-  { label:'Produk',      icon:'ph ph-package', items:[
-    { tab:'flow',     label:'Flow Kerja',      icon:'ph ph-film-strip' },
-    { tab:'packages', label:'Harga & Pakej',   icon:'ph ph-tag' },
-  ]},
-  { label:'Pembayaran',  icon:'ph ph-credit-card', items:[
-    { tab:'payment',    label:'Pembayaran',      icon:'ph ph-credit-card' },
-    { tab:'medialinks', label:'Hantar Gambar',   icon:'ph ph-share-network' },
-  ]},
-  { label:'Kandungan',   icon:'ph ph-layout', items:[
-    { tab:'announce', label:'Pengumuman',        icon:'ph ph-megaphone' },
-    { tab:'explore',  label:'Terokai Pilihan',   icon:'ph ph-squares-four' },
-  ]},
-  { label:'Akaun',       icon:'ph ph-user-circle', items:[
-    { tab:'akaun',    label:'Akaun Saya',        icon:'ph ph-user-circle' },
-  ]},
+  { id:'akaun',      label:'Akaun',      icon:'ph ph-user-circle', tabs:['akaun'] },
+  { id:'pembayaran', label:'Pembayaran', icon:'ph ph-credit-card', tabs:['payment','medialinks'] },
+  { id:'kandungan',  label:'Kandungan',  icon:'ph ph-layout',      tabs:['announce','explore'] },
+  { id:'produk',     label:'Produk',     icon:'ph ph-package',     tabs:['flow','packages'] },
 ];
 let _settingsOpen = true;
+let _activeSettingsGroup = null;
 const LABELS = { overview:'Overview', orders:'Senarai Order', revenue:'Pendapatan', editors:'Urus Editor', reviews:'Ulasan', settings:'Tetapan' };
 
 const STATUS = {
@@ -1227,52 +1217,43 @@ function renderNav(){
     </div>`).join('');
 
   const settingsActive = currentView === 'settings';
-  const groupsHtml = _settingsOpen ? SETTINGS_GROUPS.map(g => `
-    <div class="nav-label" style="margin-top:4px;">
-      <div class="nav-group-label" onclick="event.stopPropagation()">
-        <span style="display:flex;align-items:center;gap:7px;"><i class="${g.icon}" style="font-size:13px;"></i>${g.label}</span>
-      </div>
-      <div class="nav-sub">
-        ${g.items.map(it => `
-          <div class="nav-item ${settingsActive && _activeSettingsTab===it.tab ? 'active' : ''}" onclick="goSettings('${it.tab}')">
-            <i style="font-size:14px;" class="${it.icon}"></i>
-            <span class="nav-label" style="font-size:12px;font-weight:500;">${it.label}</span>
-          </div>`).join('')}
-      </div>
-    </div>`).join('') : '';
+  const divider = `<div class="nav-label" style="font-size:10px;font-family:'Courier New',monospace;letter-spacing:0.14em;text-transform:uppercase;color:#5a4a3e;padding:14px 12px 4px;">Tetapan</div>`;
+  const groupItems = SETTINGS_GROUPS.map(g => `
+    <div class="nav-item ${settingsActive && _activeSettingsGroup===g.id ? 'active' : ''}" onclick="goSettingsGroup('${g.id}')">
+      <i style="font-size:16px;" class="${g.icon}"></i>
+      <span class="nav-label" style="font-size:13px;font-weight:500;">${g.label}</span>
+    </div>`).join('');
 
-  const settingsToggle = `
-    <div class="nav-item ${settingsActive?'active':''}" onclick="_settingsOpen=!_settingsOpen;renderNav()" style="margin-top:6px;">
-      <i style="font-size:16px;" class="ph ph-gear"></i>
-      <span class="nav-label" style="font-size:13px;font-weight:500;">Tetapan</span>
-      <i class="ph ${_settingsOpen?'ph-caret-up':'ph-caret-down'} nav-label" style="font-size:12px;margin-left:auto;"></i>
-    </div>
-    ${groupsHtml}`;
-
-  document.getElementById('nav-list').innerHTML = mainItems + settingsToggle;
+  document.getElementById('nav-list').innerHTML = mainItems + divider + groupItems;
 }
 
-const SETTINGS_META = {
-  flow:       { title:'Flow Kerja',      sub:'Video langkah-langkah yang dipaparkan kepada pelanggan' },
-  packages:   { title:'Harga & Pakej',   sub:'Urus pakej, kategori dan harga' },
-  payment:    { title:'Pembayaran',      sub:'Konfigurasi HitPay dan tetapan bayaran' },
-  medialinks: { title:'Hantar Gambar',   sub:'Link untuk pelanggan hantar gambar' },
-  announce:   { title:'Pengumuman',      sub:'Bar pengumuman yang bergerak di laman pelanggan' },
-  explore:    { title:'Terokai Pilihan', sub:'Kad pilihan dalam seksyen Terokai Pilihan Kami' },
-  akaun:      { title:'Akaun Saya',      sub:'Tukar nama paparan dan kata laluan' },
-};
-
 let _activeSettingsTab = 'flow';
-function goSettings(tab){
-  _activeSettingsTab = tab;
-  _settingsOpen = true;
-  const meta = SETTINGS_META[tab] || {};
-  goView('settings');
+
+function goSettingsGroup(groupId){
+  _activeSettingsGroup = groupId;
+  const group = SETTINGS_GROUPS.find(g => g.id === groupId);
+  if(!group) return;
   const titleEl = document.getElementById('settings-page-title');
   const subEl   = document.getElementById('settings-page-sub');
-  if(titleEl) titleEl.textContent = meta.title || 'Tetapan';
-  if(subEl)   subEl.textContent   = meta.sub   || '';
-  goSettingsTab(tab);
+  if(titleEl) titleEl.textContent = group.label;
+  if(subEl)   subEl.textContent   = '';
+  const allTabs = ['flow','packages','payment','medialinks','announce','explore','akaun'];
+  allTabs.forEach(t => {
+    const el = document.getElementById('settings-'+t);
+    if(el) el.style.display = group.tabs.includes(t) ? 'block' : 'none';
+  });
+  if(group.tabs.includes('payment'))    loadHitPayConfig();
+  if(group.tabs.includes('medialinks')) loadMediaLinks();
+  if(group.tabs.includes('announce'))   loadAnnouncements();
+  if(group.tabs.includes('explore'))    loadExplore();
+  if(group.tabs.includes('akaun'))      loadAkaun();
+  goView('settings');
+}
+
+function goSettings(tab){
+  _activeSettingsTab = tab;
+  const group = SETTINGS_GROUPS.find(g => g.tabs.includes(tab));
+  if(group) goSettingsGroup(group.id);
 }
 
 function goView(id){
