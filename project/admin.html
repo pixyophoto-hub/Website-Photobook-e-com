@@ -1706,7 +1706,7 @@ function renderPackages(){
     const dis = editing ? '' : 'disabled';
     const dragAttrs = !editing ? `draggable="true" ondragstart="pkgDragStart(event,${i})" ondragend="pkgDragEnd(event)" ondragover="pkgDragOver(event,${i})" ondragleave="pkgDragLeave(event)" ondrop="pkgDrop(event,${i})"` : '';
     return `
-    <div class="card" style="padding:22px;" ${dragAttrs}>
+    <div class="card" style="padding:22px;background:rgba(201,138,134,0.08);" ${dragAttrs}>
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:12px;">
         <div style="display:flex;align-items:center;flex:1;gap:0;min-width:0;">
           ${!editing ? `<span class="drag-handle" title="Seret untuk susun semula"><i class="ph ph-dots-six-vertical"></i></span>` : ''}
