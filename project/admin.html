@@ -274,25 +274,44 @@ tbody tr{border-top:1px solid #f0e8df;}
         </div><!-- /settings-kandungan-wrap -->
 
         <!-- PANEL: Akaun -->
-        <div id="settings-akaun" style="display:none;max-width:480px;">
-          <div style="font-size:13px;font-weight:700;color:#2d2520;margin-bottom:18px;">Maklumat Akaun</div>
-          <div style="margin-bottom:14px;">
-            <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Nama Paparan</div>
-            <input id="akaun-name" class="inp" style="width:100%;" placeholder="Nama anda">
+        <div id="settings-akaun" style="display:none;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;max-width:760px;">
+
+            <!-- Profil -->
+            <div class="card" style="padding:18px 20px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+                <i class="ph ph-user-circle" style="color:#a86d69;font-size:16px;"></i>
+                <div style="font-size:13px;font-weight:700;color:#2d2520;">Profil</div>
+              </div>
+              <div style="margin-bottom:12px;">
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Nama Paparan</label>
+                <input id="akaun-name" class="inp" style="width:100%;box-sizing:border-box;" placeholder="Nama anda">
+              </div>
+              <div style="margin-bottom:16px;">
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Email</label>
+                <input id="akaun-email" class="inp" style="width:100%;box-sizing:border-box;background:#f5f0eb;color:#9a8d80;" readonly>
+              </div>
+              <button class="btn-primary" style="width:100%;font-size:13px;padding:9px;border-radius:8px;" onclick="saveAkaun()"><i class="ph ph-floppy-disk"></i> Simpan Profil</button>
+            </div>
+
+            <!-- Keselamatan -->
+            <div class="card" style="padding:18px 20px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+                <i class="ph ph-lock-key" style="color:#a86d69;font-size:16px;"></i>
+                <div style="font-size:13px;font-weight:700;color:#2d2520;">Kata Laluan</div>
+              </div>
+              <div style="margin-bottom:12px;">
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Kata Laluan Baru <span style="font-weight:400;color:#9a8d80;">— kosong jika tidak tukar</span></label>
+                <input id="akaun-pass" class="inp" type="password" style="width:100%;box-sizing:border-box;" placeholder="••••••••">
+              </div>
+              <div style="margin-bottom:16px;">
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Sahkan Kata Laluan</label>
+                <input id="akaun-pass2" class="inp" type="password" style="width:100%;box-sizing:border-box;" placeholder="••••••••">
+              </div>
+              <button class="btn-primary" style="width:100%;font-size:13px;padding:9px;border-radius:8px;" onclick="saveAkaun()"><i class="ph ph-floppy-disk"></i> Simpan Kata Laluan</button>
+            </div>
+
           </div>
-          <div style="margin-bottom:14px;">
-            <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Email</div>
-            <input id="akaun-email" class="inp" style="width:100%;background:#f5f0eb;color:#9a8d80;" readonly>
-          </div>
-          <div style="margin-bottom:6px;">
-            <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Kata Laluan Baru <span style="font-weight:400;color:#9a8d80;">— kosongkan jika tidak tukar</span></div>
-            <input id="akaun-pass" class="inp" type="password" style="width:100%;" placeholder="••••••••">
-          </div>
-          <div style="margin-bottom:20px;">
-            <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Sahkan Kata Laluan Baru</div>
-            <input id="akaun-pass2" class="inp" type="password" style="width:100%;" placeholder="••••••••">
-          </div>
-          <button class="btn-primary" style="padding:11px 24px;font-size:13px;border-radius:8px;" onclick="saveAkaun()"><i class="ph ph-floppy-disk"></i> Simpan Perubahan</button>
         </div>
 
 
@@ -434,11 +453,17 @@ tbody tr{border-top:1px solid #f0e8df;}
 
         <!-- PANEL: Flow Kerja -->
         <div id="settings-flow">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;max-width:820px;gap:16px;">
-            <div style="font-size:13px;color:#8a7e72;">Ubah 4 video proses yang dipaparkan di laman pelanggan</div>
-            <button class="btn-primary" style="display:flex;align-items:center;gap:8px;font-size:13px;padding:10px 18px;border-radius:8px;flex:none;white-space:nowrap;" onclick="saveFlow()"><i class="ph ph-floppy-disk"></i> Simpan Semua</button>
+          <div class="card" style="padding:18px 20px;max-width:760px;margin-top:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <i class="ph ph-film-strip" style="color:#a86d69;font-size:16px;"></i>
+                <div style="font-size:13px;font-weight:700;color:#2d2520;">Video Flow Kerja</div>
+              </div>
+              <button class="btn-primary" style="display:flex;align-items:center;gap:6px;font-size:12px;padding:7px 14px;border-radius:8px;flex:none;" onclick="saveFlow()"><i class="ph ph-floppy-disk"></i> Simpan</button>
+            </div>
+            <div style="font-size:12px;color:#8a7e72;margin-bottom:16px;">4 video langkah yang dipaparkan di laman pelanggan.</div>
+            <div style="display:flex;flex-direction:column;gap:10px;" id="flow-settings"></div>
           </div>
-          <div style="display:flex;flex-direction:column;gap:14px;max-width:820px;" id="flow-settings"></div>
         </div>
       </div>
 
