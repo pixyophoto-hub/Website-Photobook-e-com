@@ -1338,9 +1338,11 @@ function showExploreModal(editIdx){
   document.getElementById('ex-icon').value = e.icon || 'ph ph-book-bookmark';
   // populate category dropdown from existing packages
   const cats = [...new Set(PACKAGES.map(p=>p.category||'').filter(Boolean))];
+  // Kekalkan nilai sedia ada walaupun gabungan (cth "HARDCOVER,SOFTCOVER") supaya tak terpadam
+  if(e.cat && !cats.includes(e.cat)) cats.unshift(e.cat);
   const catSel = document.getElementById('ex-cat');
   catSel.innerHTML = '<option value="">— Tiada (pergi ke semua pakej) —</option>' +
-    cats.map(c=>`<option value="${c}"${(e.cat||'')==c?' selected':''}>${c}</option>`).join('');
+    cats.map(c=>`<option value="${c}"${(e.cat||'')==c?' selected':''}>${c.replace(/,/g,' + ')}</option>`).join('');
   catSel.value = e.cat || '';
   const imgVal = e.img || '';
   document.getElementById('ex-img').value = imgVal;
