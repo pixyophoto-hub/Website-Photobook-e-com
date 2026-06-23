@@ -1606,10 +1606,13 @@ function selectPay(id) {
   renderCheckout();
 }
 
+// Pastikan pautan luar ada protokol (https://) supaya tak dianggap pautan dalaman
+function _normLink(u){ u=(u||'').trim(); if(u && !/^https?:\/\//i.test(u) && !/^mailto:/i.test(u)) u='https://'+u; return u; }
+function _normLinks(o, keys){ keys.forEach(k=>{ if(o[k]) o[k]=_normLink(o[k]); }); return o; }
 let _mediaLinks = { whatsapp:'', telegram:'', gdrive:'' };
-fetch('/api/media-links').then(r=>r.json()).then(d=>{ _mediaLinks = d; }).catch(()=>{});
-let _contactLinks = { whatsapp:'', telegram:'' };
-fetch('/api/contact-links').then(r=>r.json()).then(d=>{ _contactLinks = d; }).catch(()=>{});
+fetch('/api/media-links').then(r=>r.json()).then(d=>{ _mediaLinks = _normLinks(d, ['whatsapp','telegram','gdrive','instagram']); }).catch(()=>{});
+let _contactLinks = { whatsapp:'', email:'' };
+fetch('/api/contact-links').then(r=>r.json()).then(d=>{ _contactLinks = _normLinks(d, ['whatsapp']); }).catch(()=>{});
 
 function onMediumChange(value) {
   const sel = document.getElementById('medium-select');
