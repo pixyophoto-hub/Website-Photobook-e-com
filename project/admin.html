@@ -1356,8 +1356,7 @@ function uploadExImg(input){
   const file = input.files[0]; if(!file) return;
   const status = document.getElementById('ex-img-status');
   status.textContent = 'Memuat naik…';
-  const fd = new FormData(); fd.append('file', file);
-  fetch('/api/upload',{ method:'POST', headers: authHeaders(), body: fd })
+  fetch('/api/upload',{ method:'POST', headers: {...authHeaders(), 'X-Filename': file.name}, body: file })
     .then(r=>r.json())
     .then(res=>{
       if(res.url){
@@ -1366,7 +1365,7 @@ function uploadExImg(input){
         thumb.src = res.url;
         document.getElementById('ex-img-preview').style.display = 'block';
         status.textContent = '';
-      } else { status.textContent = 'Gagal muat naik'; }
+      } else { status.textContent = res.error || 'Gagal muat naik'; }
     })
     .catch(()=>{ status.textContent = 'Gagal muat naik'; });
   input.value = '';
