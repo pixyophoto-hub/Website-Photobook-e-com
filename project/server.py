@@ -60,7 +60,8 @@ def get_hitpay_cfg():
 BASE = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE = os.path.join(BASE, "data.json")
 UPLOAD_DIR = os.path.join(BASE, "uploads")
-ALLOWED_EXT = {".mp4", ".mov", ".webm", ".m4v", ".avi", ".mkv"}
+ALLOWED_EXT = {".mp4", ".mov", ".webm", ".m4v", ".avi", ".mkv",
+               ".jpg", ".jpeg", ".png", ".webp", ".gif"}
 MAX_UPLOAD = 200 * 1024 * 1024  # 200 MB
 PORT = 3000
 
