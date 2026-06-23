@@ -130,8 +130,8 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
   .explore-grid{grid-template-columns:1fr;gap:22px;}
   #section-terokai{padding:36px 18px;}
   .explore-arrow{display:none;}
-  .explore-track{scroll-snap-type:x mandatory;gap:14px;}
-  .explore-card{flex:0 0 100%;width:100%;scroll-snap-align:center;}
+  .explore-track{overflow-x:hidden;gap:14px;}
+  .explore-card{flex:0 0 100%;width:100%;}
   .explore-thumb{height:300px;}
 }
 .foot-link{cursor:pointer;color:#cdbfb2;transition:color .15s;}
@@ -960,14 +960,34 @@ function renderExplore(){
 function loadExplore(){
   fetch('/api/explore').then(r=>r.json()).then(list=>{ if(Array.isArray(list)) EXPLORE = list; renderExplore(); }).catch(()=>renderExplore());
 }
+let _exploreIndex = 0;
 function exploreScroll(d){
   const t = document.getElementById('explore-track');
-  if(!t) return;
-  const maxScroll = t.scrollWidth - t.clientWidth;
-  if(d > 0 && t.scrollLeft >= maxScroll - 4) { t.scrollTo({left:0, behavior:'smooth'}); }
-  else t.scrollBy({ left: d * 260, behavior:'smooth' });
+  if(!t || !t.children.length) return;
+  const n = t.children.length;
+  // satu langkah = satu kad (dengan wrap-around)
+  _exploreIndex = (_exploreIndex + d + n) % n;
+  const card = t.children[_exploreIndex];
+  t.scrollTo({ left: card.offsetLeft - t.offsetLeft, behavior:'smooth' });
+}
+function _initExploreSwipe(){
+  const t = document.getElementById('explore-track');
+  if(!t || t._swipeBound) return;
+  t._swipeBound = true;
+  let startX = 0, startY = 0, active = false;
+  t.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY; active = true;
+  }, { passive:true });
+  t.addEventListener('touchend', e => {
+    if(!active) return; active = false;
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    // hanya layan jika swipe mendatar & cukup jauh
+    if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) exploreScroll(dx < 0 ? 1 : -1);
+  }, { passive:true });
 }
 loadExplore();
+_initExploreSwipe();
 // load packages awal supaya catalog sedia bila user klik Terokai
 loadPackages().then(()=>{ loadCategories(); loadPostageCfg(); if(_isCatalogActive()) renderCatalog(_activeCatalogCat); });
 function heroCheckStatus(){
