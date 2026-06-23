@@ -840,8 +840,8 @@ function _catalogCard(p){
   return `
   <div style="background:#fffdfa;border:1px solid #ede4d8;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;">
     ${(p.imgs && p.imgs.length)
-      ? `<div style="position:relative;aspect-ratio:1/1;">
-           <div class="pcard-slider" style="display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;">
+      ? `<div style="position:relative;aspect-ratio:1/1;overflow:hidden;">
+           <div class="pcard-slider" style="position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;">
              ${p.imgs.map(u=>`<img src="${esc(u)}" style="flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start;">`).join('')}
            </div>
            ${p.imgs.length > 1 ? `
