@@ -946,14 +946,6 @@ function exploreScroll(d){
   if(d > 0 && t.scrollLeft >= maxScroll - 4) { t.scrollTo({left:0, behavior:'smooth'}); }
   else t.scrollBy({ left: d * 260, behavior:'smooth' });
 }
-let _exploreAutoTimer = setInterval(()=>exploreScroll(1), 3000);
-document.addEventListener('DOMContentLoaded',()=>{
-  const t = document.getElementById('explore-track');
-  if(t){
-    t.addEventListener('mouseenter',()=>clearInterval(_exploreAutoTimer));
-    t.addEventListener('mouseleave',()=>{ _exploreAutoTimer = setInterval(()=>exploreScroll(1), 3000); });
-  }
-});
 loadExplore();
 // load packages awal supaya catalog sedia bila user klik Terokai
 loadPackages().then(()=>{ loadCategories(); loadPostageCfg(); if(_isCatalogActive()) renderCatalog(_activeCatalogCat); });
