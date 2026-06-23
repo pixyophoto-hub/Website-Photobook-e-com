@@ -1900,17 +1900,18 @@ function renderPackages(){
       </div>
       ${editing?`
       <div style="margin-bottom:12px;">
-        <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Gambar Produk</div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          ${p.img ? `<img src="${esc(p.img)}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #ddd;" id="pkg-img-preview-${i}">` : `<div id="pkg-img-preview-${i}" style="width:64px;height:64px;border-radius:8px;background:#f0e7dc;display:flex;align-items:center;justify-content:center;color:#c2ad9b;font-size:22px;"><i class="ph ph-image"></i></div>`}
-          <div>
-            <label class="btn-ghost" style="cursor:pointer;font-size:12px;padding:7px 14px;">
-              <i class="ph ph-upload-simple"></i> ${p.img ? 'Tukar Gambar' : 'Muat Naik Gambar'}
+        <div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Gambar Produk <span style="color:#9a8d80;font-weight:500;">(maks 5 — pelanggan boleh slide)</span></div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          ${(p.imgs||[]).map((u,idx)=>`
+            <div style="position:relative;width:64px;height:64px;">
+              <img src="${esc(u)}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #ddd;">
+              <button onclick="removePkgImg(${i},${idx})" title="Buang" style="position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;border:none;background:#c0392b;color:#fff;font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
+            </div>`).join('')}
+          ${(p.imgs||[]).length < 5 ? `
+            <label class="btn-ghost" style="cursor:pointer;font-size:12px;padding:0;width:64px;height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:1px dashed #cdbfae;border-radius:8px;color:#a08878;">
+              <i class="ph ph-plus" style="font-size:16px;"></i><span style="font-size:10px;">Tambah</span>
               <input type="file" accept="image/*" style="display:none;" onchange="uploadPkgImg(${i}, this)">
-            </label>
-            ${p.img ? `<button class="btn-ghost" style="font-size:12px;padding:7px 10px;margin-left:4px;" onclick="clearPkgImg(${i})"><i class="ph ph-trash"></i></button>` : ''}
-            <input type="hidden" id="pkg-img-${i}" value="${esc(p.img||'')}">
-          </div>
+            </label>` : ''}
         </div>
       </div>
       <div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:600;color:#6f6358;margin-bottom:6px;">Kategori <span style="color:#9a8d80;font-weight:500;">(pelanggan nampak harga disusun ikut kategori)</span></div><input type="text" id="pkg-cat-${i}" list="cat-suggestions" value="${esc(p.category||'')}" class="inp" style="width:100%;font-size:13px;color:#2d2520;" placeholder="cth: Digital, Cetak & Album"></div>
@@ -1946,7 +1947,9 @@ function uploadPkgImg(i, input){
     try {
       const res = JSON.parse(xhr.responseText);
       if(res.ok){
-        PACKAGES[i].img = res.url;
+        if(!Array.isArray(PACKAGES[i].imgs)) PACKAGES[i].imgs = [];
+        if(PACKAGES[i].imgs.length >= 5){ showToast('Maksimum 5 gambar.'); return; }
+        PACKAGES[i].imgs.push(res.url);
         renderPackages();
         showToast('Gambar dimuat naik — tekan Simpan untuk terbitkan');
       } else showToast(res.error||'Gagal muat naik');
@@ -1954,8 +1957,8 @@ function uploadPkgImg(i, input){
   };
   xhr.send(file);
 }
-function clearPkgImg(i){
-  PACKAGES[i].img = '';
+function removePkgImg(i, idx){
+  if(Array.isArray(PACKAGES[i].imgs)) PACKAGES[i].imgs.splice(idx, 1);
   renderPackages();
 }
 function editPackage(i){
@@ -1997,7 +2000,8 @@ function persistPackages(msg){
 }
 
 function savePackage(i){
-  PACKAGES[i].img    = document.getElementById('pkg-img-'+i)?.value || '';
+  if(!Array.isArray(PACKAGES[i].imgs)) PACKAGES[i].imgs = PACKAGES[i].img ? [PACKAGES[i].img] : [];
+  PACKAGES[i].img    = PACKAGES[i].imgs[0] || '';   // keserasian dengan paparan lama
   PACKAGES[i].name   = document.getElementById('pkg-name-'+i).value.trim() || 'Pakej Baharu';
   PACKAGES[i].desc   = document.getElementById('pkg-desc-'+i).value.trim();
   PACKAGES[i].category = document.getElementById('pkg-cat-'+i).value.trim();

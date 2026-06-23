@@ -120,6 +120,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 .explore-grid{display:grid;grid-template-columns:300px 1fr;gap:32px;align-items:center;}
 .explore-track{display:flex;gap:18px;overflow-x:auto;scroll-behavior:smooth;padding:4px;scrollbar-width:none;-ms-overflow-style:none;}
 .explore-track::-webkit-scrollbar{display:none;}
+.pcard-slider::-webkit-scrollbar{display:none;}
 .explore-card{flex:0 0 240px;width:240px;}
 .explore-thumb{height:230px;border-radius:14px;background:repeating-linear-gradient(45deg,#f0e7dc,#f0e7dc 11px,#eadfd1 11px,#eadfd1 22px);display:flex;align-items:center;justify-content:center;color:#c2ad9b;font-size:40px;overflow:hidden;}
 .explore-thumb img{width:100%;height:100%;object-fit:cover;}
@@ -813,6 +814,10 @@ function goToCatalog(cat, label, desc){
   goPage('catalog');
 }
 
+function pcardSlide(btn, dir){
+  const slider = btn.parentElement.querySelector('.pcard-slider');
+  if(slider) slider.scrollBy({ left: dir * slider.clientWidth, behavior:'smooth' });
+}
 function _catalogCard(p){
   const q = state.cart[p.id]||0;
   const ctrl = q > 0
@@ -824,8 +829,17 @@ function _catalogCard(p){
     : `<button class="btn-primary" style="width:100%;border-radius:100px;padding:12px;margin-top:14px;font-size:14px;" onclick="addToCart('${p.id}')">+ Tambah</button>`;
   return `
   <div style="background:#fffdfa;border:1px solid #ede4d8;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;">
-    ${p.img
-      ? `<div style="height:110px;overflow:hidden;"><img src="${esc(p.img)}" style="width:100%;height:110px;object-fit:cover;"></div>`
+    ${(p.imgs && p.imgs.length)
+      ? `<div style="position:relative;height:110px;">
+           <div class="pcard-slider" style="display:flex;height:110px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;">
+             ${p.imgs.map(u=>`<img src="${esc(u)}" style="flex:0 0 100%;width:100%;height:110px;object-fit:cover;scroll-snap-align:start;">`).join('')}
+           </div>
+           ${p.imgs.length > 1 ? `
+             <button onclick="pcardSlide(this,-1)" style="position:absolute;left:6px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);color:#473f38;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 1px 4px rgba(0,0,0,.15);"><i class="ph-bold ph-caret-left"></i></button>
+             <button onclick="pcardSlide(this,1)" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);color:#473f38;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 1px 4px rgba(0,0,0,.15);"><i class="ph-bold ph-caret-right"></i></button>
+             <div style="position:absolute;bottom:6px;left:0;right:0;display:flex;justify-content:center;gap:4px;">${p.imgs.map(()=>`<span style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.9);box-shadow:0 0 2px rgba(0,0,0,.3);"></span>`).join('')}</div>
+           ` : ''}
+         </div>`
       : `<div style="height:110px;background:linear-gradient(135deg,#e8ddd4 0%,#d6c9bc 50%,#c9b8a8 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
            <i class="ph ph-books" style="font-size:30px;color:#a08878;"></i>
            <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:#a08878;text-transform:uppercase;">${esc(p.category||'Produk')}</span>
@@ -1014,6 +1028,7 @@ function loadPackages(){
         material: p.material || '',
         size: p.size || '',
         img: p.img || '',
+        imgs: Array.isArray(p.imgs) ? p.imgs.filter(Boolean) : (p.img ? [p.img] : []),
         weight: parseFloat(p.weight) || 0,
       }));
       if(PKG.length && !PKG.find(p=>p.id===state.selPkg)) state.selPkg = PKG[0].id;

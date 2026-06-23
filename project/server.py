@@ -221,6 +221,11 @@ def load_data():
             if key not in p:
                 p[key] = val
                 changed = True
+        # Migrasi: tukar 'img' tunggal -> 'imgs' (senarai, maks 5)
+        if "imgs" not in p:
+            old = p.get("img", "")
+            p["imgs"] = [old] if old else []
+            changed = True
     # Migrasi: pastikan categoryOrder selari dengan kategori dalam pakej
     cats_in_pkgs = []
     for p in data.get("packages", []):
