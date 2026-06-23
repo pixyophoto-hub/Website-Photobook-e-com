@@ -359,6 +359,28 @@ tbody tr{border-top:1px solid #f0e8df;}
             </div>
 
           </div>
+
+          <!-- Pautan Hubungi Kami (berasingan dari Cara Hantar Gambar) -->
+          <div class="card" style="padding:18px 20px;max-width:760px;margin-top:20px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <i class="ph ph-address-book" style="color:#a86d69;font-size:16px;"></i>
+              <div style="font-size:13px;font-weight:700;color:#2d2520;">Pautan "Hubungi Kami"</div>
+            </div>
+            <div style="font-size:12px;color:#8a7e72;margin-bottom:16px;">Pautan di halaman <b>Hubungi Kami</b>. Berasingan dari pautan "Cara Hantar Gambar".</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">WhatsApp</label>
+                <input id="cl-whatsapp" type="url" placeholder="cth: https://wasap.my/60123456789" class="inp" style="width:100%;box-sizing:border-box;">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Telegram</label>
+                <input id="cl-telegram" type="url" placeholder="cth: https://t.me/pixyoprint" class="inp" style="width:100%;box-sizing:border-box;">
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+              <button class="btn-primary" style="font-size:13px;padding:9px 18px;border-radius:8px;" onclick="saveContactLinks()"><i class="ph ph-floppy-disk"></i> Simpan Pautan</button>
+            </div>
+          </div>
         </div>
 
 
@@ -1555,7 +1577,7 @@ function goSettingsGroup(groupId){
   if(group.tabs.includes('medialinks')) loadMediaLinks();
   if(group.tabs.includes('announce'))   loadAnnouncements();
   if(group.tabs.includes('explore'))  { loadExplore(); loadVAFaq(); }
-  if(group.tabs.includes('akaun'))      loadAkaun();
+  if(group.tabs.includes('akaun'))    { loadAkaun(); loadContactLinks(); }
   goView('settings');
 }
 
@@ -2372,6 +2394,25 @@ function saveMediaLinks(){
     if(res.ok) showToast('Link cara hantar gambar disimpan ✓');
     else showToast('Gagal simpan: ' + (res.error || ''));
   });
+}
+
+// ── Contact Links (Hubungi Kami) ──────────────────────────
+function loadContactLinks(){
+  fetch('/api/contact-links', { headers: authHeaders() })
+    .then(r => r.json())
+    .then(d => {
+      document.getElementById('cl-whatsapp').value = d.whatsapp || '';
+      document.getElementById('cl-telegram').value = d.telegram || '';
+    }).catch(()=>{});
+}
+function saveContactLinks(){
+  const body = {
+    whatsapp: document.getElementById('cl-whatsapp').value.trim(),
+    telegram: document.getElementById('cl-telegram').value.trim(),
+  };
+  fetch('/api/contact-links', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body: JSON.stringify(body) })
+    .then(r=>r.json()).then(res=>showToast(res.ok ? 'Pautan Hubungi Kami disimpan ✓' : 'Gagal simpan'))
+    .catch(()=>showToast('Gagal sambung ke server'));
 }
 
 // ── Postage Settings ───────────────────────────────────────

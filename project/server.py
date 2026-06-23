@@ -133,6 +133,10 @@ DEFAULT_DATA = {
         "telegram": "",
         "gdrive":   "",
     },
+    "contact_links": {
+        "whatsapp": "",
+        "telegram": "",
+    },
     "vouchers": [],
     "users": [
         {"email": os.environ.get("ADMIN_EMAIL", "admin@pixyoprint.com"),
@@ -262,6 +266,9 @@ def load_data():
         changed = True
     if "media_links" not in data:
         data["media_links"] = DEFAULT_DATA["media_links"].copy()
+        changed = True
+    if "contact_links" not in data:
+        data["contact_links"] = DEFAULT_DATA["contact_links"].copy()
         changed = True
     if "hitpay" not in data:
         data["hitpay"] = DEFAULT_DATA["hitpay"].copy()
@@ -426,6 +433,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(load_data().get("postage", {"base":8,"threshold":1.5,"per_kg":2,"east":{"base":15,"threshold":1.0,"per_kg":10}}))
         if self.path == "/api/media-links":
             return self._json(load_data().get("media_links", {}))
+        if self.path == "/api/contact-links":
+            return self._json(load_data().get("contact_links", {}))
         if self.path == "/api/hitpay-config":
             if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
@@ -761,6 +770,17 @@ class Handler(SimpleHTTPRequestHandler):
             for k in ("whatsapp", "telegram", "gdrive"):
                 if k in b: ml[k] = b[k]
             d["media_links"] = ml
+            save_data(d)
+            return self._json({"ok": True})
+        if self.path == "/api/contact-links":
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            b = self._read_body()
+            d = load_data()
+            cl = d.get("contact_links", {})
+            for k in ("whatsapp", "telegram"):
+                if k in b: cl[k] = b[k]
+            d["contact_links"] = cl
             save_data(d)
             return self._json({"ok": True})
         if self.path == "/api/hitpay-config":
