@@ -1447,17 +1447,17 @@ function renderCheckout() {
     lines.innerHTML = items.map(({pkg,qty}) => `
       <div class="cart-line">
         <div class="cart-thumb"></div>
-        <div style="flex:1;">
+        <div style="flex:1;min-width:0;">
           <div style="font-size:14px;font-weight:600;color:#473f38;">${pkg.name}</div>
           <div style="font-size:12px;color:#9a8d80;margin-top:2px;">${pkg.pages ? String(pkg.pages).replace(/\D/g,'')+ ' muka surat' : ''}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="display:flex;align-items:center;border:1.5px solid #e3d8cb;border-radius:100px;overflow:hidden;">
-            <button onclick="removeFromCart('${pkg.id}')" style="width:30px;height:30px;border:none;background:#fff0ee;color:#c98a86;font-size:17px;font-weight:700;cursor:pointer;line-height:1;">−</button>
-            <span style="min-width:24px;text-align:center;font-size:13px;font-weight:700;color:#473f38;">${qty}</span>
-            <button onclick="addToCart('${pkg.id}')" style="width:30px;height:30px;border:none;background:#c98a86;color:#fff;font-size:17px;font-weight:700;cursor:pointer;line-height:1;">+</button>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;">
+            <div style="display:flex;align-items:center;border:1.5px solid #e3d8cb;border-radius:100px;overflow:hidden;flex:none;">
+              <button onclick="removeFromCart('${pkg.id}')" style="width:30px;height:30px;border:none;background:#fff0ee;color:#c98a86;font-size:17px;font-weight:700;cursor:pointer;line-height:1;">−</button>
+              <span style="min-width:24px;text-align:center;font-size:13px;font-weight:700;color:#473f38;">${qty}</span>
+              <button onclick="addToCart('${pkg.id}')" style="width:30px;height:30px;border:none;background:#c98a86;color:#fff;font-size:17px;font-weight:700;cursor:pointer;line-height:1;">+</button>
+            </div>
+            <div style="font-size:15px;font-weight:700;color:#473f38;white-space:nowrap;">${money(pkg.price*qty)}</div>
           </div>
-          <div style="font-size:14px;font-weight:700;color:#473f38;min-width:72px;text-align:right;">${money(pkg.price*qty)}</div>
         </div>
       </div>
     `).join('');
