@@ -175,6 +175,7 @@ tbody tr{border-top:1px solid #f0e8df;}
               <option>Hantar Gambar</option><option>Order</option><option>Editing</option><option>Reviewing</option><option>Amend</option><option>Printing</option><option>Delivery</option><option>Siap</option>
             </select>
             <input type="text" id="order-search" placeholder="Cari nama / #order…" class="inp" style="width:200px;" oninput="renderOrders()">
+            <button class="btn-primary" style="font-size:13px;padding:9px 16px;border-radius:8px;white-space:nowrap;" onclick="exportOrdersCsv()"><i class="ph ph-download-simple"></i> Muat Turun CSV</button>
           </div>
         </div>
         <div class="card" style="overflow:hidden;">
@@ -859,6 +860,51 @@ function loadOrders(){
       renderRevenue();
     })
     .catch(() => { renderOrders(); renderOverview(); renderRevenue(); });
+}
+
+// Muat turun semua order sebagai CSV (untuk simpanan/backup manual sebelum auto-padam)
+function exportOrdersCsv(){
+  if(!ORDERS.length){ showToast('Tiada order untuk dimuat turun.'); return; }
+  const headers = ['No. Order','Tarikh','Nama','Email','Telefon','Cara Hantar','Pakej','Subtotal (RM)','Diskaun (RM)','Baucar','Jumlah (RM)','Status','Editor','Consent Pemasaran','Versi Consent','Tarikh Consent'];
+  const esc = v => {
+    const s = (v === null || v === undefined) ? '' : String(v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+  };
+  const rows = ORDERS.map(o => {
+    const r = o._raw || {};
+    const c = r.consent || {};
+    return [
+      r.reference || o.id,
+      r.created_at || '',
+      r.name || '',
+      r.email || '',
+      r.phone || '',
+      r.medium || '',
+      (r.items||[]).map(i => `${i.name} x${i.qty}`).join(' | '),
+      parseFloat(r.subtotal||0).toFixed(2),
+      parseFloat(r.discount||0).toFixed(2),
+      r.voucher || '',
+      parseFloat(r.total||0).toFixed(2),
+      r.status || '',
+      r.editor || '',
+      c.marketing ? 'Ya' : 'Tidak',
+      c.version || '',
+      c.at || '',
+    ].map(esc).join(',');
+  });
+  // BOM supaya Excel kenal UTF-8 (aksara Melayu betul)
+  const csv = '﻿' + headers.map(esc).join(',') + '\n' + rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `pixyoprint-orders-${stamp}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('CSV dimuat turun (' + ORDERS.length + ' order).');
 }
 
 let EDITORS = [];
