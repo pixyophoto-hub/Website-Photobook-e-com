@@ -70,7 +70,7 @@ Kepada: Jabatan Perlindungan Data Peribadi
 PERKARA: Notifikasi Pelanggaran Data Peribadi
 
 Nama organisasi : PixyoPrint
-Pegawai dihubungi: [Nama] — photobookpixyo@gmail.com
+Pegawai dihubungi: Mohd Naim Bin Rosni — photobookpixyo@gmail.com
 
 1. Tarikh & masa pelanggaran dikesan: [____]
 2. Penerangan pelanggaran: [apa yang berlaku & bagaimana]
@@ -108,7 +108,7 @@ hubungi kami di photobookpixyo@gmail.com.
 ---
 
 ## Kenalan penting
-- **Pegawai Privasi PixyoPrint:** [Nama anda] — photobookpixyo@gmail.com
+- **Pegawai Privasi PixyoPrint:** Mohd Naim Bin Rosni — photobookpixyo@gmail.com
 - **Jabatan Perlindungan Data Peribadi (JPDP):** 03-8911 7000 · aduan@pdp.gov.my · www.pdp.gov.my
 - **Penyedia hosting:** [isi nama & kontak sokongan]
 - **HitPay (pembayaran):** support@hit-pay.com
