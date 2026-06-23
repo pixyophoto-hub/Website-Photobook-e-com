@@ -1723,7 +1723,7 @@ function drawFlow(flow){
            <div class="vid-play" style="z-index:2;"><i class="ph-fill ph-play"></i></div>
          </div>`
       : `<div class="vid-placeholder"><span class="vid-badge">${esc(f.n)}</span><div class="vid-play"><i class="ph-fill ph-play"></i></div></div>`;
-    return `<div>${media}<div style="font-size:13px;font-weight:600;color:#6f6358;margin-top:10px;line-height:1.4;">${esc(f.cap)}</div></div>`;
+    return `<div><div style="font-size:13px;font-weight:600;color:#6f6358;margin-bottom:10px;line-height:1.4;">${esc(f.cap)}</div>${media}</div>`;
   }).join('');
 }
 function playFlowVid(box){
