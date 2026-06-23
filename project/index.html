@@ -772,7 +772,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
     <div>
       <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#7a6a5e;margin-bottom:16px;">Servis</div>
       <div style="display:flex;flex-direction:column;gap:11px;font-size:14px;">
-        <span class="foot-link" onclick="goPage('servis');setTimeout(()=>document.getElementById('pkg-section').scrollIntoView({behavior:'smooth'}),50)">Lihat Pakej</span>
+        <span class="foot-link" onclick="goPage('servis');setTimeout(()=>{const el=document.getElementById('section-terokai');const nav=document.querySelector('.nav');if(el)window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-(nav?nav.offsetHeight:60),behavior:'smooth'});},80)">Lihat Pakej</span>
         <span class="foot-link" onclick="goPage('servis');setTimeout(()=>document.getElementById('flow-grid').scrollIntoView({behavior:'smooth'}),50)">Flow Kerja</span>
         <span class="foot-link" onclick="goPage('upload')">Hantar Gambar</span>
       </div>
