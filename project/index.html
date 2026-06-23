@@ -426,7 +426,8 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
           <div style="font-size:15px;font-weight:700;color:#3a4f35;">Bayaran berjaya! Terima kasih.</div>
           <div id="success-sub" style="font-size:13px;color:#6f8466;margin-top:2px;">Designer anda akan mula bekerja selepas gambar diterima.</div>
         </div>
-        <button onclick="resetCheckout()" style="margin-left:auto;flex:none;border:1px solid #9aae90;background:transparent;color:#6f8466;font-family:inherit;font-size:12px;font-weight:600;padding:8px 14px;border-radius:6px;cursor:pointer;" onmouseover="this.style.background='#c8d8bc'" onmouseout="this.style.background='transparent'"><i class="ph ph-arrow-left"></i> Kembali</button>
+        <button onclick="sendReceiptWhatsApp()" style="margin-left:auto;flex:none;border:none;background:#25D366;color:#fff;font-family:inherit;font-size:12px;font-weight:600;padding:9px 16px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px;"><i class="ph-fill ph-whatsapp-logo" style="font-size:15px;"></i> Hantar Resit ke WhatsApp</button>
+        <button onclick="resetCheckout()" style="flex:none;border:1px solid #9aae90;background:transparent;color:#6f8466;font-family:inherit;font-size:12px;font-weight:600;padding:8px 14px;border-radius:6px;cursor:pointer;" onmouseover="this.style.background='#c8d8bc'" onmouseout="this.style.background='transparent'"><i class="ph ph-arrow-left"></i> Kembali</button>
       </div>
       <!-- Post-checkout upload options -->
       <div style="display:flex;align-items:stretch;justify-content:space-between;gap:24px;padding:32px 32px 8px;" class="mobile-stack">
@@ -1723,6 +1724,11 @@ function doPay() {
     if(res.ok && res.url) {
       sessionStorage.setItem('pixyo_ref', res.reference);
       sessionStorage.setItem('pixyo_medium', medium);
+      // Simpan butiran untuk resit WhatsApp (cart akan dikosongkan selepas bayar)
+      sessionStorage.setItem('pixyo_receipt', JSON.stringify({
+        items: items.map(({pkg, qty}) => ({ name: pkg.name, qty, price: pkg.price })),
+        total: total
+      }));
       window.location.href = res.url;
     } else {
       showToast('Gagal: ' + (res.error || 'Cuba semula'));
@@ -1741,6 +1747,21 @@ function resetCheckout() {
   document.getElementById('checkout-success').style.display = 'none';
   document.getElementById('checkout-form').style.display = 'block';
   goPage('servis');
+}
+
+// Resit ke WhatsApp (mesej siap-isi ke nombor perniagaan)
+let _receiptData = null;
+function _waNumber(url){ const m = String(url||'').match(/(\d{8,15})/); return m ? m[1] : ''; }
+function sendReceiptWhatsApp(){
+  const d = _receiptData || {};
+  const num = _waNumber((window._mediaLinks && _mediaLinks.whatsapp) || (window._contactLinks && _contactLinks.whatsapp) || '');
+  if(!num){ showToast('⚠ Nombor WhatsApp belum ditetapkan dalam tetapan admin.'); return; }
+  const lines = ['Resit PixyoPrint'];
+  if(d.ref) lines.push('Order #' + d.ref);
+  (d.items || []).forEach(it => lines.push('Pakej: ' + it.name + ' x' + it.qty));
+  if(d.medium) lines.push('Cara hantar gambar: ' + d.medium);
+  if(typeof d.total === 'number') lines.push('Jumlah: ' + money(d.total));
+  window.open('https://wa.me/' + num + '?text=' + encodeURIComponent(lines.join('\n')), '_blank', 'noopener');
 }
 
 // ============================================================
@@ -1942,8 +1963,11 @@ function submitLogin(ev){
         parts.push('Designer anda akan mula bekerja selepas gambar diterima.');
         sub.textContent = parts.join(' · ');
       }
+      // Simpan data untuk butang "Hantar Resit ke WhatsApp"
+      try { _receiptData = { ref, medium, ...JSON.parse(sessionStorage.getItem('pixyo_receipt') || '{}') }; } catch(e){ _receiptData = { ref, medium }; }
       sessionStorage.removeItem('pixyo_ref');
       sessionStorage.removeItem('pixyo_medium');
+      sessionStorage.removeItem('pixyo_receipt');
     } else {
       // Bayaran gagal/dibatalkan
       showToast('Bayaran tidak berjaya atau dibatalkan. Cuba semula.');
