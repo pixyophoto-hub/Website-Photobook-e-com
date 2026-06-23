@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: pixyoprint
+    runtime: python
+    plan: starter            # ~$7/bulan (kekal hidup). Tukar ke 'free' untuk uji.
+    buildCommand: pip install -r requirements.txt
+    startCommand: python project/server.py
+    disk:
+      name: pixyo-data       # storan kekal — data.json & gambar upload tak hilang
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DATA_DIR
+        value: /var/data
+      - key: PYTHON_VERSION
+        value: "3.12.4"
+      - key: ADMIN_EMAIL
+        value: admin@pixyoprint.com
+      - key: ADMIN_PASSWORD
+        sync: false          # Render minta nilai ini semasa setup (rahsia)
+      - key: HITPAY_API_KEY
+        sync: false
+      - key: HITPAY_SALT
+        sync: false
+      - key: HITPAY_SANDBOX
+        value: "true"

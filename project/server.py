@@ -58,12 +58,15 @@ def get_hitpay_cfg():
     }
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-DATA_FILE = os.path.join(BASE, "data.json")
-UPLOAD_DIR = os.path.join(BASE, "uploads")
+# DATA_DIR = lokasi storan kekal (persistent disk di Render). Default = folder app (lokal).
+DATA_DIR = os.environ.get("DATA_DIR", BASE)
+os.makedirs(DATA_DIR, exist_ok=True)
+DATA_FILE = os.path.join(DATA_DIR, "data.json")
+UPLOAD_DIR = os.path.join(DATA_DIR, "uploads")
 ALLOWED_EXT = {".mp4", ".mov", ".webm", ".m4v", ".avi", ".mkv",
                ".jpg", ".jpeg", ".png", ".webp", ".gif"}
 MAX_UPLOAD = 200 * 1024 * 1024  # 200 MB
-PORT = 3000
+PORT = int(os.environ.get("PORT", 3000))
 
 PKG_NOTE_DEFAULT = "disusun manual, 2x semakan percuma, siap dalam 7 hari bekerja"
 PKG_FIELD_DEFAULTS = {
@@ -150,19 +153,35 @@ DEFAULT_DATA = {
         {"n": "04", "cap": "Semak & terima album",  "url": ""},
     ],
     "packages": [
-        {"name": "Design Sahaja",  "desc": "Susun layout digital sahaja",
-         "category": "Digital", "note": PKG_NOTE_DEFAULT,
-         "material": "Art Matte", "size": "12\"x12\"",
-         "price": "280", "strike": "320", "pages": "40 muka surat", "orders": 12},
-        {"name": "Design + Cetak", "desc": "Layout + album bercetak 12\"x12\"",
-         "category": "Cetak & Album", "note": PKG_NOTE_DEFAULT,
-         "material": "Art Matte", "size": "12\"x12\"",
-         "price": "680", "strike": "780", "pages": "40 muka surat", "orders": 18},
-        {"name": "Pakej Penuh",    "desc": "Design + Cetak + Penghantaran",
-         "category": "Cetak & Album", "note": PKG_NOTE_DEFAULT,
-         "material": "Art Matte", "size": "12\"x12\"",
-         "price": "880", "strike": "990", "pages": "40 muka surat", "orders": 8},
+        {"name": "PHOTOBOOK HARDCOVER 6x6", "category": "HARDCOVER", "material": "Lustre Paper",
+         "size": "6\"×6\"", "price": "68", "pages": "40", "weight": 0.5,
+         "desc": "Susun layout digital sahaja. Gambar Max 100 pcs. Editor susunkan, 1× semakan PERCUMA. Siap dalam 30 hari bekerja."},
+        {"name": "PHOTOBOOK HARDCOVER 6x8", "category": "HARDCOVER", "material": "Lustre Paper",
+         "size": "6\"×8\"", "price": "78", "pages": "40", "weight": 0.5,
+         "desc": "Susun layout digital sahaja. Gambar Max 150 pcs. Editor susunkan, 1× semakan PERCUMA. Siap dalam 30 hari bekerja."},
+        {"name": "PHOTOBOOK HARDCOVER 8x8", "category": "HARDCOVER", "material": "Lustre Paper",
+         "size": "8\"×8\"", "price": "115", "pages": "40", "weight": 0.5,
+         "desc": "Susun layout digital sahaja. Gambar Max 150 pcs. Editor susunkan, 1× semakan PERCUMA. Siap dalam 30 hari bekerja."},
+        {"name": "PHOTOBOOK HARDCOVER 11x8.5", "category": "HARDCOVER", "material": "Lustre Paper",
+         "size": "11\"×8.5\"", "price": "135", "pages": "40", "weight": 0.5,
+         "desc": "Susun layout digital sahaja. Gambar Max 250 pcs. Editor susunkan, 1× semakan PERCUMA. Siap dalam 30 hari bekerja."},
+        {"name": "PHOTOBOOK SOFTCOVER 6X6", "category": "SOFTCOVER", "material": "Lustre Paper",
+         "size": "6\"×6\"", "price": "65", "pages": "40", "weight": 0.5,
+         "desc": "Susun layout digital sahaja. Gambar Max 100 pcs. Editor susunkan, 1× semakan PERCUMA. Siap dalam 30 hari bekerja."},
+        {"name": "PHOTOBOOK SOFTCOVER 6X8", "category": "SOFTCOVER", "material": "Lustre Paper",
+         "size": "6\"×8\"", "price": "70", "pages": "40", "weight": 0.5,
+         "desc": "Susun layout digital sahaja. Gambar Max 150 pcs. Editor susunkan, 1× semakan PERCUMA. Siap dalam 30 hari bekerja."},
+        {"name": "PHOTOBOOK SOFTCOVER 8X8", "category": "SOFTCOVER", "material": "Lustre Paper",
+         "size": "8\"×8\"", "price": "80", "pages": "40", "weight": 0.5,
+         "desc": "Susun layout digital sahaja. Gambar Max 150 pcs. Editor susunkan, 1× semakan PERCUMA. Siap dalam 30 hari bekerja."},
+        {"name": "PHOTOBOOK SOFTCOVER 11X8.5", "category": "SOFTCOVER", "material": "Lustre Paper",
+         "size": "11\"×8.5\"", "price": "100", "pages": "40", "weight": 0.5,
+         "desc": "Susun layout digital sahaja. Gambar Max 250 pcs. Editor susunkan, 1× semakan PERCUMA. Siap dalam 30 hari bekerja."},
+        {"name": "CRYSTAL ALBUM 12x8", "category": "CRYSTAL ALBUM", "material": "Glossy",
+         "size": "12\"×8\"", "price": "240", "pages": "20", "weight": 2.3,
+         "desc": "Susun layout digital sahaja. Gambar Max 100 pcs. Editor susunkan, 1× semakan PERCUMA. Siap dalam 30 hari bekerja."},
     ],
+    "categoryOrder": ["HARDCOVER", "SOFTCOVER", "CRYSTAL ALBUM"],
 }
 
 # token -> nama pengguna (sesi dalam ingatan; hilang bila server restart)
@@ -406,8 +425,31 @@ class Handler(SimpleHTTPRequestHandler):
         u = self._user()
         return u if (u and u.get("role") == "admin") else None
 
+    def _serve_upload(self, name):
+        """Hidangkan fail dari UPLOAD_DIR dengan selamat (cegah path traversal)."""
+        import mimetypes
+        safe = os.path.basename(name)  # buang sebarang path
+        path = os.path.join(UPLOAD_DIR, safe)
+        if not os.path.abspath(path).startswith(os.path.abspath(UPLOAD_DIR)) or not os.path.isfile(path):
+            return self._json({"error": "not found"}, 404)
+        ctype = mimetypes.guess_type(path)[0] or "application/octet-stream"
+        try:
+            with open(path, "rb") as f:
+                data = f.read()
+        except OSError:
+            return self._json({"error": "not found"}, 404)
+        self.send_response(200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header("Cache-Control", "public, max-age=86400")
+        self.end_headers()
+        self.wfile.write(data)
+
     # --- routes ----------------------------------------------------
     def do_GET(self):
+        # Hidangkan fail upload dari persistent disk (UPLOAD_DIR mungkin di luar BASE)
+        if self.path.startswith("/uploads/"):
+            return self._serve_upload(self.path[len("/uploads/"):].split("?")[0])
         if self.path == "/api/flow":
             return self._json(load_data().get("flow", []))
         if self.path == "/api/packages":

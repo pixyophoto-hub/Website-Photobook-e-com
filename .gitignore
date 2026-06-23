@@ -1,0 +1,11 @@
+# Data & fail pelanggan (JANGAN commit — ada maklumat peribadi)
+project/data.json
+project/data.json.tmp
+project/uploads/
+
+# Python
+__pycache__/
+*.pyc
+
+# Tooling tempatan
+.claude/
