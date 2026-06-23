@@ -147,7 +147,10 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
   .mobile-stack{flex-direction:column!important;}
   .mobile-full{width:100%!important;}
   .checkout-layout{flex-direction:column!important;}
-  .summary-panel{width:100%!important;}
+  .summary-panel{width:100%!important;padding:22px 16px!important;position:static!important;max-height:none!important;}
+  .checkout-left{padding:22px 16px!important;border-right:none!important;}
+  .cart-line{gap:10px;}
+  .cart-thumb{width:46px;height:46px;}
 }
 
 /* Proof preview */
@@ -474,7 +477,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 
       <div style="display:flex;gap:0;align-items:flex-start;" class="checkout-layout">
         <!-- left -->
-        <div style="flex:1;padding:30px 32px;border-right:1px solid #efe6da;">
+        <div class="checkout-left" style="flex:1;padding:30px 32px;border-right:1px solid #efe6da;">
 
           <!-- Cart items -->
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
