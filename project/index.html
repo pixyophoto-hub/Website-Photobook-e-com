@@ -656,6 +656,42 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
   </div>
 </div>
 
+<!-- PERMINTAAN DATA PERIBADI (PDPA s.30/s.34/s.10/s.38) -->
+<div class="page" id="page-datarequest" style="padding:40px 32px 80px;">
+  <div class="card" style="max-width:600px;margin:0 auto;padding:40px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:500;margin-bottom:8px;">Permintaan Data Peribadi</div>
+    <div style="font-size:14px;color:#8a7e72;margin-bottom:8px;line-height:1.6;">Anda berhak mengakses, membetulkan atau memadam data peribadi anda, serta menarik balik kebenaran — di bawah Akta Perlindungan Data Peribadi 2010.</div>
+    <div style="font-size:12px;color:#a08878;margin-bottom:24px;">Kami akan membalas dalam tempoh <b>21 hari</b>.</div>
+
+    <div id="dr-form" style="display:flex;flex-direction:column;gap:14px;">
+      <div>
+        <label style="font-size:12px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Jenis permintaan</label>
+        <select id="dr-type" class="inp" style="width:100%;box-sizing:border-box;font-size:13px;">
+          <option value="akses">Akses data saya</option>
+          <option value="betulkan">Betulkan data saya</option>
+          <option value="padam">Padam data saya</option>
+          <option value="tarik_kebenaran">Tarik balik kebenaran</option>
+          <option value="unsubscribe">Berhenti langgan pemasaran</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <input type="text" id="dr-name" placeholder="Nama penuh" class="inp" style="font-size:13px;padding:10px 12px;">
+        <input type="text" id="dr-order" placeholder="No. Order (jika ada)" class="inp" style="font-size:13px;padding:10px 12px;">
+        <input type="email" id="dr-email" placeholder="Email" class="inp" style="font-size:13px;padding:10px 12px;">
+        <input type="tel" id="dr-phone" placeholder="No. Telefon" class="inp" style="font-size:13px;padding:10px 12px;">
+      </div>
+      <textarea id="dr-message" placeholder="Maklumat tambahan (pilihan)" class="inp" rows="3" style="width:100%;resize:none;font-size:13px;padding:10px 12px;font-family:inherit;line-height:1.5;box-sizing:border-box;"></textarea>
+      <button class="btn-primary" style="width:100%;font-size:15px;padding:14px;" onclick="submitDataRequest()" id="dr-submit">Hantar Permintaan</button>
+    </div>
+
+    <div id="dr-success" style="display:none;text-align:center;padding:24px 0;">
+      <div style="font-size:42px;color:#6f8466;margin-bottom:8px;"><i class="ph-bold ph-check-circle"></i></div>
+      <div style="font-size:16px;font-weight:700;color:#473f38;margin-bottom:6px;">Permintaan diterima</div>
+      <div style="font-size:13px;color:#8a7e72;line-height:1.6;">Terima kasih. Kami akan menghubungi anda dalam tempoh 21 hari.</div>
+    </div>
+  </div>
+</div>
+
 <!-- FOOTER -->
 <footer style="background:#2d2520;color:#cdbfb2;padding:56px 32px 28px;">
   <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:32px;" class="mobile-grid">
@@ -692,6 +728,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
       <div style="display:flex;flex-direction:column;gap:11px;font-size:14px;">
         <span class="foot-link" onclick="goPage('status')">Semak Status Order</span>
         <span class="foot-link" onclick="goPage('upload')">Hantar Gambar</span>
+        <span class="foot-link" onclick="goPage('datarequest')">Permintaan Data Peribadi</span>
         <span class="foot-link" onclick="openLogin()">Log Masuk Admin</span>
       </div>
     </div>
@@ -1005,7 +1042,7 @@ function showToast(msg) {
 // ============================================================
 // NAVIGATION
 // ============================================================
-const pages = ['servis','upload','catalog','checkout','status','hubungi','privasi'];
+const pages = ['servis','upload','catalog','checkout','status','hubungi','privasi','datarequest'];
 
 function goPage(id) {
   pages.forEach(p => {
@@ -1021,6 +1058,45 @@ function goPage(id) {
   if(id === 'checkout') renderCheckout();
   if(id === 'status') renderStatus();
   if(id === 'privasi') renderPrivasi();
+  if(id === 'datarequest') resetDataRequest();
+}
+
+function resetDataRequest(){
+  const f = document.getElementById('dr-form');
+  const s = document.getElementById('dr-success');
+  if(f) f.style.display = 'flex';
+  if(s) s.style.display = 'none';
+  ['dr-name','dr-order','dr-email','dr-phone','dr-message'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+}
+
+function submitDataRequest(){
+  const name  = document.getElementById('dr-name').value.trim();
+  const email = document.getElementById('dr-email').value.trim();
+  const phone = document.getElementById('dr-phone').value.trim();
+  if(!name || (!email && !phone)){ showToast('⚠ Sila isi nama dan email/telefon.'); return; }
+  const btn = document.getElementById('dr-submit');
+  btn.disabled = true; btn.textContent = 'Menghantar...';
+  fetch('/api/data-request', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type:      document.getElementById('dr-type').value,
+      name, email, phone,
+      order_ref: document.getElementById('dr-order').value.trim(),
+      message:   document.getElementById('dr-message').value.trim(),
+    })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if(res.ok){
+      document.getElementById('dr-form').style.display = 'none';
+      document.getElementById('dr-success').style.display = 'block';
+    } else {
+      showToast('Gagal: ' + (res.error || 'Cuba semula'));
+      btn.disabled = false; btn.textContent = 'Hantar Permintaan';
+    }
+  })
+  .catch(() => { showToast('Gagal sambung ke server.'); btn.disabled = false; btn.textContent = 'Hantar Permintaan'; });
 }
 
 // ============================================================
@@ -1086,6 +1162,7 @@ const _PRIVASI_BM = `
   <li>Halang pemprosesan yang menyebabkan kerugian/kesusahan</li>
 </ul>
 <p style="margin-top:8px;">Kami akan membalas permohonan akses dalam tempoh <b>21 hari</b>.</p>
+<p style="margin-top:12px;"><span onclick="goPage('datarequest')" style="display:inline-block;background:#a86d69;color:#fff;font-weight:600;font-size:13px;padding:9px 18px;border-radius:8px;cursor:pointer;">Buat permintaan data &rarr;</span></p>
 
 <h3 style="font-size:15px;font-weight:700;color:#473f38;margin:24px 0 8px;">7. Hubungi kami (Pegawai Privasi)</h3>
 <p>Untuk sebarang pertanyaan privasi atau untuk melaksanakan hak anda, hubungi:</p>
@@ -1137,6 +1214,7 @@ const _PRIVASI_EN = `
   <li>Prevent processing causing damage/distress</li>
 </ul>
 <p style="margin-top:8px;">We will respond to access requests within <b>21 days</b>.</p>
+<p style="margin-top:12px;"><span onclick="goPage('datarequest')" style="display:inline-block;background:#a86d69;color:#fff;font-weight:600;font-size:13px;padding:9px 18px;border-radius:8px;cursor:pointer;">Make a data request &rarr;</span></p>
 
 <h3 style="font-size:15px;font-weight:700;color:#473f38;margin:24px 0 8px;">7. Contact us (Privacy Officer)</h3>
 <p>For any privacy enquiry or to exercise your rights, contact:</p>

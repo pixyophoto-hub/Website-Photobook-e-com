@@ -188,6 +188,22 @@ tbody tr{border-top:1px solid #f0e8df;}
         </div>
       </div>
 
+      <!-- ============ PERMINTAAN DATA (PDPA) ============ -->
+      <div class="view" id="view-datareq">
+        <div style="margin-bottom:22px;">
+          <div class="h-title">Permintaan Data Peribadi</div>
+          <div style="font-size:13px;color:#8a7e72;margin-top:2px;">Permintaan akses / pembetulan / pemadaman daripada pelanggan (PDPA). Balas dalam <b>21 hari</b>.</div>
+        </div>
+        <div class="card" style="overflow:hidden;">
+          <table>
+            <thead><tr>
+              <th>Tarikh</th><th>Jenis</th><th>Pelanggan</th><th>Hubungi</th><th>No. Order</th><th>Mesej</th><th>Status</th><th></th>
+            </tr></thead>
+            <tbody id="datareq-rows"></tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- ============ REVENUE ============ -->
       <div class="view" id="view-revenue">
         <div class="h-title" style="margin-bottom:6px;">Laporan Pendapatan</div>
@@ -811,6 +827,7 @@ tbody tr{border-top:1px solid #f0e8df;}
 const NAV = [
   { id:'overview', label:'Overview',      icon:'ph ph-squares-four',  badge:false },
   { id:'orders',   label:'Senarai Order', icon:'ph ph-list-checks',   badge:false },
+  { id:'datareq',  label:'Permintaan Data', icon:'ph ph-shield-check', badge:false },
   { id:'revenue',  label:'Pendapatan',    icon:'ph ph-chart-bar',     badge:false },
   { id:'editors',  label:'Urus Editor',   icon:'ph ph-users-three',   badge:false },
   { id:'reviews',  label:'Ulasan',        icon:'ph ph-star',          badge:false },
@@ -823,7 +840,7 @@ const SETTINGS_GROUPS = [
 ];
 let _settingsOpen = true;
 let _activeSettingsGroup = null;
-const LABELS = { overview:'Overview', orders:'Senarai Order', revenue:'Pendapatan', editors:'Urus Editor', reviews:'Ulasan', settings:'Tetapan' };
+const LABELS = { overview:'Overview', orders:'Senarai Order', datareq:'Permintaan Data', revenue:'Pendapatan', editors:'Urus Editor', reviews:'Ulasan', settings:'Tetapan' };
 
 const STATUS = {
   'Hantar Gambar':{bg:'#fef3f2',color:'#c0392b'},
@@ -905,6 +922,49 @@ function exportOrdersCsv(){
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   showToast('CSV dimuat turun (' + ORDERS.length + ' order).');
+}
+
+// ── Permintaan Data Peribadi (PDPA) ───────────────────────
+let DATA_REQUESTS = [];
+const DR_TYPE_LABEL = {
+  akses:'Akses data', betulkan:'Betulkan data', padam:'Padam data',
+  tarik_kebenaran:'Tarik kebenaran', unsubscribe:'Berhenti pemasaran'
+};
+function loadDataRequests(){
+  fetch('/api/data-requests', { headers: authHeaders() })
+    .then(r => r.json())
+    .then(d => { if(d.ok){ DATA_REQUESTS = d.requests || []; } renderDataRequests(); })
+    .catch(() => renderDataRequests());
+}
+function renderDataRequests(){
+  const tb = document.getElementById('datareq-rows');
+  if(!tb) return;
+  if(!DATA_REQUESTS.length){
+    tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#9a8d80;padding:28px;">Tiada permintaan setakat ini.</td></tr>';
+    return;
+  }
+  tb.innerHTML = DATA_REQUESTS.map(r => {
+    const done = r.status === 'done';
+    return `<tr style="${done?'opacity:.55;':''}">
+      <td style="font-size:12px;color:#8a7e72;white-space:nowrap;">${esc(r.created_at||'—')}</td>
+      <td><span class="status-pill" style="background:#f0eafb;color:#7d3c98;">${esc(DR_TYPE_LABEL[r.type]||r.type)}</span></td>
+      <td style="font-weight:600;">${esc(r.name||'—')}</td>
+      <td style="font-size:12px;">${esc(r.email||'')}${r.email&&r.phone?'<br>':''}${esc(r.phone||'')}</td>
+      <td style="font-size:12px;color:#8a7e72;">${esc(r.order_ref||'—')}</td>
+      <td style="font-size:12px;max-width:220px;">${esc(r.message||'—')}</td>
+      <td>${done?'<span class="status-pill" style="background:#dde6d8;color:#4a5e3a;">Selesai</span>':'<span class="status-pill" style="background:#fef9ec;color:#b7860a;">Terbuka</span>'}</td>
+      <td>${done
+        ? `<button class="icon-btn" onclick="setDataRequestStatus('${r.id}','open')" title="Tanda terbuka semula"><i class="ph ph-arrow-counter-clockwise"></i></button>`
+        : `<button class="btn-primary" style="font-size:12px;padding:6px 12px;border-radius:6px;" onclick="setDataRequestStatus('${r.id}','done')">Tandai Selesai</button>`}</td>
+    </tr>`;
+  }).join('');
+}
+function setDataRequestStatus(id, status){
+  fetch('/api/data-requests/'+id, { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body: JSON.stringify({status}) })
+    .then(r=>r.json()).then(res=>{
+      if(res.ok){ const r = DATA_REQUESTS.find(x=>x.id===id); if(r) r.status = status; renderDataRequests(); }
+      else showToast('Gagal kemaskini.');
+    }).catch(()=>showToast('Gagal sambung ke server.'));
 }
 
 let EDITORS = [];
@@ -1455,6 +1515,7 @@ function goView(id){
   document.getElementById('view-'+id).classList.add('active');
   document.getElementById('view-label').textContent = LABELS[id];
   renderNav();
+  if(id === 'datareq') loadDataRequests();
   document.querySelector('.content').scrollTo(0,0);
 }
 

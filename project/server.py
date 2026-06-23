@@ -239,6 +239,9 @@ def load_data():
     if "orders" not in data:
         data["orders"] = []
         changed = True
+    if "data_requests" not in data:
+        data["data_requests"] = []
+        changed = True
     if "media_links" not in data:
         data["media_links"] = DEFAULT_DATA["media_links"].copy()
         changed = True
@@ -427,6 +430,11 @@ class Handler(SimpleHTTPRequestHandler):
                 orders = [o for o in orders
                           if o.get("editor") in (first, u["name"])]
             return self._json({"ok": True, "orders": list(reversed(orders))})
+        if self.path == "/api/data-requests":
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            reqs = load_data().get("data_requests", [])
+            return self._json({"ok": True, "requests": list(reversed(reqs))})
         if self.path == "/api/editors":
             if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
@@ -525,6 +533,34 @@ class Handler(SimpleHTTPRequestHandler):
                 out.write(self.rfile.read(length))
             return self._json({"ok": True, "url": "uploads/" + fname,
                                "name": raw_name})
+        if self.path == "/api/data-request":
+            # PDPA: permintaan subjek data (akses/betul/padam/tarik kebenaran/unsubscribe)
+            b = self._read_body()
+            VALID_TYPES = {"akses", "betulkan", "padam", "tarik_kebenaran", "unsubscribe"}
+            rtype = str(b.get("type", "")).strip()[:30]
+            if rtype not in VALID_TYPES:
+                return self._json({"ok": False, "error": "Jenis permintaan tidak sah"}, 400)
+            name  = str(b.get("name", "")).strip()[:120]
+            email = str(b.get("email", "")).strip()[:254]
+            phone = str(b.get("phone", "")).strip()[:30]
+            if not name or not (email or phone):
+                return self._json({"ok": False, "error": "Sila isi nama dan email/telefon"}, 400)
+            d = load_data()
+            d.setdefault("data_requests", []).append({
+                "id":         secrets.token_hex(6),
+                "type":       rtype,
+                "name":       name,
+                "email":      email,
+                "phone":      phone,
+                "order_ref":  str(b.get("order_ref", "")).strip()[:40],
+                "message":    str(b.get("message", "")).strip()[:1000],
+                "status":     "open",
+                "created_at": datetime.datetime.now().strftime("%d %b %Y, %H:%M"),
+                "created_ts": datetime.datetime.now().isoformat(timespec="seconds"),
+            })
+            save_data(d)
+            return self._json({"ok": True})
+
         if self.path == "/api/pay":
             b = self._read_body()
             name    = str(b.get("name", ""))[:120]
@@ -786,6 +822,18 @@ class Handler(SimpleHTTPRequestHandler):
                     else:
                         if "editor" in b: order["editor"] = b["editor"]
                         if "status" in b: order["status"] = b["status"]
+                    break
+            save_data(d)
+            return self._json({"ok": True})
+        if self.path.startswith("/api/data-requests/"):
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            rid = self.path[len("/api/data-requests/"):]
+            b = self._read_body()
+            d = load_data()
+            for r in d.get("data_requests", []):
+                if r.get("id") == rid:
+                    if "status" in b: r["status"] = str(b["status"])[:20]
                     break
             save_data(d)
             return self._json({"ok": True})
