@@ -275,6 +275,52 @@ def save_data(d):
     os.replace(tmp, DATA_FILE)
 
 
+# PDPA s.10 (Prinsip Penyimpanan): padam order melebihi tempoh simpan.
+RETENTION_DAYS = 730  # 2 tahun
+
+def _order_age_days(order):
+    """Pulangkan umur order dalam hari, atau None jika tarikh tak boleh dibaca."""
+    ts = order.get("created_ts")
+    dt = None
+    if ts:
+        try:
+            dt = datetime.datetime.fromisoformat(ts)
+        except (ValueError, TypeError):
+            dt = None
+    if dt is None:
+        # Fallback: parse created_at ("22 Jun 2026, 23:56") — singkatan bulan Inggeris
+        try:
+            dt = datetime.datetime.strptime(order.get("created_at", ""), "%d %b %Y, %H:%M")
+        except (ValueError, TypeError):
+            return None
+    return (datetime.datetime.now() - dt).days
+
+def purge_old_orders(d):
+    """Buang order yang melebihi RETENTION_DAYS. Pulangkan bilangan dipadam.
+    Order tanpa tarikh sah dikekalkan (selamat — tidak dipadam secara silap)."""
+    orders = d.get("orders", [])
+    kept = []
+    removed = 0
+    for o in orders:
+        age = _order_age_days(o)
+        if age is not None and age > RETENTION_DAYS:
+            removed += 1
+        else:
+            kept.append(o)
+    if removed:
+        d["orders"] = kept
+    return removed
+
+def run_retention_purge():
+    """Jalankan purge dan simpan jika ada perubahan. Pulangkan bilangan dipadam."""
+    d = load_data()
+    removed = purge_old_orders(d)
+    if removed:
+        save_data(d)
+        print(f"[Retention] {removed} order melebihi {RETENTION_DAYS} hari dipadam (PDPA s.10).")
+    return removed
+
+
 _SECURITY_HEADERS = [
     ("X-Content-Type-Options",  "nosniff"),
     ("X-Frame-Options",         "DENY"),
@@ -556,6 +602,7 @@ class Handler(SimpleHTTPRequestHandler):
                 "phone":      phone,
                 "medium":     medium,
                 "created_at": datetime.datetime.now().strftime("%d %b %Y, %H:%M"),
+                "created_ts": datetime.datetime.now().isoformat(timespec="seconds"),
                 "items":      server_items,
                 # Rekod persetujuan PDPA (s.7/s.40 — bukti kebenaran)
                 "consent": {
@@ -769,5 +816,18 @@ if __name__ == "__main__":
         print("   atau kemaskini dalam data.json.")
     if not _d.get("hitpay", {}).get("api_key"):
         print("ℹ  HitPay belum dikonfigurasi — set via panel admin atau HITPAY_API_KEY env var.")
+
+    # PDPA s.10: padam order lama waktu mula, kemudian setiap 24 jam.
+    run_retention_purge()
+    import threading
+    def _retention_loop():
+        while True:
+            time.sleep(86400)  # 24 jam
+            try:
+                run_retention_purge()
+            except Exception as e:
+                print(f"[Retention] ralat: {e}")
+    threading.Thread(target=_retention_loop, daemon=True).start()
+
     print(f"PixyoPrint server di http://localhost:{PORT}")
     ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
