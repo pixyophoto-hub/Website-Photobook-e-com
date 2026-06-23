@@ -126,7 +126,14 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 .explore-thumb img{width:100%;height:100%;object-fit:cover;}
 .explore-arrow{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid #e3d8cb;background:#fffdfa;color:#a86d69;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
 .explore-arrow:hover{border-color:#c98a86;background:#fdf6f5;}
-@media(max-width:768px){.explore-grid{grid-template-columns:1fr;gap:22px;}}
+@media(max-width:768px){
+  .explore-grid{grid-template-columns:1fr;gap:22px;}
+  #section-terokai{padding:36px 18px;}
+  .explore-arrow{display:none;}
+  .explore-track{scroll-snap-type:x mandatory;gap:14px;}
+  .explore-card{flex:0 0 100%;width:100%;scroll-snap-align:center;}
+  .explore-thumb{height:300px;}
+}
 .foot-link{cursor:pointer;color:#cdbfb2;transition:color .15s;}
 .foot-link:hover{color:#f5ede4;}
 .ann-cta{color:#d99e97;cursor:pointer;font-weight:700;text-decoration:underline;text-underline-offset:2px;}
