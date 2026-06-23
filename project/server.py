@@ -135,7 +135,7 @@ DEFAULT_DATA = {
     },
     "contact_links": {
         "whatsapp": "",
-        "telegram": "",
+        "email": "",
     },
     "vouchers": [],
     "users": [
@@ -778,7 +778,7 @@ class Handler(SimpleHTTPRequestHandler):
             b = self._read_body()
             d = load_data()
             cl = d.get("contact_links", {})
-            for k in ("whatsapp", "telegram"):
+            for k in ("whatsapp", "email"):
                 if k in b: cl[k] = b[k]
             d["contact_links"] = cl
             save_data(d)

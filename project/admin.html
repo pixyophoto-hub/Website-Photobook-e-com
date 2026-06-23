@@ -373,8 +373,8 @@ tbody tr{border-top:1px solid #f0e8df;}
                 <input id="cl-whatsapp" type="url" placeholder="cth: https://wasap.my/60123456789" class="inp" style="width:100%;box-sizing:border-box;">
               </div>
               <div>
-                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Telegram</label>
-                <input id="cl-telegram" type="url" placeholder="cth: https://t.me/pixyoprint" class="inp" style="width:100%;box-sizing:border-box;">
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Email</label>
+                <input id="cl-email" type="email" placeholder="cth: photobookpixyo@gmail.com" class="inp" style="width:100%;box-sizing:border-box;">
               </div>
             </div>
             <div style="display:flex;justify-content:flex-end;">
@@ -2402,13 +2402,13 @@ function loadContactLinks(){
     .then(r => r.json())
     .then(d => {
       document.getElementById('cl-whatsapp').value = d.whatsapp || '';
-      document.getElementById('cl-telegram').value = d.telegram || '';
+      document.getElementById('cl-email').value = d.email || '';
     }).catch(()=>{});
 }
 function saveContactLinks(){
   const body = {
     whatsapp: document.getElementById('cl-whatsapp').value.trim(),
-    telegram: document.getElementById('cl-telegram').value.trim(),
+    email: document.getElementById('cl-email').value.trim(),
   };
   fetch('/api/contact-links', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body: JSON.stringify(body) })
     .then(r=>r.json()).then(res=>showToast(res.ok ? 'Pautan Hubungi Kami disimpan ✓' : 'Gagal simpan'))
