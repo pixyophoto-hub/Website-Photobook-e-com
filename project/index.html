@@ -24,6 +24,12 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 .nav-link.active{color:#a86d69;font-weight:600;}
 .nav-cart{display:flex;align-items:center;gap:7px;padding:8px 16px;border:1px solid #c98a86;background:#c98a86;color:#fff;border-radius:100px;font-weight:600;font-size:13px;white-space:nowrap;cursor:pointer;transition:background .15s;}
 .nav-cart:hover{background:#b9786f;border-color:#b9786f;}
+.nav-burger{display:none;background:none;border:none;font-size:25px;color:#473f38;cursor:pointer;padding:2px 4px;line-height:1;}
+#mobile-menu{display:none;position:absolute;top:100%;left:0;right:0;background:#fffdfa;border-bottom:1px solid #efe6da;box-shadow:0 10px 24px rgba(45,37,32,.10);flex-direction:column;z-index:99;}
+#mobile-menu .mm-link{padding:15px 24px;font-size:15px;color:#473f38;cursor:pointer;border-bottom:1px solid #f5efe6;display:flex;align-items:center;gap:8px;}
+#mobile-menu .mm-link:last-child{border-bottom:none;}
+#mobile-menu .mm-link.active{color:#a86d69;font-weight:600;}
+@media(min-width:769px){#mobile-menu{display:none!important;}}
 
 /* Pages */
 .page{display:none;min-height:calc(100vh - 61px);}
@@ -139,7 +145,8 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 .ann-cta{color:#d99e97;cursor:pointer;font-weight:700;text-decoration:underline;text-underline-offset:2px;}
 .ann-cta:hover{color:#f5ede4;}
 @media(max-width:768px){
-  .nav-links .nav-link:not(.nav-link-mobile){display:none;}
+  .nav-links .nav-link:not(.nav-link-mobile){display:none!important;}
+  .nav-burger{display:flex;align-items:center;}
   .nav{padding:14px 20px;}
   .page-inner{padding:20px 16px;}
   .hide-mobile{display:none!important;}
@@ -184,6 +191,15 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
     <button class="nav-cart" onclick="goPage('checkout')">
       <i class="ph ph-shopping-cart"></i> <span id="nav-cart-label">Troli · 0</span>
     </button>
+    <button class="nav-burger" onclick="toggleMobileMenu()" aria-label="Menu"><i class="ph ph-list" id="burger-icon"></i></button>
+  </div>
+  <!-- Menu mobile (dropdown) -->
+  <div id="mobile-menu">
+    <div class="mm-link active" id="mm-servis" onclick="mmGo('servis')">Servis</div>
+    <div class="mm-link" id="mm-upload" onclick="mmGo('upload')">Hantar Gambar</div>
+    <div class="mm-link" id="mm-status" onclick="mmGo('status')">Status Tempahan</div>
+    <div class="mm-link" id="mm-hubungi" onclick="mmGo('hubungi')">Hubungi</div>
+    <div class="mm-link" onclick="closeMobileMenu();openLogin()"><i class="ph ph-user-circle"></i> Log Masuk</div>
   </div>
 </nav>
 
@@ -1202,6 +1218,8 @@ function goPage(id) {
   document.getElementById('page-'+id).classList.add('active');
   const nl = document.getElementById('nl-'+id);
   if(nl) nl.classList.add('active');
+  // segerakkan keadaan aktif menu mobile
+  ['servis','upload','status','hubungi'].forEach(p=>{ const mm=document.getElementById('mm-'+p); if(mm) mm.classList.toggle('active', p===id); });
   window.scrollTo(0,0);
 
   if(id === 'checkout') renderCheckout();
@@ -1209,6 +1227,21 @@ function goPage(id) {
   if(id === 'privasi') renderPrivasi();
   if(id === 'datarequest') resetDataRequest();
 }
+
+function toggleMobileMenu(){
+  const m = document.getElementById('mobile-menu');
+  const open = m.style.display === 'flex';
+  m.style.display = open ? 'none' : 'flex';
+  const ic = document.getElementById('burger-icon');
+  if(ic) ic.className = open ? 'ph ph-list' : 'ph ph-x';
+}
+function closeMobileMenu(){
+  const m = document.getElementById('mobile-menu');
+  if(m) m.style.display = 'none';
+  const ic = document.getElementById('burger-icon');
+  if(ic) ic.className = 'ph ph-list';
+}
+function mmGo(id){ closeMobileMenu(); goPage(id); }
 
 function resetDataRequest(){
   const f = document.getElementById('dr-form');
