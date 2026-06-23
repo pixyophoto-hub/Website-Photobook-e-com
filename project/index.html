@@ -930,7 +930,7 @@ function renderExplore(){
   if(!EXPLORE.length){ const sec = t.closest('.card'); if(sec) sec.style.display='none'; return; }
   t.innerHTML = EXPLORE.map(e=>`
     <div class="explore-card">
-      <div class="explore-thumb">${exploreIcon(e)}</div>
+      <div class="explore-thumb" ${e.cat?`onclick="goToCatalog('${escA(e.cat)}','${escA(e.name)}','${escA(e.desc)}')" style="cursor:pointer;"`:''}>${exploreIcon(e)}</div>
       <div style="font-size:15px;font-weight:700;color:#2d2520;margin-top:14px;text-align:center;">${escA(e.name)}</div>
       <div style="font-size:12px;color:#9a8d80;text-align:center;margin-top:2px;">${escA(e.desc)}</div>
       <div style="text-align:center;margin-top:8px;"><span class="ann-cta" style="color:#a86d69;${e.cat?'':' opacity:0.45;cursor:default;'}" onclick="${e.cat?`goToCatalog('${escA(e.cat)}','${escA(e.name)}','${escA(e.desc)}')`:'void(0)'}">Terokai →</span></div>
