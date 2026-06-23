@@ -804,7 +804,72 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
   </div>
 </footer>
 
+<!-- ============ VIRTUAL ASSISTANT (FAQ + WhatsApp) ============ -->
+<div id="va-panel" style="display:none;position:fixed;bottom:92px;right:20px;width:330px;max-width:calc(100vw - 32px);max-height:70vh;background:#fffdfa;border:1px solid #ece2d6;border-radius:18px;box-shadow:0 12px 40px rgba(45,37,32,.22);z-index:600;overflow:hidden;flex-direction:column;">
+  <div style="background:#c98a86;color:#fff;padding:16px 18px;display:flex;align-items:center;gap:10px;">
+    <div style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:17px;"><i class="ph-fill ph-chat-circle-dots"></i></div>
+    <div style="flex:1;">
+      <div style="font-size:14px;font-weight:700;line-height:1.2;">Bantuan PixyoPrint</div>
+      <div style="font-size:11px;opacity:.85;">Biasanya balas dalam 1 jam</div>
+    </div>
+    <span onclick="toggleVA(false)" style="cursor:pointer;font-size:20px;line-height:1;opacity:.9;">&times;</span>
+  </div>
+  <div style="padding:14px 16px;overflow-y:auto;">
+    <div style="font-size:12px;color:#8a7e72;margin-bottom:10px;">Hai! 👋 Pilih soalan di bawah, atau chat terus dengan kami.</div>
+    <div id="va-faq"></div>
+  </div>
+  <div style="padding:12px 16px;border-top:1px solid #f0e7dc;">
+    <a href="#" onclick="vaWhatsApp();return false;" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;font-size:14px;font-weight:600;padding:11px;border-radius:10px;text-decoration:none;"><i class="ph-fill ph-whatsapp-logo" style="font-size:18px;"></i> Chat WhatsApp</a>
+  </div>
+</div>
+<button id="va-fab" onclick="toggleVA()" aria-label="Bantuan" style="position:fixed;bottom:20px;right:20px;width:58px;height:58px;border-radius:50%;border:none;background:#c98a86;color:#fff;font-size:26px;cursor:pointer;z-index:600;box-shadow:0 6px 20px rgba(201,138,134,.5);display:flex;align-items:center;justify-content:center;transition:transform .15s;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'">
+  <i id="va-fab-icon" class="ph-fill ph-chat-circle-dots"></i>
+</button>
+
 <script>
+// ============================================================
+// VIRTUAL ASSISTANT — FAQ ringkas + WhatsApp
+// ============================================================
+const VA_FAQ = [
+  { q: 'Berapa harga pakej?', a: 'Pakej Photobook bermula dari RM65. Tekan butang di bawah untuk lihat semua pakej & harga.', cta: { label: 'Lihat Pakej →', fn: "toggleVA(false);goPage('servis');setTimeout(()=>{const el=document.getElementById('section-terokai');if(el)el.scrollIntoView({behavior:'smooth'});},120)" } },
+  { q: 'Berapa lama siap?', a: 'Anggaran 30 hari bekerja selepas kami terima gambar lengkap anda.' },
+  { q: 'Macam mana nak hantar gambar?', a: 'Selepas pembayaran, anda boleh hantar gambar melalui WhatsApp, Telegram atau Google Drive — ikut pilihan semasa checkout.' },
+  { q: 'Berapa kali boleh semak/edit?', a: 'Setiap pakej termasuk 1× semakan PERCUMA sebelum cetakan/finalisasi.' },
+  { q: 'Cara pembayaran?', a: 'Pembayaran selamat melalui FPX, Kad Kredit/Debit & e-Wallet (dikuasakan oleh HitPay).' },
+  { q: 'Penghantaran ke mana?', a: 'Kami hantar ke seluruh Malaysia. Caj penghantaran dikira automatik ikut berat & zon (Semenanjung / Sabah & Sarawak) semasa checkout.' },
+];
+function renderVAFaq(){
+  document.getElementById('va-faq').innerHTML = VA_FAQ.map((f,i)=>`
+    <div style="border:1px solid #ece2d6;border-radius:10px;margin-bottom:8px;overflow:hidden;">
+      <div onclick="toggleVAItem(${i})" style="padding:10px 12px;font-size:13px;font-weight:600;color:#473f38;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <span>${f.q}</span><i class="ph ph-caret-down" id="va-caret-${i}" style="transition:transform .15s;color:#a08878;"></i>
+      </div>
+      <div id="va-ans-${i}" style="display:none;padding:0 12px 12px;font-size:12px;color:#6f6358;line-height:1.6;">
+        ${f.a}
+        ${f.cta ? `<div style="margin-top:8px;"><span onclick="${f.cta.fn}" style="color:#a86d69;font-weight:600;cursor:pointer;">${f.cta.label}</span></div>` : ''}
+      </div>
+    </div>`).join('');
+}
+function toggleVAItem(i){
+  const ans = document.getElementById('va-ans-'+i);
+  const caret = document.getElementById('va-caret-'+i);
+  const open = ans.style.display === 'block';
+  ans.style.display = open ? 'none' : 'block';
+  caret.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+function toggleVA(force){
+  const panel = document.getElementById('va-panel');
+  const icon = document.getElementById('va-fab-icon');
+  const show = (force === undefined) ? (panel.style.display === 'none') : force;
+  panel.style.display = show ? 'flex' : 'none';
+  icon.className = show ? 'ph-bold ph-x' : 'ph-fill ph-chat-circle-dots';
+  if(show && !document.getElementById('va-faq').innerHTML) renderVAFaq();
+}
+function vaWhatsApp(){
+  if(window._mediaLinks && _mediaLinks.whatsapp){ window.open(_mediaLinks.whatsapp,'_blank','noopener'); }
+  else { showToast('⚠ Link WhatsApp belum ditetapkan.'); }
+}
+
 // ============================================================
 // ANNOUNCEMENT BAR (slider berputar)
 // ============================================================
