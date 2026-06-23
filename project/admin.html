@@ -300,6 +300,24 @@ tbody tr{border-top:1px solid #f0e8df;}
             <div style="display:flex;flex-direction:column;gap:10px;" id="explore-list"></div>
           </div>
         </div><!-- /settings-explore -->
+
+        <!-- Bantuan / FAQ (Virtual Assistant) -->
+        <div id="settings-vafaq" style="grid-column:1/-1;">
+          <div class="card" style="padding:18px 20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <i class="ph ph-chat-circle-dots" style="color:#a86d69;font-size:16px;"></i>
+                <div style="font-size:13px;font-weight:700;color:#2d2520;">Bantuan / FAQ (Chat Assistant)</div>
+              </div>
+              <button class="btn-primary" style="display:flex;align-items:center;gap:6px;font-size:12px;padding:7px 12px;border-radius:8px;" onclick="addVAFaqItem()"><i class="ph ph-plus"></i> Tambah Soalan</button>
+            </div>
+            <div style="font-size:12px;color:#8a7e72;margin-bottom:14px;">Soalan & jawapan dalam bubble chat terapung di laman pelanggan. Susun ikut urutan paparan.</div>
+            <div style="display:flex;flex-direction:column;gap:12px;" id="vafaq-list"></div>
+            <div style="display:flex;justify-content:flex-end;margin-top:14px;">
+              <button class="btn-primary" style="font-size:13px;padding:9px 18px;border-radius:8px;" onclick="saveVAFaq()"><i class="ph ph-floppy-disk"></i> Simpan FAQ</button>
+            </div>
+          </div>
+        </div><!-- /settings-vafaq -->
         </div><!-- /settings-kandungan-wrap -->
 
         <!-- PANEL: Akaun -->
@@ -1246,6 +1264,43 @@ function removeAnnounce(i){
 // TEROKAI PILIHAN / EXPLORE
 // ============================================================
 let EXPLORE = [];
+// ── Bantuan / FAQ (Virtual Assistant) ─────────────────────
+let VA_FAQ = [];
+function loadVAFaq(){
+  fetch('/api/va-faq', { headers: authHeaders() })
+    .then(r => r.json())
+    .then(list => { VA_FAQ = Array.isArray(list) ? list : []; renderVAFaqAdmin(); })
+    .catch(() => renderVAFaqAdmin());
+}
+function renderVAFaqAdmin(){
+  const el = document.getElementById('vafaq-list');
+  if(!el) return;
+  if(!VA_FAQ.length){
+    el.innerHTML = '<div style="font-size:12px;color:#9a8d80;padding:10px 0;">Tiada soalan lagi. Tekan "Tambah Soalan".</div>';
+    return;
+  }
+  el.innerHTML = VA_FAQ.map((f,i)=>`
+    <div style="border:1px solid #ece2d6;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:11px;font-weight:700;color:#a08878;">#${i+1}</span>
+        <input type="text" value="${esc(f.q||'')}" oninput="VA_FAQ[${i}].q=this.value" placeholder="Soalan (cth: Berapa harga?)" class="inp" style="flex:1;font-size:13px;font-weight:600;">
+        <button class="icon-btn" onclick="moveVAFaq(${i},-1)" title="Naik" ${i===0?'disabled style="opacity:.3;"':''}><i class="ph ph-arrow-up"></i></button>
+        <button class="icon-btn" onclick="moveVAFaq(${i},1)" title="Turun" ${i===VA_FAQ.length-1?'disabled style="opacity:.3;"':''}><i class="ph ph-arrow-down"></i></button>
+        <button class="icon-btn" onclick="removeVAFaqItem(${i})" title="Buang"><i class="ph ph-trash" style="color:#c0392b;"></i></button>
+      </div>
+      <textarea oninput="VA_FAQ[${i}].a=this.value" placeholder="Jawapan" rows="2" class="inp" style="font-size:13px;resize:vertical;font-family:inherit;line-height:1.5;">${esc(f.a||'')}</textarea>
+    </div>`).join('');
+}
+function addVAFaqItem(){ VA_FAQ.push({ q:'', a:'' }); renderVAFaqAdmin(); }
+function removeVAFaqItem(i){ VA_FAQ.splice(i,1); renderVAFaqAdmin(); }
+function moveVAFaq(i,d){ const j=i+d; if(j<0||j>=VA_FAQ.length) return; const t=VA_FAQ[i]; VA_FAQ[i]=VA_FAQ[j]; VA_FAQ[j]=t; renderVAFaqAdmin(); }
+function saveVAFaq(){
+  const clean = VA_FAQ.map(f=>({ q:(f.q||'').trim(), a:(f.a||'').trim() })).filter(f=>f.q && f.a);
+  fetch('/api/va-faq', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body:JSON.stringify(clean) })
+    .then(r=>r.json()).then(res=>{ if(res.ok){ VA_FAQ=clean; renderVAFaqAdmin(); showToast('FAQ disimpan'); } else showToast('Gagal simpan'); })
+    .catch(()=>showToast('Gagal sambung ke server'));
+}
+
 let _exploreEditIdx = null;
 
 function loadExplore(){
@@ -1499,7 +1554,7 @@ function goSettingsGroup(groupId){
   if(group.tabs.includes('payment'))    { loadHitPayConfig(); loadPostage(); }
   if(group.tabs.includes('medialinks')) loadMediaLinks();
   if(group.tabs.includes('announce'))   loadAnnouncements();
-  if(group.tabs.includes('explore'))    loadExplore();
+  if(group.tabs.includes('explore'))  { loadExplore(); loadVAFaq(); }
   if(group.tabs.includes('akaun'))      loadAkaun();
   goView('settings');
 }

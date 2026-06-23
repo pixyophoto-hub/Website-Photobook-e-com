@@ -830,14 +830,11 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 // ============================================================
 // VIRTUAL ASSISTANT — FAQ ringkas + WhatsApp
 // ============================================================
-const VA_FAQ = [
-  { q: 'Berapa harga pakej?', a: 'Pakej Photobook bermula dari RM65. Tekan butang di bawah untuk lihat semua pakej & harga.', cta: { label: 'Lihat Pakej →', fn: "toggleVA(false);goPage('servis');setTimeout(()=>{const el=document.getElementById('section-terokai');if(el)el.scrollIntoView({behavior:'smooth'});},120)" } },
-  { q: 'Berapa lama siap?', a: 'Anggaran 30 hari bekerja selepas kami terima gambar lengkap anda.' },
-  { q: 'Macam mana nak hantar gambar?', a: 'Selepas pembayaran, anda boleh hantar gambar melalui WhatsApp, Telegram atau Google Drive — ikut pilihan semasa checkout.' },
-  { q: 'Berapa kali boleh semak/edit?', a: 'Setiap pakej termasuk 1× semakan PERCUMA sebelum cetakan/finalisasi.' },
-  { q: 'Cara pembayaran?', a: 'Pembayaran selamat melalui FPX, Kad Kredit/Debit & e-Wallet (dikuasakan oleh HitPay).' },
-  { q: 'Penghantaran ke mana?', a: 'Kami hantar ke seluruh Malaysia. Caj penghantaran dikira automatik ikut berat & zon (Semenanjung / Sabah & Sarawak) semasa checkout.' },
-];
+let VA_FAQ = [];
+function loadVAFaq(){
+  return fetch('/api/va-faq').then(r=>r.json()).then(list=>{ if(Array.isArray(list)) VA_FAQ = list; }).catch(()=>{});
+}
+loadVAFaq();
 function renderVAFaq(){
   document.getElementById('va-faq').innerHTML = VA_FAQ.map((f,i)=>`
     <div style="border:1px solid #ece2d6;border-radius:10px;margin-bottom:8px;overflow:hidden;">
@@ -863,7 +860,7 @@ function toggleVA(force){
   const show = (force === undefined) ? (panel.style.display === 'none') : force;
   panel.style.display = show ? 'flex' : 'none';
   icon.className = show ? 'ph-bold ph-x' : 'ph-fill ph-chat-circle-dots';
-  if(show && !document.getElementById('va-faq').innerHTML) renderVAFaq();
+  if(show) renderVAFaq();
 }
 function vaWhatsApp(){
   if(window._mediaLinks && _mediaLinks.whatsapp){ window.open(_mediaLinks.whatsapp,'_blank','noopener'); }

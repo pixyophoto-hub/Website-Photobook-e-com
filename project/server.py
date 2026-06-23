@@ -71,6 +71,15 @@ PKG_FIELD_DEFAULTS = {
     "material": "Art Matte", "size": "12\"x12\"", "pages": "40 muka surat",
 }
 
+DEFAULT_VA_FAQ = [
+    {"q": "Berapa harga pakej?", "a": "Pakej Photobook bermula dari RM65. Lihat seksyen Terokai di laman utama untuk semua pakej & harga."},
+    {"q": "Berapa lama siap?", "a": "Anggaran 30 hari bekerja selepas kami terima gambar lengkap anda."},
+    {"q": "Macam mana nak hantar gambar?", "a": "Selepas pembayaran, anda boleh hantar gambar melalui WhatsApp, Telegram atau Google Drive — ikut pilihan semasa checkout."},
+    {"q": "Berapa kali boleh semak/edit?", "a": "Setiap pakej termasuk 1× semakan PERCUMA sebelum cetakan/finalisasi."},
+    {"q": "Cara pembayaran?", "a": "Pembayaran selamat melalui FPX, Kad Kredit/Debit & e-Wallet (dikuasakan oleh HitPay)."},
+    {"q": "Penghantaran ke mana?", "a": "Kami hantar ke seluruh Malaysia. Caj penghantaran dikira automatik ikut berat & zon (Semenanjung / Sabah & Sarawak) semasa checkout."},
+]
+
 DEFAULT_REVIEWS = [
     {"name": "Aisyah & Haziq",     "pkg": "Album Warisan",  "date": "Jun 2026", "rating": 5,
      "quote": "Album kami sangat cantik & tersusun. Designer faham betul vibe yang kami nak. Semak 2 kali je terus sempurna!"},
@@ -248,6 +257,9 @@ def load_data():
     if "data_requests" not in data:
         data["data_requests"] = []
         changed = True
+    if "va_faq" not in data:
+        data["va_faq"] = json.loads(json.dumps(DEFAULT_VA_FAQ))
+        changed = True
     if "media_links" not in data:
         data["media_links"] = DEFAULT_DATA["media_links"].copy()
         changed = True
@@ -403,6 +415,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(load_data().get("announcements", []))
         if self.path == "/api/explore":
             return self._json(load_data().get("explore", []))
+        if self.path == "/api/va-faq":
+            return self._json(load_data().get("va_faq", []))
         if self.path == "/api/me":
             u = self._user()
             return self._json({"ok": bool(u),
@@ -846,7 +860,7 @@ class Handler(SimpleHTTPRequestHandler):
         key_map = {"/api/flow": "flow", "/api/packages": "packages",
                    "/api/categories": "categoryOrder", "/api/vouchers": "vouchers",
                    "/api/reviews": "reviews", "/api/announcements": "announcements",
-                   "/api/explore": "explore"}
+                   "/api/explore": "explore", "/api/va-faq": "va_faq"}
         if self.path in key_map:
             if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
