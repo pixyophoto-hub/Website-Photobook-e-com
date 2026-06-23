@@ -840,9 +840,9 @@ function _catalogCard(p){
   return `
   <div style="background:#fffdfa;border:1px solid #ede4d8;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;">
     ${(p.imgs && p.imgs.length)
-      ? `<div style="position:relative;height:110px;">
-           <div class="pcard-slider" style="display:flex;height:110px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;">
-             ${p.imgs.map(u=>`<img src="${esc(u)}" style="flex:0 0 100%;width:100%;height:110px;object-fit:cover;scroll-snap-align:start;">`).join('')}
+      ? `<div style="position:relative;aspect-ratio:1/1;">
+           <div class="pcard-slider" style="display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none;">
+             ${p.imgs.map(u=>`<img src="${esc(u)}" style="flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start;">`).join('')}
            </div>
            ${p.imgs.length > 1 ? `
              <button onclick="pcardSlide(this,-1)" style="position:absolute;left:6px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);color:#473f38;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 1px 4px rgba(0,0,0,.15);"><i class="ph-bold ph-caret-left"></i></button>
@@ -850,7 +850,7 @@ function _catalogCard(p){
              <div style="position:absolute;bottom:6px;left:0;right:0;display:flex;justify-content:center;gap:4px;">${p.imgs.map(()=>`<span style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.9);box-shadow:0 0 2px rgba(0,0,0,.3);"></span>`).join('')}</div>
            ` : ''}
          </div>`
-      : `<div style="height:110px;background:linear-gradient(135deg,#e8ddd4 0%,#d6c9bc 50%,#c9b8a8 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
+      : `<div style="aspect-ratio:1/1;background:linear-gradient(135deg,#e8ddd4 0%,#d6c9bc 50%,#c9b8a8 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
            <i class="ph ph-books" style="font-size:30px;color:#a08878;"></i>
            <span style="font-size:9px;font-weight:700;letter-spacing:0.1em;color:#a08878;text-transform:uppercase;">${esc(p.category||'Produk')}</span>
          </div>`
