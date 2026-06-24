@@ -380,6 +380,28 @@ tbody tr{border-top:1px solid #f0e8df;}
               <button class="btn-primary" style="font-size:13px;padding:9px 18px;border-radius:8px;" onclick="saveContactLinks()"><i class="ph ph-floppy-disk"></i> Simpan Pautan</button>
             </div>
           </div>
+
+          <!-- Tracking / Pixel (Meta + Google Analytics) -->
+          <div class="card" style="padding:18px 20px;max-width:760px;margin-top:20px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <i class="ph ph-chart-line-up" style="color:#a86d69;font-size:16px;"></i>
+              <div style="font-size:13px;font-weight:700;color:#2d2520;">Tracking / Pixel</div>
+            </div>
+            <div style="font-size:12px;color:#8a7e72;margin-bottom:16px;">Untuk jejak pelawat & pembelian. <b>Biar kosong jika belum guna</b> — tiada tracking akan berjalan. Isi ID bila dah sedia.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Meta Pixel ID <span style="font-weight:400;color:#9a8d80;">(Facebook/Instagram)</span></label>
+                <input id="trk-meta" type="text" placeholder="cth: 1234567890123456" class="inp" style="width:100%;box-sizing:border-box;">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Google Analytics ID <span style="font-weight:400;color:#9a8d80;">(GA4)</span></label>
+                <input id="trk-ga4" type="text" placeholder="cth: G-XXXXXXXXXX" class="inp" style="width:100%;box-sizing:border-box;">
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+              <button class="btn-primary" style="font-size:13px;padding:9px 18px;border-radius:8px;" onclick="saveTracking()"><i class="ph ph-floppy-disk"></i> Simpan Tracking</button>
+            </div>
+          </div>
         </div>
 
 
@@ -1557,7 +1579,7 @@ function goSettingsGroup(groupId){
   if(group.tabs.includes('medialinks')) loadMediaLinks();
   if(group.tabs.includes('announce'))   loadAnnouncements();
   if(group.tabs.includes('explore'))  { loadExplore(); loadVAFaq(); }
-  if(group.tabs.includes('akaun'))    { loadAkaun(); loadContactLinks(); }
+  if(group.tabs.includes('akaun'))    { loadAkaun(); loadContactLinks(); loadTracking(); }
   goView('settings');
 }
 
@@ -1896,7 +1918,7 @@ function goSettingsTab(tab){
   if(tab==='medialinks') loadMediaLinks();
   if(tab==='announce')   loadAnnouncements();
   if(tab==='explore')    loadExplore();
-  if(tab==='akaun')      loadAkaun();
+  if(tab==='akaun')      { loadAkaun(); loadContactLinks(); loadTracking(); }
 }
 
 function loadAkaun(){
@@ -2420,6 +2442,24 @@ function saveContactLinks(){
   };
   fetch('/api/contact-links', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body: JSON.stringify(body) })
     .then(r=>r.json()).then(res=>showToast(res.ok ? 'Pautan Hubungi Kami disimpan ✓' : 'Gagal simpan'))
+    .catch(()=>showToast('Gagal sambung ke server'));
+}
+
+// ── Tracking / Pixel (Meta + GA4) ─────────────────────────
+function loadTracking(){
+  fetch('/api/tracking', { headers: authHeaders() })
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('trk-meta').value = d.meta_pixel_id || '';
+      document.getElementById('trk-ga4').value  = d.ga4_id || '';
+    }).catch(()=>{});
+}
+function saveTracking(){
+  const body = {
+    meta_pixel_id: document.getElementById('trk-meta').value.trim(),
+    ga4_id: document.getElementById('trk-ga4').value.trim(),
+  };
+  fetch('/api/tracking', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body: JSON.stringify(body) })
+    .then(r=>r.json()).then(res=>showToast(res.ok ? 'Tetapan tracking disimpan ✓' : 'Gagal simpan'))
     .catch(()=>showToast('Gagal sambung ke server'));
 }
 

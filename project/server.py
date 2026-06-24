@@ -136,6 +136,10 @@ DEFAULT_DATA = {
         "brand_id":   os.environ.get("CHIP_BRAND_ID", ""),
     },
     "payment_gateway": os.environ.get("PAYMENT_GATEWAY", "hitpay"),
+    "tracking": {
+        "meta_pixel_id": "",
+        "ga4_id": "",
+    },
     "media_links": {
         "whatsapp": "",
         "telegram": "",
@@ -387,6 +391,9 @@ def _migrate_data(data):
     if "payment_gateway" not in data:
         data["payment_gateway"] = DEFAULT_DATA.get("payment_gateway", "hitpay")
         changed = True
+    if "tracking" not in data:
+        data["tracking"] = DEFAULT_DATA["tracking"].copy()
+        changed = True
     if "hitpay" not in data:
         data["hitpay"] = DEFAULT_DATA["hitpay"].copy()
         changed = True
@@ -474,12 +481,12 @@ _SECURITY_HEADERS = [
     ("Permissions-Policy",      "camera=(), microphone=(), geolocation=()"),
     ("Content-Security-Policy",
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline'; "
+        "script-src 'self' 'unsafe-inline' https://connect.facebook.net https://www.googletagmanager.com https://www.google-analytics.com; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
         "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; "
-        "img-src 'self' data: blob:; "
+        "img-src 'self' data: blob: https://www.facebook.com https://www.google-analytics.com https://*.googletagmanager.com; "
         "media-src 'self' blob:; "
-        "connect-src 'self'; "
+        "connect-src 'self' https://www.facebook.com https://connect.facebook.net https://www.google-analytics.com https://*.analytics.google.com https://*.google-analytics.com https://www.googletagmanager.com; "
         "frame-ancestors 'none'"),
 ]
 
@@ -599,6 +606,13 @@ class Handler(SimpleHTTPRequestHandler):
                 "secret_key_set": bool(sk),
                 "brand_id": cfg.get("brand_id", ""),
                 "gateway": d.get("payment_gateway", "chip"),
+            })
+        if self.path == "/api/tracking":
+            # Awam — laman perlu tahu pixel mana nak dimuat (ID pixel memang awam di sisi klien)
+            t = load_data().get("tracking", {})
+            return self._json({
+                "meta_pixel_id": t.get("meta_pixel_id", ""),
+                "ga4_id": t.get("ga4_id", ""),
             })
         if self.path == "/api/orders":
             u = self._user()
@@ -1033,6 +1047,19 @@ class Handler(SimpleHTTPRequestHandler):
             d["chip"] = cfg
             if "gateway" in b and b["gateway"] in ("chip", "hitpay"):
                 d["payment_gateway"] = b["gateway"]
+            save_data(d)
+            return self._json({"ok": True})
+        if self.path == "/api/tracking":
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            b = self._read_body()
+            d = load_data()
+            t = d.get("tracking", {}) or {}
+            if "meta_pixel_id" in b:
+                t["meta_pixel_id"] = str(b["meta_pixel_id"]).strip()
+            if "ga4_id" in b:
+                t["ga4_id"] = str(b["ga4_id"]).strip()
+            d["tracking"] = t
             save_data(d)
             return self._json({"ok": True})
         if self.path == "/api/editors":

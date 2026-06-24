@@ -1487,6 +1487,7 @@ function addToCart(pkgId) {
   renderCheckout();
   const pkg = PKG.find(p => p.id === pkgId);
   if(state.cart[pkgId] === 1) showToast((pkg ? pkg.name : '') + ' ditambah ke troli ✓');
+  try { if(pkg) trackEvent('AddToCart', 'add_to_cart', { value: parseFloat(pkg.price)||0, currency: 'MYR', content_name: pkg.name }); } catch(e){}
 }
 
 function removeFromCart(pkgId) {
@@ -1943,6 +1944,41 @@ function submitLogin(ev){
 }
 
 // ============================================================
+// TRACKING / PIXEL (Meta Pixel + Google Analytics GA4)
+// Dimuat HANYA jika ID ditetapkan di admin. Kosong = tiada tracking (zero kesan).
+// ============================================================
+window._trackingReady = null;
+function initTracking(){
+  if(window._trackingReady) return window._trackingReady;
+  window._trackingReady = fetch('/api/tracking').then(r=>r.json()).then(t=>{
+    var meta = (t.meta_pixel_id || '').trim();
+    var ga4  = (t.ga4_id || '').trim();
+    if(meta && !window.fbq){
+      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+      n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+      document,'script','https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', meta); fbq('track', 'PageView');
+    }
+    if(ga4 && !window.gtag){
+      var sc=document.createElement('script'); sc.async=true;
+      sc.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(ga4);
+      document.head.appendChild(sc);
+      window.dataLayer=window.dataLayer||[];
+      window.gtag=function(){dataLayer.push(arguments);};
+      gtag('js', new Date()); gtag('config', ga4);
+    }
+  }).catch(function(){});
+  return window._trackingReady;
+}
+function trackEvent(metaName, gaName, params){
+  params = params || {};
+  try { if(window.fbq) fbq('track', metaName, params); } catch(e){}
+  try { if(window.gtag) gtag('event', gaName, params); } catch(e){}
+}
+
+// ============================================================
 // INIT
 // ============================================================
 // ── Detect balik dari HitPay ──────────────────────────────
@@ -1976,6 +2012,9 @@ function submitLogin(ev){
       }
       // Simpan data untuk butang "Hantar Resit ke WhatsApp"
       try { _receiptData = { ref, medium, ...JSON.parse(sessionStorage.getItem('pixyo_receipt') || '{}') }; } catch(e){ _receiptData = { ref, medium }; }
+      // Tracking: event Purchase (Meta + GA4) — hanya jika pixel diaktifkan
+      var _pTotal = (_receiptData && _receiptData.total) || 0;
+      initTracking().then(function(){ trackEvent('Purchase', 'purchase', { value: parseFloat(_pTotal)||0, currency: 'MYR', transaction_id: ref || '' }); });
       sessionStorage.removeItem('pixyo_ref');
       sessionStorage.removeItem('pixyo_medium');
       sessionStorage.removeItem('pixyo_receipt');
@@ -1985,10 +2024,12 @@ function submitLogin(ev){
     }
   });
   renderFlowGrid();
+  initTracking();
   return;
 })();
 
 if(window.location.search.indexOf('payment=return') === -1) {
+  initTracking();
   renderFlowGrid();
   renderPkgList();
   renderCheckout();
