@@ -486,73 +486,14 @@ tbody tr{border-top:1px solid #f0e8df;}
 
         <!-- PANEL: Pembayaran -->
         <div id="settings-payment">
-          <div class="card" style="padding:18px 20px;margin-bottom:20px;">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-              <i class="ph ph-credit-card" style="color:#a86d69;font-size:16px;"></i>
-              <div style="font-size:13px;font-weight:700;color:#2d2520;">Tetapan Pembayaran (HitPay)</div>
-            </div>
-            <div style="font-size:12px;color:#8a7e72;margin-bottom:16px;">API Key dan Salt boleh didapati dari HitPay Dashboard → Payment Gateway → API Keys.</div>
-            <div style="display:flex;flex-direction:column;gap:12px;">
-              <div>
-                <label style="font-size:12px;font-weight:600;color:#5a4e46;display:block;margin-bottom:4px;">API Key</label>
-                <div style="position:relative;">
-                  <input id="hp-api-key" type="password" placeholder="Masukkan API Key baru (kosongkan jika tidak tukar)"
-                    style="width:100%;padding:9px 40px 9px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;background:#faf9f7;box-sizing:border-box;">
-                  <span onclick="toggleHpShow('hp-api-key','hp-eye-ak')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#8a7e72;">
-                    <i id="hp-eye-ak" class="ph ph-eye" style="font-size:16px;"></i>
-                  </span>
-                </div>
-                <div id="hp-api-key-status" style="font-size:11px;color:#8a7e72;margin-top:4px;"></div>
-              </div>
-              <div>
-                <label style="font-size:12px;font-weight:600;color:#5a4e46;display:block;margin-bottom:4px;">Salt (Webhook)</label>
-                <div style="position:relative;">
-                  <input id="hp-salt" type="password" placeholder="Masukkan Salt baru (kosongkan jika tidak tukar)"
-                    style="width:100%;padding:9px 40px 9px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;background:#faf9f7;box-sizing:border-box;">
-                  <span onclick="toggleHpShow('hp-salt','hp-eye-sl')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#8a7e72;">
-                    <i id="hp-eye-sl" class="ph ph-eye" style="font-size:16px;"></i>
-                  </span>
-                </div>
-                <div id="hp-salt-status" style="font-size:11px;color:#8a7e72;margin-top:4px;"></div>
-              </div>
-              <div style="display:flex;align-items:center;justify-content:space-between;">
-                <div>
-                  <div style="font-size:12px;font-weight:600;color:#5a4e46;">Mode</div>
-                  <div style="font-size:11px;color:#8a7e72;">Sandbox = ujian, Live = bayaran sebenar</div>
-                </div>
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                  <span id="hp-mode-label" style="font-size:12px;color:#8a7e72;">Sandbox</span>
-                  <div style="position:relative;width:44px;height:24px;">
-                    <input type="checkbox" id="hp-sandbox" style="opacity:0;width:0;height:0;position:absolute;" onchange="updateHpModeLabel()">
-                    <span id="hp-toggle-track"
-                      style="position:absolute;inset:0;background:#c98a86;border-radius:12px;cursor:pointer;transition:.2s;">
-                      <span id="hp-toggle-thumb" style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s;"></span>
-                    </span>
-                  </div>
-                </label>
-              </div>
-              <button class="btn-primary" style="font-size:13px;padding:9px 18px;border-radius:8px;align-self:flex-end;" onclick="saveHitPayConfig()">
-                <i class="ph ph-floppy-disk"></i> Simpan Tetapan
-              </button>
-            </div>
-          </div>
-
           <!-- CHIP -->
           <div class="card" style="padding:18px 20px;margin-bottom:20px;">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
               <i class="ph ph-credit-card" style="color:#a86d69;font-size:16px;"></i>
               <div style="font-size:13px;font-weight:700;color:#2d2520;">Tetapan Pembayaran (CHIP)</div>
             </div>
-            <div style="font-size:12px;color:#8a7e72;margin-bottom:16px;">Secret Key dari portal.chip-in.asia → Developers → API Keys. Brand ID dari Developers → Brands. Guna kunci <b>Test</b> untuk ujian.</div>
+            <div style="font-size:12px;color:#8a7e72;margin-bottom:16px;">Secret Key dari portal.chip-in.asia → Developers → API Keys. Brand ID dari Developers → Brands. Guna kunci <b>Test</b> untuk ujian, <b>Live</b> untuk bayaran sebenar.</div>
             <div style="display:flex;flex-direction:column;gap:12px;">
-              <div>
-                <label style="font-size:12px;font-weight:600;color:#5a4e46;display:block;margin-bottom:4px;">Gateway Aktif</label>
-                <select id="chip-gateway" style="width:100%;padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;background:#faf9f7;box-sizing:border-box;">
-                  <option value="chip">CHIP</option>
-                  <option value="hitpay">HitPay</option>
-                </select>
-                <div style="font-size:11px;color:#8a7e72;margin-top:4px;">Pilih gerbang pembayaran yang digunakan di checkout.</div>
-              </div>
               <div>
                 <label style="font-size:12px;font-weight:600;color:#5a4e46;display:block;margin-bottom:4px;">Secret Key (CHIP)</label>
                 <div style="position:relative;">
@@ -1610,7 +1551,7 @@ function goSettingsGroup(groupId){
     const el = document.getElementById('settings-'+t);
     if(el) el.style.display = group.tabs.includes(t) ? 'block' : 'none';
   });
-  if(group.tabs.includes('payment'))    { loadHitPayConfig(); loadChipConfig(); loadPostage(); }
+  if(group.tabs.includes('payment'))    { loadChipConfig(); loadPostage(); }
   if(group.tabs.includes('medialinks')) loadMediaLinks();
   if(group.tabs.includes('announce'))   loadAnnouncements();
   if(group.tabs.includes('explore'))  { loadExplore(); loadVAFaq(); }
@@ -1921,7 +1862,7 @@ function goSettingsTab(tab){
     document.getElementById('settings-'+t).style.display = (tab===t) ? 'block' : 'none';
     document.getElementById('tab-'+t).classList.toggle('active', tab===t);
   });
-  if(tab==='payment')  { loadHitPayConfig(); loadChipConfig(); }
+  if(tab==='payment')  { loadChipConfig(); }
   if(tab==='medialinks') loadMediaLinks();
   if(tab==='announce')   loadAnnouncements();
   if(tab==='explore')    loadExplore();
@@ -2554,14 +2495,12 @@ function loadChipConfig(){
       if(st) st.textContent = cfg.secret_key_set ? '✓ Secret Key telah ditetapkan (' + cfg.secret_key + ')' : '⚠ Belum ditetapkan';
       const brand = document.getElementById('chip-brand');
       if(brand) brand.value = cfg.brand_id || '';
-      const gw = document.getElementById('chip-gateway');
-      if(gw) gw.value = cfg.gateway || 'chip';
     }).catch(() => {});
 }
 function saveChipConfig(){
   const body = {
     brand_id: document.getElementById('chip-brand').value.trim(),
-    gateway:  document.getElementById('chip-gateway').value,
+    gateway:  'chip',
   };
   const sk = document.getElementById('chip-secret').value.trim();
   if(sk) body.secret_key = sk;

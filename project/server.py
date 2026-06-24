@@ -813,28 +813,19 @@ class Handler(SimpleHTTPRequestHandler):
             host = self.headers.get("Host", f"localhost:{PORT}")
             is_local = ("localhost" in host or "127.0.0.1" in host)
             scheme = "http" if is_local else "https"
-            gateway = d.get("payment_gateway", "chip")
 
-            if gateway == "chip":
-                success_redirect = f"{scheme}://{host}/index.html?payment=return&ref={reference}&status=completed"
-                failure_redirect = f"{scheme}://{host}/index.html?payment=return&ref={reference}&status=failed"
-                # Callback server-ke-server tak boleh ke localhost
-                callback_url = "" if is_local else f"{scheme}://{host}/api/chip-callback"
-                result = chip_create_purchase(total, reference, success_redirect, failure_redirect, callback_url, name, email)
-                if result["ok"]:
-                    for o in d["orders"]:
-                        if o.get("reference") == reference:
-                            o["chip_id"] = result.get("id")
-                            break
-                    save_data(d)
-                    return self._json({"ok": True, "url": result["url"], "reference": reference})
-                return self._json({"ok": False, "error": result.get("error", "Gagal cipta pembayaran")}, 502)
-
-            # Default: HitPay
-            redirect_url = f"{scheme}://{host}/index.html?payment=return&ref={reference}"
-            webhook_url  = "" if is_local else f"{scheme}://{host}/api/hitpay-webhook"
-            result = hitpay_create_payment(total, reference, redirect_url, webhook_url, name, email)
+            # Gerbang pembayaran: CHIP
+            success_redirect = f"{scheme}://{host}/index.html?payment=return&ref={reference}&status=completed"
+            failure_redirect = f"{scheme}://{host}/index.html?payment=return&ref={reference}&status=failed"
+            # Callback server-ke-server tak boleh ke localhost
+            callback_url = "" if is_local else f"{scheme}://{host}/api/chip-callback"
+            result = chip_create_purchase(total, reference, success_redirect, failure_redirect, callback_url, name, email)
             if result["ok"]:
+                for o in d["orders"]:
+                    if o.get("reference") == reference:
+                        o["chip_id"] = result.get("id")
+                        break
+                save_data(d)
                 return self._json({"ok": True, "url": result["url"], "reference": reference})
             return self._json({"ok": False, "error": result.get("error", "Gagal cipta pembayaran")}, 502)
 
