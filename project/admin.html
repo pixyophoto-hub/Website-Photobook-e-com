@@ -1610,10 +1610,27 @@ function renderOrders(){
       <td style="padding:13px 16px;font-size:12px;color:#9a8d80;white-space:nowrap;">${esc(o.date)}</td>
       <td style="padding:13px 16px;"><div style="display:flex;align-items:center;gap:6px;">
         <button class="btn-ghost" onclick="showOrderDetail('${esc(o.id)}')">Lihat</button>
+        ${o.status === 'Menunggu Bayaran' ? `<button class="icon-btn" title="Salin link bayaran untuk pelanggan" onclick="copyPayLink('${esc(o.id)}')"><i class="ph ph-link" style="color:#a86d69;"></i></button>` : ''}
         <button class="icon-btn" title="Padam order" onclick="deleteOrder('${esc(o.id)}')"><i class="ph ph-trash" style="color:#c0392b;"></i></button>
       </div></td>
     </tr>`;
   }).join('');
+}
+function copyPayLink(ref){
+  showToast('Menjana link bayaran...');
+  fetch('/api/orders/' + encodeURIComponent(ref) + '/repay', { method:'POST', headers: authHeaders() })
+    .then(r=>r.json()).then(res=>{
+      if(res.ok && res.url){
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(res.url).then(
+            ()=>showToast('Link bayaran disalin — tampal ke WhatsApp pelanggan'),
+            ()=>prompt('Salin link bayaran ini:', res.url)
+          );
+        } else {
+          prompt('Salin link bayaran ini:', res.url);
+        }
+      } else showToast(res.error || 'Gagal jana link');
+    }).catch(()=>showToast('Gagal sambung ke server'));
 }
 function deleteOrder(ref){
   if(!confirm('Padam order ' + ref + '? Tindakan ini tidak boleh dibatalkan.')) return;

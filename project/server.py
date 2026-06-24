@@ -879,6 +879,32 @@ class Handler(SimpleHTTPRequestHandler):
             self.wfile.write(b"OK")
             return
 
+        if self.path.startswith("/api/orders/") and self.path.endswith("/repay"):
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            ref = self.path[len("/api/orders/"):-len("/repay")]
+            d = load_data()
+            order = next((o for o in d.get("orders", []) if o.get("reference") == ref), None)
+            if not order:
+                return self._json({"ok": False, "error": "Order tidak dijumpai"}, 404)
+            total = float(order.get("total", 0) or 0)
+            if total <= 0:
+                return self._json({"ok": False, "error": "Jumlah tidak sah"}, 400)
+            host = self.headers.get("Host", f"localhost:{PORT}")
+            is_local = ("localhost" in host or "127.0.0.1" in host)
+            scheme = "http" if is_local else "https"
+            success_redirect = f"{scheme}://{host}/index.html?payment=return&ref={ref}&status=completed"
+            failure_redirect = f"{scheme}://{host}/index.html?payment=return&ref={ref}&status=failed"
+            callback_url = "" if is_local else f"{scheme}://{host}/api/chip-callback"
+            result = chip_create_purchase(total, ref, success_redirect, failure_redirect, callback_url,
+                                          order.get("name", ""), order.get("email", ""))
+            if result["ok"]:
+                order["chip_id"] = result.get("id")
+                order["chip_url"] = result.get("url")
+                save_data(d)
+                return self._json({"ok": True, "url": result["url"]})
+            return self._json({"ok": False, "error": result.get("error", "Gagal jana link")}, 502)
+
         if self.path == "/api/chip-callback":
             length = int(self.headers.get("Content-Length", 0) or 0)
             raw = self.rfile.read(length) if length else b""
