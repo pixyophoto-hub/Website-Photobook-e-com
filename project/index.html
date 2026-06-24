@@ -1761,6 +1761,8 @@ function sendReceiptWhatsApp(){
   (d.items || []).forEach(it => lines.push('Pakej: ' + it.name + ' x' + it.qty));
   if(d.medium) lines.push('Cara hantar gambar: ' + d.medium);
   if(typeof d.total === 'number') lines.push('Jumlah: ' + money(d.total));
+  lines.push('');
+  lines.push('*Resit lengkap di email yang didaftarkan');
   window.open('https://wa.me/' + num + '?text=' + encodeURIComponent(lines.join('\n')), '_blank', 'noopener');
 }
 
