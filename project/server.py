@@ -315,8 +315,30 @@ def load_data():
     if not os.path.exists(DATA_FILE):
         save_data(DEFAULT_DATA)
         return json.loads(json.dumps(DEFAULT_DATA))
-    with open(DATA_FILE, "r", encoding="utf-8") as f:
-        data = json.load(f)
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (ValueError, OSError) as e:
+        # data.json rosak — backup & seed semula supaya laman PULIH (bukan crash 502)
+        try:
+            os.replace(DATA_FILE, DATA_FILE + ".corrupt")
+        except OSError:
+            pass
+        print(f"[load_data] data.json rosak ({e}); seed semula DEFAULT_DATA")
+        save_data(DEFAULT_DATA)
+        return json.loads(json.dumps(DEFAULT_DATA))
+    if not isinstance(data, dict):
+        save_data(DEFAULT_DATA)
+        return json.loads(json.dumps(DEFAULT_DATA))
+    try:
+        return _migrate_data(data)
+    except Exception as e:
+        # Migrasi gagal — jangan crash; pulangkan data sedia ada
+        print(f"[load_data] migrasi gagal: {e}")
+        return data
+
+
+def _migrate_data(data):
     # Migrasi: backfill medan pakej yang belum wujud (tanpa reset data)
     changed = False
     for p in data.get("packages", []):
