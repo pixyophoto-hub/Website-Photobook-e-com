@@ -536,6 +536,44 @@ tbody tr{border-top:1px solid #f0e8df;}
               </button>
             </div>
           </div>
+
+          <!-- CHIP -->
+          <div class="card" style="padding:18px 20px;margin-bottom:20px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <i class="ph ph-credit-card" style="color:#a86d69;font-size:16px;"></i>
+              <div style="font-size:13px;font-weight:700;color:#2d2520;">Tetapan Pembayaran (CHIP)</div>
+            </div>
+            <div style="font-size:12px;color:#8a7e72;margin-bottom:16px;">Secret Key dari portal.chip-in.asia → Developers → API Keys. Brand ID dari Developers → Brands. Guna kunci <b>Test</b> untuk ujian.</div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div>
+                <label style="font-size:12px;font-weight:600;color:#5a4e46;display:block;margin-bottom:4px;">Gateway Aktif</label>
+                <select id="chip-gateway" style="width:100%;padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;background:#faf9f7;box-sizing:border-box;">
+                  <option value="chip">CHIP</option>
+                  <option value="hitpay">HitPay</option>
+                </select>
+                <div style="font-size:11px;color:#8a7e72;margin-top:4px;">Pilih gerbang pembayaran yang digunakan di checkout.</div>
+              </div>
+              <div>
+                <label style="font-size:12px;font-weight:600;color:#5a4e46;display:block;margin-bottom:4px;">Secret Key (CHIP)</label>
+                <div style="position:relative;">
+                  <input id="chip-secret" type="password" placeholder="Masukkan Secret Key baru (kosongkan jika tidak tukar)"
+                    style="width:100%;padding:9px 40px 9px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;background:#faf9f7;box-sizing:border-box;">
+                  <span onclick="toggleHpShow('chip-secret','chip-eye')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#8a7e72;">
+                    <i id="chip-eye" class="ph ph-eye" style="font-size:16px;"></i>
+                  </span>
+                </div>
+                <div id="chip-secret-status" style="font-size:11px;color:#8a7e72;margin-top:4px;"></div>
+              </div>
+              <div>
+                <label style="font-size:12px;font-weight:600;color:#5a4e46;display:block;margin-bottom:4px;">Brand ID (CHIP)</label>
+                <input id="chip-brand" type="text" placeholder="cth: 1a2b3c4d-..."
+                  style="width:100%;padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;background:#faf9f7;box-sizing:border-box;">
+              </div>
+              <button class="btn-primary" style="font-size:13px;padding:9px 18px;border-radius:8px;align-self:flex-end;" onclick="saveChipConfig()">
+                <i class="ph ph-floppy-disk"></i> Simpan Tetapan CHIP
+              </button>
+            </div>
+          </div>
         </div><!-- /settings-payment -->
         </div><!-- /settings-pembayaran-wrap -->
 
@@ -1572,7 +1610,7 @@ function goSettingsGroup(groupId){
     const el = document.getElementById('settings-'+t);
     if(el) el.style.display = group.tabs.includes(t) ? 'block' : 'none';
   });
-  if(group.tabs.includes('payment'))    { loadHitPayConfig(); loadPostage(); }
+  if(group.tabs.includes('payment'))    { loadHitPayConfig(); loadChipConfig(); loadPostage(); }
   if(group.tabs.includes('medialinks')) loadMediaLinks();
   if(group.tabs.includes('announce'))   loadAnnouncements();
   if(group.tabs.includes('explore'))  { loadExplore(); loadVAFaq(); }
@@ -1883,7 +1921,7 @@ function goSettingsTab(tab){
     document.getElementById('settings-'+t).style.display = (tab===t) ? 'block' : 'none';
     document.getElementById('tab-'+t).classList.toggle('active', tab===t);
   });
-  if(tab==='payment')    loadHitPayConfig();
+  if(tab==='payment')  { loadHitPayConfig(); loadChipConfig(); }
   if(tab==='medialinks') loadMediaLinks();
   if(tab==='announce')   loadAnnouncements();
   if(tab==='explore')    loadExplore();
@@ -2501,6 +2539,41 @@ function saveHitPayConfig(){
       document.getElementById('hp-salt').value = '';
       showToast('Tetapan HitPay disimpan ✓');
       loadHitPayConfig();
+    } else {
+      showToast('Gagal simpan: ' + (res.error || ''));
+    }
+  });
+}
+
+// ── CHIP Config ───────────────────────────────────────────
+function loadChipConfig(){
+  fetch('/api/chip-config', { headers: { 'Authorization': authHeaders()['Authorization'] } })
+    .then(r => r.json())
+    .then(cfg => {
+      const st = document.getElementById('chip-secret-status');
+      if(st) st.textContent = cfg.secret_key_set ? '✓ Secret Key telah ditetapkan (' + cfg.secret_key + ')' : '⚠ Belum ditetapkan';
+      const brand = document.getElementById('chip-brand');
+      if(brand) brand.value = cfg.brand_id || '';
+      const gw = document.getElementById('chip-gateway');
+      if(gw) gw.value = cfg.gateway || 'chip';
+    }).catch(() => {});
+}
+function saveChipConfig(){
+  const body = {
+    brand_id: document.getElementById('chip-brand').value.trim(),
+    gateway:  document.getElementById('chip-gateway').value,
+  };
+  const sk = document.getElementById('chip-secret').value.trim();
+  if(sk) body.secret_key = sk;
+  fetch('/api/chip-config', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': authHeaders()['Authorization'] },
+    body: JSON.stringify(body)
+  }).then(r => r.json()).then(res => {
+    if(res.ok){
+      document.getElementById('chip-secret').value = '';
+      showToast('Tetapan CHIP disimpan ✓');
+      loadChipConfig();
     } else {
       showToast('Gagal simpan: ' + (res.error || ''));
     }

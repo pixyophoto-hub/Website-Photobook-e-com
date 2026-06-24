@@ -131,6 +131,11 @@ DEFAULT_DATA = {
         "salt":    os.environ.get("HITPAY_SALT", ""),
         "sandbox": os.environ.get("HITPAY_SANDBOX", "true").lower() != "false",
     },
+    "chip": {
+        "secret_key": os.environ.get("CHIP_SECRET_KEY", ""),
+        "brand_id":   os.environ.get("CHIP_BRAND_ID", ""),
+    },
+    "payment_gateway": os.environ.get("PAYMENT_GATEWAY", "hitpay"),
     "media_links": {
         "whatsapp": "",
         "telegram": "",
@@ -241,6 +246,71 @@ def hitpay_verify_webhook(payload: dict, hmac_received: str) -> bool:
     return hmac_lib.compare_digest(computed, hmac_received)
 
 
+# ============================================================
+# CHIP COLLECT HELPERS (gate.chip-in.asia)
+# ============================================================
+CHIP_BASE = "https://gate.chip-in.asia/api/v1"
+
+def get_chip_cfg():
+    """Baca config CHIP dari data.json (live, boleh tukar tanpa restart)."""
+    cfg = load_data().get("chip", {})
+    return {
+        "secret_key": cfg.get("secret_key", "") or os.environ.get("CHIP_SECRET_KEY", ""),
+        "brand_id":   cfg.get("brand_id", "") or os.environ.get("CHIP_BRAND_ID", ""),
+    }
+
+def chip_request(method, path, body=None):
+    """Panggil API CHIP. Pulangkan (data, error)."""
+    cfg = get_chip_cfg()
+    if not cfg["secret_key"]:
+        return None, "CHIP Secret Key belum dikonfigurasi"
+    data = json.dumps(body).encode("utf-8") if body is not None else None
+    req = urllib.request.Request(
+        CHIP_BASE + path, data=data,
+        headers={
+            "Authorization": "Bearer " + cfg["secret_key"],
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "PixyoPrint/1.0",
+        }, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return json.loads(resp.read().decode("utf-8")), None
+    except urllib.error.HTTPError as e:
+        return None, e.read().decode("utf-8")
+    except Exception as e:
+        return None, str(e)
+
+def chip_create_purchase(total, reference, success_redirect, failure_redirect, success_callback, name, email):
+    """Cipta purchase di CHIP. Amaun dalam SEN (integer). Pulangkan {ok, url, id}."""
+    cfg = get_chip_cfg()
+    if not cfg["secret_key"] or not cfg["brand_id"]:
+        return {"ok": False, "error": "CHIP Secret Key / Brand ID belum dikonfigurasi"}
+    body = {
+        "brand_id": cfg["brand_id"],
+        "client": {"email": email or "noemail@pixyoprint.com", "full_name": name or "Pelanggan"},
+        "purchase": {
+            "currency": "MYR",
+            "products": [{"name": "Pesanan PixyoPrint #" + reference,
+                          "price": int(round(float(total) * 100)), "quantity": "1"}],
+        },
+        "reference": reference,
+        "success_redirect": success_redirect,
+        "failure_redirect": failure_redirect,
+    }
+    if success_callback:
+        body["success_callback"] = success_callback
+    data, err = chip_request("POST", "/purchases/", body)
+    if err:
+        return {"ok": False, "error": err}
+    return {"ok": True, "url": data.get("checkout_url"), "id": data.get("id")}
+
+def chip_get_purchase(purchase_id):
+    """Ambil semula purchase dari CHIP (sahkan status guna secret key)."""
+    data, _ = chip_request("GET", "/purchases/" + str(purchase_id) + "/")
+    return data
+
+
 def load_data():
     if not os.path.exists(DATA_FILE):
         save_data(DEFAULT_DATA)
@@ -288,6 +358,12 @@ def load_data():
         changed = True
     if "contact_links" not in data:
         data["contact_links"] = DEFAULT_DATA["contact_links"].copy()
+        changed = True
+    if "chip" not in data:
+        data["chip"] = DEFAULT_DATA["chip"].copy()
+        changed = True
+    if "payment_gateway" not in data:
+        data["payment_gateway"] = DEFAULT_DATA.get("payment_gateway", "hitpay")
         changed = True
     if "hitpay" not in data:
         data["hitpay"] = DEFAULT_DATA["hitpay"].copy()
@@ -489,6 +565,18 @@ class Handler(SimpleHTTPRequestHandler):
                 "api_key_set": bool(ak),
                 "salt_set": bool(sl),
                 "sandbox": cfg.get("sandbox", True),
+            })
+        if self.path == "/api/chip-config":
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            d = load_data()
+            cfg = d.get("chip", {})
+            sk = cfg.get("secret_key", "")
+            return self._json({
+                "secret_key": sk[:6] + "..." + sk[-4:] if len(sk) > 12 else sk,
+                "secret_key_set": bool(sk),
+                "brand_id": cfg.get("brand_id", ""),
+                "gateway": d.get("payment_gateway", "chip"),
             })
         if self.path == "/api/orders":
             u = self._user()
@@ -721,18 +809,34 @@ class Handler(SimpleHTTPRequestHandler):
             })
             save_data(d)
 
-            # Detect host untuk redirect & webhook URL
+            # Detect host & scheme untuk redirect/callback
             host = self.headers.get("Host", f"localhost:{PORT}")
-            scheme = "http"
-            redirect_url = f"{scheme}://{host}/index.html?payment=return&ref={reference}"
-            # Webhook tidak boleh pakai localhost — skip untuk development
-            webhook_url  = "" if ("localhost" in host or "127.0.0.1" in host) else f"{scheme}://{host}/api/hitpay-webhook"
+            is_local = ("localhost" in host or "127.0.0.1" in host)
+            scheme = "http" if is_local else "https"
+            gateway = d.get("payment_gateway", "chip")
 
+            if gateway == "chip":
+                success_redirect = f"{scheme}://{host}/index.html?payment=return&ref={reference}&status=completed"
+                failure_redirect = f"{scheme}://{host}/index.html?payment=return&ref={reference}&status=failed"
+                # Callback server-ke-server tak boleh ke localhost
+                callback_url = "" if is_local else f"{scheme}://{host}/api/chip-callback"
+                result = chip_create_purchase(total, reference, success_redirect, failure_redirect, callback_url, name, email)
+                if result["ok"]:
+                    for o in d["orders"]:
+                        if o.get("reference") == reference:
+                            o["chip_id"] = result.get("id")
+                            break
+                    save_data(d)
+                    return self._json({"ok": True, "url": result["url"], "reference": reference})
+                return self._json({"ok": False, "error": result.get("error", "Gagal cipta pembayaran")}, 502)
+
+            # Default: HitPay
+            redirect_url = f"{scheme}://{host}/index.html?payment=return&ref={reference}"
+            webhook_url  = "" if is_local else f"{scheme}://{host}/api/hitpay-webhook"
             result = hitpay_create_payment(total, reference, redirect_url, webhook_url, name, email)
             if result["ok"]:
                 return self._json({"ok": True, "url": result["url"], "reference": reference})
-            else:
-                return self._json({"ok": False, "error": result.get("error", "Gagal cipta pembayaran")}, 502)
+            return self._json({"ok": False, "error": result.get("error", "Gagal cipta pembayaran")}, 502)
 
         if self.path == "/api/hitpay-webhook":
             # Baca form-encoded body dari HitPay
@@ -756,6 +860,31 @@ class Handler(SimpleHTTPRequestHandler):
                     break
             save_data(d)
             # HitPay expects HTTP 200 plaintext
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain")
+            self.end_headers()
+            self.wfile.write(b"OK")
+            return
+
+        if self.path == "/api/chip-callback":
+            length = int(self.headers.get("Content-Length", 0) or 0)
+            raw = self.rfile.read(length) if length else b""
+            try:
+                payload = json.loads(raw.decode("utf-8"))
+            except Exception:
+                payload = {}
+            purchase_id = payload.get("id", "")
+            # SECURITY: jangan percaya body — sahkan dengan re-fetch guna secret key
+            verified = chip_get_purchase(purchase_id) if purchase_id else None
+            if verified and verified.get("status") == "paid":
+                ref = verified.get("reference", "")
+                d = load_data()
+                for order in d.get("orders", []):
+                    if order.get("reference") == ref:
+                        order["status"]     = "completed"
+                        order["payment_id"] = str(purchase_id)
+                        break
+                save_data(d)
             self.send_response(200)
             self.send_header("Content-Type", "text/plain")
             self.end_headers()
@@ -838,6 +967,21 @@ class Handler(SimpleHTTPRequestHandler):
             if "sandbox" in b:
                 cfg["sandbox"] = bool(b["sandbox"])
             d["hitpay"] = cfg
+            save_data(d)
+            return self._json({"ok": True})
+        if self.path == "/api/chip-config":
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            b = self._read_body()
+            d = load_data()
+            cfg = d.get("chip", {})
+            if "secret_key" in b and b["secret_key"] and not b["secret_key"].endswith("..."):
+                cfg["secret_key"] = b["secret_key"].strip()
+            if "brand_id" in b:
+                cfg["brand_id"] = b["brand_id"].strip()
+            d["chip"] = cfg
+            if "gateway" in b and b["gateway"] in ("chip", "hitpay"):
+                d["payment_gateway"] = b["gateway"]
             save_data(d)
             return self._json({"ok": True})
         if self.path == "/api/editors":
