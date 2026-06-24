@@ -884,6 +884,18 @@ class Handler(SimpleHTTPRequestHandler):
 
         return self._json({"error": "not found"}, 404)
 
+    def do_DELETE(self):
+        if self.path.startswith("/api/orders/"):
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            ref = self.path[len("/api/orders/"):]
+            d = load_data()
+            before = len(d.get("orders", []))
+            d["orders"] = [o for o in d.get("orders", []) if o.get("reference") != ref]
+            save_data(d)
+            return self._json({"ok": before != len(d["orders"])})
+        return self._json({"error": "not found"}, 404)
+
     def do_PUT(self):
         if self.path == "/api/account":
             sess = self._user()

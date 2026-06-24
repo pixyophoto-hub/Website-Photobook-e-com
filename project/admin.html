@@ -1608,9 +1608,20 @@ function renderOrders(){
       <td style="padding:13px 16px;">${statusPill(o.status)}</td>
       <td style="padding:13px 16px;"><select class="inp" style="padding:6px 10px;font-size:12px;" onchange="assignEditor('${esc(o.id)}', this.value)">${opts}</select></td>
       <td style="padding:13px 16px;font-size:12px;color:#9a8d80;white-space:nowrap;">${esc(o.date)}</td>
-      <td style="padding:13px 16px;"><button class="btn-ghost" onclick="showOrderDetail('${esc(o.id)}')">Lihat</button></td>
+      <td style="padding:13px 16px;"><div style="display:flex;align-items:center;gap:6px;">
+        <button class="btn-ghost" onclick="showOrderDetail('${esc(o.id)}')">Lihat</button>
+        <button class="icon-btn" title="Padam order" onclick="deleteOrder('${esc(o.id)}')"><i class="ph ph-trash" style="color:#c0392b;"></i></button>
+      </div></td>
     </tr>`;
   }).join('');
+}
+function deleteOrder(ref){
+  if(!confirm('Padam order ' + ref + '? Tindakan ini tidak boleh dibatalkan.')) return;
+  fetch('/api/orders/' + encodeURIComponent(ref), { method:'DELETE', headers: authHeaders() })
+    .then(r=>r.json()).then(res=>{
+      if(res.ok){ showToast('Order dipadam'); loadOrders(); }
+      else showToast(res.error || 'Gagal padam');
+    }).catch(()=>showToast('Gagal sambung ke server'));
 }
 
 function assignEditor(id, editor){
