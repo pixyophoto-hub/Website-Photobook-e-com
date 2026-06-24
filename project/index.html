@@ -511,7 +511,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
               <input type="text" id="ship-name" placeholder="Nama penuh" class="inp" style="padding:9px 12px;font-size:13px;">
               <input type="tel" id="ship-phone" placeholder="No. Telefon" class="inp" style="padding:9px 12px;font-size:13px;">
-              <input type="email" id="ship-email" placeholder="Email" class="inp" style="padding:9px 12px;font-size:13px;">
+              <input type="email" id="ship-email" placeholder="Email * (untuk resit)" required class="inp" style="padding:9px 12px;font-size:13px;">
               <div style="position:relative;">
                 <input type="text" id="ship-poskod" placeholder="Poskod" class="inp" maxlength="5" oninput="onPoskodInput(this.value)" style="padding:9px 12px;font-size:13px;width:100%;box-sizing:border-box;">
                 <span id="poskod-spinner" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:#a08878;">⟳</span>
@@ -1680,6 +1680,15 @@ function doPay() {
       sel.scrollIntoView({ behavior:'smooth', block:'center' });
     }
     showToast('⚠ Pilih cara hantar gambar dahulu sebelum bayar.');
+    return;
+  }
+
+  // Email wajib (untuk resit)
+  const emailEl = document.getElementById('ship-email');
+  const emailVal = (emailEl?.value || '').trim();
+  if(!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)){
+    if(emailEl){ emailEl.style.borderColor = '#c0392b'; emailEl.scrollIntoView({behavior:'smooth', block:'center'}); emailEl.focus(); }
+    showToast('⚠ Sila masukkan email yang sah untuk terima resit.');
     return;
   }
 
