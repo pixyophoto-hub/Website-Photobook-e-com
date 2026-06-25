@@ -123,6 +123,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 @keyframes reviewScroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 .review-card{flex:0 0 360px;width:360px;border-radius:14px;padding:28px 26px;box-sizing:border-box;}
 @media(max-width:768px){.review-card{flex-basis:300px;width:300px;}}
+#section-terokai{padding:64px 48px;}
 .explore-grid{display:grid;grid-template-columns:300px 1fr;gap:32px;align-items:center;}
 .explore-track{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:4px;}
 .explore-track::-webkit-scrollbar{display:none;}
@@ -134,11 +135,11 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 .explore-arrow:hover{border-color:#c98a86;background:#fdf6f5;}
 @media(max-width:768px){
   .explore-grid{grid-template-columns:1fr;gap:22px;}
-  #section-terokai{padding:36px 18px;}
+  #section-terokai{padding:30px 14px;}
   .explore-arrow{display:none;}
-  .explore-track{grid-template-columns:1fr;gap:14px;}
-  .explore-card{width:100%;}
-  .explore-thumb{height:300px;}
+  .explore-track{grid-template-columns:1fr 1fr;gap:12px;}
+  .explore-card{width:auto;}
+  .explore-thumb{height:150px;}
 }
 .foot-link{cursor:pointer;color:#cdbfb2;transition:color .15s;}
 .foot-link:hover{color:#f5ede4;}
@@ -266,7 +267,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
   </div>
 
   <!-- Terokai Pilihan -->
-  <div id="section-terokai" class="card" style="margin-bottom:32px;padding:64px 48px;">
+  <div id="section-terokai" class="card" style="margin-bottom:32px;">
     <div class="explore-grid">
       <div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(34px,4.5vw,48px);font-weight:600;line-height:1.05;color:#2d2520;">Terokai <span style="font-style:italic;color:#c98a86;">Pilihan</span> Anda</div>
