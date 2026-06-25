@@ -139,6 +139,7 @@ DEFAULT_DATA = {
     "tracking": {
         "meta_pixel_id": "",
         "ga4_id": "",
+        "tiktok_pixel_id": "",
     },
     "media_links": {
         "whatsapp": "",
@@ -481,12 +482,12 @@ _SECURITY_HEADERS = [
     ("Permissions-Policy",      "camera=(), microphone=(), geolocation=()"),
     ("Content-Security-Policy",
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' https://connect.facebook.net https://www.googletagmanager.com https://www.google-analytics.com; "
+        "script-src 'self' 'unsafe-inline' https://connect.facebook.net https://www.googletagmanager.com https://www.google-analytics.com https://analytics.tiktok.com; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
         "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; "
-        "img-src 'self' data: blob: https://www.facebook.com https://www.google-analytics.com https://*.googletagmanager.com; "
+        "img-src 'self' data: blob: https://www.facebook.com https://www.google-analytics.com https://*.googletagmanager.com https://analytics.tiktok.com; "
         "media-src 'self' blob:; "
-        "connect-src 'self' https://www.facebook.com https://connect.facebook.net https://www.google-analytics.com https://*.analytics.google.com https://*.google-analytics.com https://www.googletagmanager.com; "
+        "connect-src 'self' https://www.facebook.com https://connect.facebook.net https://www.google-analytics.com https://*.analytics.google.com https://*.google-analytics.com https://www.googletagmanager.com https://analytics.tiktok.com https://*.tiktok.com; "
         "frame-ancestors 'none'"),
 ]
 
@@ -613,6 +614,7 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json({
                 "meta_pixel_id": t.get("meta_pixel_id", ""),
                 "ga4_id": t.get("ga4_id", ""),
+                "tiktok_pixel_id": t.get("tiktok_pixel_id", ""),
             })
         if self.path == "/api/orders":
             u = self._user()
@@ -1059,6 +1061,8 @@ class Handler(SimpleHTTPRequestHandler):
                 t["meta_pixel_id"] = str(b["meta_pixel_id"]).strip()
             if "ga4_id" in b:
                 t["ga4_id"] = str(b["ga4_id"]).strip()
+            if "tiktok_pixel_id" in b:
+                t["tiktok_pixel_id"] = str(b["tiktok_pixel_id"]).strip()
             d["tracking"] = t
             save_data(d)
             return self._json({"ok": True})

@@ -1953,6 +1953,7 @@ function initTracking(){
   window._trackingReady = fetch('/api/tracking').then(r=>r.json()).then(t=>{
     var meta = (t.meta_pixel_id || '').trim();
     var ga4  = (t.ga4_id || '').trim();
+    var tiktok = (t.tiktok_pixel_id || '').trim();
     if(meta && !window.fbq){
       !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
       n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
@@ -1969,13 +1970,24 @@ function initTracking(){
       window.gtag=function(){dataLayer.push(arguments);};
       gtag('js', new Date()); gtag('config', ga4);
     }
+    if(tiktok && !window.ttq){
+      !function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];
+      ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"];
+      ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};
+      for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);
+      ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};
+      ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var s=d.createElement("script");s.type="text/javascript",s.async=!0,s.src=r+"?sdkid="+e+"&lib="+t;var a=d.getElementsByTagName("script")[0];a.parentNode.insertBefore(s,a)};
+      ttq.load(tiktok); ttq.page();
+      }(window,document,'ttq');
+    }
   }).catch(function(){});
   return window._trackingReady;
 }
-function trackEvent(metaName, gaName, params){
+function trackEvent(metaName, gaName, params, ttName){
   params = params || {};
   try { if(window.fbq) fbq('track', metaName, params); } catch(e){}
   try { if(window.gtag) gtag('event', gaName, params); } catch(e){}
+  try { if(window.ttq) ttq.track(ttName || metaName, params); } catch(e){}
 }
 
 // ============================================================
@@ -2014,7 +2026,7 @@ function trackEvent(metaName, gaName, params){
       try { _receiptData = { ref, medium, ...JSON.parse(sessionStorage.getItem('pixyo_receipt') || '{}') }; } catch(e){ _receiptData = { ref, medium }; }
       // Tracking: event Purchase (Meta + GA4) — hanya jika pixel diaktifkan
       var _pTotal = (_receiptData && _receiptData.total) || 0;
-      initTracking().then(function(){ trackEvent('Purchase', 'purchase', { value: parseFloat(_pTotal)||0, currency: 'MYR', transaction_id: ref || '' }); });
+      initTracking().then(function(){ trackEvent('Purchase', 'purchase', { value: parseFloat(_pTotal)||0, currency: 'MYR', transaction_id: ref || '' }, 'CompletePayment'); });
       sessionStorage.removeItem('pixyo_ref');
       sessionStorage.removeItem('pixyo_medium');
       sessionStorage.removeItem('pixyo_receipt');

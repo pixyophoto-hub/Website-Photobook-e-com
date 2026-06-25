@@ -397,6 +397,10 @@ tbody tr{border-top:1px solid #f0e8df;}
                 <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Google Analytics ID <span style="font-weight:400;color:#9a8d80;">(GA4)</span></label>
                 <input id="trk-ga4" type="text" placeholder="cth: G-XXXXXXXXXX" class="inp" style="width:100%;box-sizing:border-box;">
               </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">TikTok Pixel ID <span style="font-weight:400;color:#9a8d80;">(TikTok Ads)</span></label>
+                <input id="trk-tiktok" type="text" placeholder="cth: CXXXXXXXXXXXXXXXXX" class="inp" style="width:100%;box-sizing:border-box;">
+              </div>
             </div>
             <div style="display:flex;justify-content:flex-end;">
               <button class="btn-primary" style="font-size:13px;padding:9px 18px;border-radius:8px;" onclick="saveTracking()"><i class="ph ph-floppy-disk"></i> Simpan Tracking</button>
@@ -2451,12 +2455,14 @@ function loadTracking(){
     .then(r=>r.json()).then(d=>{
       document.getElementById('trk-meta').value = d.meta_pixel_id || '';
       document.getElementById('trk-ga4').value  = d.ga4_id || '';
+      document.getElementById('trk-tiktok').value = d.tiktok_pixel_id || '';
     }).catch(()=>{});
 }
 function saveTracking(){
   const body = {
     meta_pixel_id: document.getElementById('trk-meta').value.trim(),
     ga4_id: document.getElementById('trk-ga4').value.trim(),
+    tiktok_pixel_id: document.getElementById('trk-tiktok').value.trim(),
   };
   fetch('/api/tracking', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body: JSON.stringify(body) })
     .then(r=>r.json()).then(res=>showToast(res.ok ? 'Tetapan tracking disimpan ✓' : 'Gagal simpan'))
