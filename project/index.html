@@ -134,6 +134,9 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
 .hc-spec span{color:#9a8d80;}
 .hc-spec b{color:#4a4038;font-weight:600;text-align:right;}
 .hc-addon{margin-top:10px;font-size:11.5px;color:#a86d69;font-style:italic;}
+.hc-btn{margin-top:14px;width:100%;display:flex;align-items:center;justify-content:center;gap:7px;border:none;background:#c98a86;color:#fff;font-family:inherit;font-size:13.5px;font-weight:600;padding:11px;border-radius:8px;cursor:pointer;transition:background .15s;}
+.hc-btn:hover{background:#b9786f;}
+.hc-btn i{font-size:16px;}
 .step-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;max-width:880px;margin:0 auto;}
 .step-item{display:flex;flex-direction:column;align-items:center;gap:12px;}
 .step-icon{font-size:30px;color:#c98a86;}
@@ -278,16 +281,6 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
     </div>
     <div class="hc-gallery">
       <div class="hc-item">
-        <img src="hardcover-1.png" alt="Photobook Hardcover Travel Memories 11x8.5" class="hc-img">
-        <div class="hc-cap">
-          <div class="hc-price"><span class="hc-old">RM199</span><span class="hc-now">RM135</span></div>
-          <div class="hc-spec"><span>Size</span><b>11 x 8.5 inci</b></div>
-          <div class="hc-spec"><span>Kertas</span><b>Lustre Paper</b></div>
-          <div class="hc-spec"><span>Muatan</span><b>250 gambar</b></div>
-          <div class="hc-addon">+ Add-On Layout: RM4 (10 foto)</div>
-        </div>
-      </div>
-      <div class="hc-item">
         <img src="hardcover-2.png" alt="Photobook Hardcover Graduation 6x6" class="hc-img">
         <div class="hc-cap">
           <div class="hc-price"><span class="hc-old">RM99</span><span class="hc-now">RM68</span></div>
@@ -295,6 +288,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <div class="hc-spec"><span>Kertas</span><b>Lustre Paper</b></div>
           <div class="hc-spec"><span>Muatan</span><b>100 gambar</b></div>
           <div class="hc-addon">+ Add-On Layout: RM2 (10 foto)</div>
+          <button class="hc-btn" onclick="addSizeToCart('PHOTOBOOK HARDCOVER 6x6')"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
         </div>
       </div>
       <div class="hc-item">
@@ -305,6 +299,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <div class="hc-spec"><span>Kertas</span><b>Lustre Paper</b></div>
           <div class="hc-spec"><span>Muatan</span><b>150 gambar</b></div>
           <div class="hc-addon">+ Add-On Layout: RM2 (10 foto)</div>
+          <button class="hc-btn" onclick="addSizeToCart('PHOTOBOOK HARDCOVER 6x8')"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
         </div>
       </div>
       <div class="hc-item">
@@ -315,6 +310,18 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <div class="hc-spec"><span>Kertas</span><b>Lustre Paper</b></div>
           <div class="hc-spec"><span>Muatan</span><b>200 gambar</b></div>
           <div class="hc-addon">+ Add-On Layout: RM4 (10 foto)</div>
+          <button class="hc-btn" onclick="addSizeToCart('PHOTOBOOK HARDCOVER 8x8')"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
+        </div>
+      </div>
+      <div class="hc-item">
+        <img src="hardcover-1.png" alt="Photobook Hardcover Travel Memories 11x8.5" class="hc-img">
+        <div class="hc-cap">
+          <div class="hc-price"><span class="hc-old">RM199</span><span class="hc-now">RM135</span></div>
+          <div class="hc-spec"><span>Size</span><b>11 x 8.5 inci</b></div>
+          <div class="hc-spec"><span>Kertas</span><b>Lustre Paper</b></div>
+          <div class="hc-spec"><span>Muatan</span><b>250 gambar</b></div>
+          <div class="hc-addon">+ Add-On Layout: RM4 (10 foto)</div>
+          <button class="hc-btn" onclick="addSizeToCart('PHOTOBOOK HARDCOVER 11x8.5')"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
         </div>
       </div>
     </div>
@@ -1518,6 +1525,13 @@ function addToCart(pkgId) {
   const pkg = PKG.find(p => p.id === pkgId);
   if(state.cart[pkgId] === 1) showToast((pkg ? pkg.name : '') + ' ditambah ke troli ✓');
   try { if(pkg) trackEvent('AddToCart', 'add_to_cart', { value: parseFloat(pkg.price)||0, currency: 'MYR', content_name: pkg.name }); } catch(e){}
+}
+
+// Tambah ke troli dari galeri hardcover (padan pakej ikut nama)
+function addSizeToCart(name){
+  var pkg = PKG.find(function(p){ return p.name === name; });
+  if(!pkg){ showToast('Pakej belum sedia, cuba sekejap lagi.'); return; }
+  addToCart(pkg.id);
 }
 
 function removeFromCart(pkgId) {
