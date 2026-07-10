@@ -562,7 +562,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
 
       <div style="display:flex;gap:0;align-items:flex-start;" class="checkout-layout">
         <!-- left -->
-        <div class="checkout-left" style="flex:1;padding:30px 32px;border-right:1px solid #efe6da;">
+        <div class="checkout-left" style="flex:1;padding:30px 32px;max-width:640px;margin:0 auto;">
 
           <!-- Cart items -->
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
@@ -572,6 +572,38 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
             </button>
           </div>
           <div id="cart-lines"></div>
+
+          <!-- Ringkasan Pesanan -->
+          <div class="summary-panel" style="width:auto;position:static;max-height:none;margin-top:20px;border-radius:10px;">
+            <div style="font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#6f6358;margin-bottom:18px;">Ringkasan Pesanan</div>
+            <div class="summary-row"><span>Subtotal</span><span id="s-subtotal" style="font-weight:600;color:#473f38;"></span></div>
+            <div class="summary-row" style="color:#6f8466;"><span id="s-discount-label">Diskaun</span><span id="s-discount" style="font-weight:600;"></span></div>
+            <div id="s-postage-row" class="summary-row" style="border-bottom:1px solid #e3d8cb;color:#6f8466;"><span id="s-postage-label">Penghantaran</span><span id="s-postage" style="font-weight:600;">Percuma</span></div>
+            <div style="display:flex;gap:8px;margin:4px 0 16px;">
+              <input type="text" id="promo-input" placeholder="KOD BAUCAR / PROMO" class="inp" style="flex:1;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;padding:9px 12px;">
+              <button class="btn-secondary" onclick="applyPromo()" style="font-size:13px;padding:9px 14px;white-space:nowrap;">Guna</button>
+            </div>
+            <div class="summary-total">
+              <span style="font-size:14px;color:#473f38;font-weight:600;">Jumlah</span>
+              <span id="s-total" style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#423b36;"></span>
+            </div>
+            <div style="margin:6px 0 14px;display:flex;flex-direction:column;gap:10px;">
+              <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:11.5px;color:#6f6358;line-height:1.5;">
+                <input type="checkbox" id="consent-pdpa" style="margin-top:2px;flex:none;width:15px;height:15px;accent-color:#a86d69;cursor:pointer;">
+                <span>Saya bersetuju data peribadi saya diproses untuk tujuan pesanan &amp; penghantaran, mengikut <span onclick="event.preventDefault();event.stopPropagation();goPage('privasi')" style="color:#a86d69;font-weight:600;text-decoration:underline;cursor:pointer;">Notis Privasi</span>.</span>
+              </label>
+              <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:11.5px;color:#8a7e72;line-height:1.5;">
+                <input type="checkbox" id="consent-marketing" style="margin-top:2px;flex:none;width:15px;height:15px;accent-color:#a86d69;cursor:pointer;">
+                <span>(Pilihan) Saya ingin menerima promosi &amp; tawaran melalui WhatsApp/e-mel.</span>
+              </label>
+            </div>
+            <button class="btn-primary" style="width:100%;font-size:15px;padding:15px;" onclick="doPay()" id="pay-btn">Buat Bayaran</button>
+            <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-size:11px;color:#9a8d80;">
+              <span><i class="ph ph-lock-simple"></i> Selamat &amp; disulitkan</span>
+              <span style="width:3px;height:3px;border-radius:50%;background:#cfc3b6;"></span>
+              <span>FPX · Kad · e-Wallet</span>
+            </div>
+          </div>
 
           <!-- Cara Hantar Gambar -->
           <div style="font-size:15px;font-weight:700;color:#473f38;margin-top:24px;margin-bottom:6px;">Cara Hantar Gambar</div>
@@ -605,41 +637,6 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <!-- Payment -->
           <div style="font-size:15px;font-weight:700;color:#473f38;margin-bottom:14px;">Kaedah Bayaran</div>
           <div id="pay-methods"></div>
-        </div>
-
-        <!-- Right summary -->
-        <div class="summary-panel">
-          <div style="font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#6f6358;margin-bottom:18px;">Ringkasan Pesanan</div>
-          <div class="summary-row"><span>Subtotal</span><span id="s-subtotal" style="font-weight:600;color:#473f38;"></span></div>
-          <div class="summary-row" style="color:#6f8466;"><span id="s-discount-label">Diskaun</span><span id="s-discount" style="font-weight:600;"></span></div>
-          <div id="s-postage-row" class="summary-row" style="border-bottom:1px solid #e3d8cb;color:#6f8466;"><span id="s-postage-label">Penghantaran</span><span id="s-postage" style="font-weight:600;">Percuma</span></div>
-          <!-- Promo -->
-          <div style="display:flex;gap:8px;margin:4px 0 16px;">
-            <input type="text" id="promo-input" placeholder="KOD BAUCAR / PROMO" class="inp" style="flex:1;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;padding:9px 12px;">
-            <button class="btn-secondary" onclick="applyPromo()" style="font-size:13px;padding:9px 14px;white-space:nowrap;">Guna</button>
-          </div>
-
-          <div class="summary-total">
-            <span style="font-size:14px;color:#473f38;font-weight:600;">Jumlah</span>
-            <span id="s-total" style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#423b36;"></span>
-          </div>
-          <!-- Persetujuan PDPA -->
-          <div style="margin:6px 0 14px;display:flex;flex-direction:column;gap:10px;">
-            <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:11.5px;color:#6f6358;line-height:1.5;">
-              <input type="checkbox" id="consent-pdpa" style="margin-top:2px;flex:none;width:15px;height:15px;accent-color:#a86d69;cursor:pointer;">
-              <span>Saya bersetuju data peribadi saya diproses untuk tujuan pesanan & penghantaran, mengikut <span onclick="event.preventDefault();event.stopPropagation();goPage('privasi')" style="color:#a86d69;font-weight:600;text-decoration:underline;cursor:pointer;">Notis Privasi</span>.</span>
-            </label>
-            <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:11.5px;color:#8a7e72;line-height:1.5;">
-              <input type="checkbox" id="consent-marketing" style="margin-top:2px;flex:none;width:15px;height:15px;accent-color:#a86d69;cursor:pointer;">
-              <span>(Pilihan) Saya ingin menerima promosi & tawaran melalui WhatsApp/e-mel.</span>
-            </label>
-          </div>
-          <button class="btn-primary" style="width:100%;font-size:15px;padding:15px;" onclick="doPay()" id="pay-btn">Buat Bayaran</button>
-          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-size:11px;color:#9a8d80;">
-            <span><i class="ph ph-lock-simple"></i> Selamat & disulitkan</span>
-            <span style="width:3px;height:3px;border-radius:50%;background:#cfc3b6;"></span>
-            <span>FPX · Kad · e-Wallet</span>
-          </div>
         </div>
       </div>
     </div>
