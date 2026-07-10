@@ -1712,14 +1712,15 @@ function renderCheckout() {
   // payment methods
   const pmEl = document.getElementById('pay-methods');
   const methods = [
-    { id:'fpx',     name:'FPX Online Banking', note:"Maybank, CIMB, Bank Islam & lain-lain", tag:'FPX' },
-    { id:'card',    name:'Kad Kredit / Debit',  note:'Visa · Mastercard',                     tag:'CARD' },
-    { id:'ewallet', name:'e-Wallet',            note:"Touch 'n Go · GrabPay · Boost",         tag:'E-WALLET' }
+    { id:'fpx',     name:'FPX Online Banking', note:"Maybank, CIMB, Bank Islam & lain-lain", tag:'FPX',      icon:'ph-bank',        color:'#2e9e5b' },
+    { id:'card',    name:'Kad Kredit / Debit',  note:'Visa · Mastercard',                     tag:'CARD',     icon:'ph-credit-card', color:'#3d6fd6' },
+    { id:'ewallet', name:'e-Wallet',            note:"Touch 'n Go · GrabPay · Boost",         tag:'E-WALLET', icon:'ph-wallet',      color:'#f39c12' }
   ];
   pmEl.innerHTML = methods.map(m => `
     <div class="pay-option ${state.pay===m.id?'selected':''}" onclick="selectPay('${m.id}')">
       <div class="pay-border"></div>
       <div class="pay-ring"><div class="pay-dot"></div></div>
+      <div style="width:38px;height:38px;border-radius:9px;background:${m.color}1f;display:flex;align-items:center;justify-content:center;flex:none;"><i class="ph ${m.icon}" style="font-size:21px;color:${m.color};"></i></div>
       <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:#473f38;">${m.name}</div><div style="font-size:12px;color:#9a8d80;">${m.note}</div></div>
       <div style="font-family:'Courier New',monospace;font-size:11px;color:#b5a596;letter-spacing:0.05em;">${m.tag}</div>
     </div>
