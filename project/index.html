@@ -1709,9 +1709,10 @@ function renderCheckout() {
   // payment methods
   const pmEl = document.getElementById('pay-methods');
   const methods = [
-    { id:'fpx',     name:'FPX Online Banking', note:"Maybank, CIMB, Bank Islam & lain-lain", tag:'FPX',      icon:'ph-bank',        color:'#2e9e5b' },
-    { id:'card',    name:'Kad Kredit / Debit',  note:'Visa · Mastercard',                     tag:'CARD',     icon:'ph-credit-card', color:'#3d6fd6' },
-    { id:'ewallet', name:'e-Wallet',            note:"Touch 'n Go · GrabPay · Boost",         tag:'E-WALLET', icon:'ph-wallet',      color:'#f39c12' }
+    { id:'fpx',        name:'FPX Online Banking', note:"Maybank, CIMB, Bank Islam & lain-lain",  tag:'FPX',      icon:'ph-bank',        color:'#2e9e5b' },
+    { id:'duitnow_qr', name:'DuitNow QR',         note:"Imbas & bayar · boleh guna SPayLater",   tag:'QR',       icon:'ph-qr-code',     color:'#d6336c' },
+    { id:'card',       name:'Kad Kredit / Debit',  note:'Visa · Mastercard',                      tag:'CARD',     icon:'ph-credit-card', color:'#3d6fd6' },
+    { id:'ewallet',    name:'e-Wallet',            note:"Touch 'n Go · GrabPay · Boost",          tag:'E-WALLET', icon:'ph-wallet',      color:'#f39c12' }
   ];
   pmEl.innerHTML = methods.map(m => `
     <div class="pay-option ${state.pay===m.id?'selected':''}" onclick="selectPay('${m.id}')" style="flex-direction:column;align-items:stretch;">
@@ -1895,6 +1896,8 @@ function doPay() {
       var payUrl = res.url;
       if(state.pay === 'fpx' && state.fpxBank){
         payUrl += (payUrl.indexOf('?') >= 0 ? '&' : '?') + 'preferred=fpx&fpx_bank_code=' + encodeURIComponent(state.fpxBank);
+      } else if(state.pay === 'duitnow_qr'){
+        payUrl += (payUrl.indexOf('?') >= 0 ? '&' : '?') + 'preferred=duitnow_qr';
       }
       window.location.href = payUrl;
     } else {
