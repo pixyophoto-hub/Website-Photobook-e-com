@@ -155,6 +155,8 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
 .hc-tick:hover{border-color:#4a7a4a;}
 .hc-tick.on{background:#4a7a4a;border-color:#4a7a4a;}
 .hc-tick.on::after{opacity:1;}
+.hc-qty{flex:none;width:54px;padding:5px 6px;border:1.5px solid #d8c8bc;border-radius:8px;font-size:13px;font-weight:600;text-align:center;font-family:inherit;color:#473f38;background:#fff;}
+.hc-qty:focus{outline:none;border-color:#c98a86;}
 .hc-total{margin-top:14px;display:flex;align-items:baseline;justify-content:space-between;padding-top:12px;border-top:1px dashed #e3d8cb;}
 .hc-total span{font-size:12.5px;color:#8a7e72;}
 .hc-total b{font-size:19px;font-weight:800;color:#2d2520;}
@@ -335,7 +337,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <div class="hc-addons">
             <div class="hc-addon"><span>+ Add-On 2 muka surat kiri kanan: RM2</span><button class="hc-tick" data-addon="Add-On Layout 6x6 (10 foto)" data-price="2" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
             <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM20</span><button class="hc-tick" data-addon="Add-On Editor Pilih Gambar 6x6" data-price="20" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
-            <div class="hc-addon"><span>+ Add-On Tambah ayat dalam buku: RM2/muka surat</span><button class="hc-tick" data-addon="Add-On Tambah Ayat 6x6" data-price="2" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
+            <div class="hc-addon"><span>+ Add-On Tambah ayat dalam buku: RM2/muka surat</span><input type="number" class="hc-qty" data-addon="Add-On Tambah Ayat 6x6" data-price="2" min="0" step="1" value="0" placeholder="0" aria-label="Bilangan muka surat" onclick="event.stopPropagation()" oninput="recalcCard(this.closest('.hc-item'))"></div>
             <div class="hc-addon"><span>+ Add-On Edit cerah & tone gambar: RM50</span><button class="hc-tick" data-addon="Add-On Edit Cerah Tone 6x6" data-price="50" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
           </div>
           <div class="hc-total"><span>Jumlah</span><b>RM 65.00</b></div>
@@ -360,7 +362,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <div class="hc-addons">
             <div class="hc-addon"><span>+ Add-On 2 muka surat kiri kanan: RM2</span><button class="hc-tick" data-addon="Add-On Layout 6x8 (10 foto)" data-price="2" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
             <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM20</span><button class="hc-tick" data-addon="Add-On Editor Pilih Gambar 6x8" data-price="20" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
-            <div class="hc-addon"><span>+ Add-On Tambah ayat dalam buku: RM2/muka surat</span><button class="hc-tick" data-addon="Add-On Tambah Ayat 6x8" data-price="2" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
+            <div class="hc-addon"><span>+ Add-On Tambah ayat dalam buku: RM2/muka surat</span><input type="number" class="hc-qty" data-addon="Add-On Tambah Ayat 6x8" data-price="2" min="0" step="1" value="0" placeholder="0" aria-label="Bilangan muka surat" onclick="event.stopPropagation()" oninput="recalcCard(this.closest('.hc-item'))"></div>
             <div class="hc-addon"><span>+ Add-On Edit cerah & tone gambar: RM75</span><button class="hc-tick" data-addon="Add-On Edit Cerah Tone 6x8" data-price="75" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
           </div>
           <div class="hc-total"><span>Jumlah</span><b>RM 68.00</b></div>
@@ -385,7 +387,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <div class="hc-addons">
             <div class="hc-addon"><span>+ Add-On 2 muka surat kiri kanan: RM4</span><button class="hc-tick" data-addon="Add-On Layout 8x8 (10 foto)" data-price="4" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
             <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM40</span><button class="hc-tick" data-addon="Add-On Editor Pilih Gambar 8x8" data-price="40" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
-            <div class="hc-addon"><span>+ Add-On Tambah ayat dalam buku: RM2/muka surat</span><button class="hc-tick" data-addon="Add-On Tambah Ayat 8x8" data-price="2" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
+            <div class="hc-addon"><span>+ Add-On Tambah ayat dalam buku: RM2/muka surat</span><input type="number" class="hc-qty" data-addon="Add-On Tambah Ayat 8x8" data-price="2" min="0" step="1" value="0" placeholder="0" aria-label="Bilangan muka surat" onclick="event.stopPropagation()" oninput="recalcCard(this.closest('.hc-item'))"></div>
             <div class="hc-addon"><span>+ Add-On Edit cerah & tone gambar: RM100</span><button class="hc-tick" data-addon="Add-On Edit Cerah Tone 8x8" data-price="100" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
           </div>
           <div class="hc-total"><span>Jumlah</span><b>RM 85.00</b></div>
@@ -410,7 +412,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <div class="hc-addons">
             <div class="hc-addon"><span>+ Add-On 2 muka surat kiri kanan: RM4</span><button class="hc-tick" data-addon="Add-On Layout 11x8.5 (10 foto)" data-price="4" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
             <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM40</span><button class="hc-tick" data-addon="Add-On Editor Pilih Gambar 11x8.5" data-price="40" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
-            <div class="hc-addon"><span>+ Add-On Tambah ayat dalam buku: RM2/muka surat</span><button class="hc-tick" data-addon="Add-On Tambah Ayat 11x8.5" data-price="2" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
+            <div class="hc-addon"><span>+ Add-On Tambah ayat dalam buku: RM2/muka surat</span><input type="number" class="hc-qty" data-addon="Add-On Tambah Ayat 11x8.5" data-price="2" min="0" step="1" value="0" placeholder="0" aria-label="Bilangan muka surat" onclick="event.stopPropagation()" oninput="recalcCard(this.closest('.hc-item'))"></div>
             <div class="hc-addon"><span>+ Add-On Edit cerah & tone gambar: RM125</span><button class="hc-tick" data-addon="Add-On Edit Cerah Tone 11x8.5" data-price="125" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
           </div>
           <div class="hc-total"><span>Jumlah</span><b>RM 95.00</b></div>
@@ -1324,6 +1326,7 @@ function recalcCard(item){
   var cover = _coverPrice(item);
   var sum = cover;
   item.querySelectorAll('.hc-tick.on').forEach(function(t){ sum += Number(t.dataset.price) || 0; });
+  item.querySelectorAll('.hc-qty').forEach(function(inp){ sum += (Number(inp.dataset.price)||0) * (parseInt(inp.value,10)||0); });
   var now = item.querySelector('.hc-now'); if(now) now.textContent = 'RM' + cover;
   var el = item.querySelector('.hc-total b');
   if(el) el.textContent = money(sum);
@@ -1332,6 +1335,15 @@ function recalcCard(item){
 function addCardToCart(btn){
   var item = btn.closest('.hc-item');
   if(!item) return;
+  // Add-on kuantiti (cth Tambah Ayat) — tambah N unit ikut kotak nombor
+  item.querySelectorAll('.hc-qty').forEach(function(inp){
+    var n = parseInt(inp.value,10)||0;
+    if(n>0){
+      var a = ADDONS.find(function(x){ return x.name === inp.dataset.addon; });
+      if(a){ state.cart[a.id] = (state.cart[a.id]||0) + n; }
+    }
+    inp.value = 0;
+  });
   var hardOn = !!item.querySelector('.hc-cover-opt[data-cover="hard"].on');
   var coverName = hardOn ? item.dataset.hardName : item.dataset.softName;
   addAddonToCart(coverName);
