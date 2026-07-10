@@ -629,19 +629,29 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
               <span>(Pilihan) Saya ingin menerima promosi &amp; tawaran melalui WhatsApp/e-mel.</span>
             </label>
           </div>
-          <button class="btn-primary" style="width:100%;font-size:15px;padding:15px;" onclick="doPay()" id="pay-btn">Buat Bayaran</button>
-          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;margin-bottom:24px;font-size:11px;color:#9a8d80;">
+          <button class="btn-primary" style="width:100%;font-size:15px;padding:15px;" onclick="openPayModal()" id="pay-btn">Buat Bayaran</button>
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-size:11px;color:#9a8d80;">
             <span><i class="ph ph-lock-simple"></i> Selamat &amp; disulitkan</span>
             <span style="width:3px;height:3px;border-radius:50%;background:#cfc3b6;"></span>
             <span>FPX · DuitNow QR · Kad · e-Wallet</span>
           </div>
-
-          <!-- Payment -->
-          <div style="font-size:15px;font-weight:700;color:#473f38;margin-bottom:14px;">Kaedah Bayaran</div>
-          <div id="pay-methods"></div>
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Popup Kaedah Bayaran -->
+<div id="pay-modal" style="display:none;position:fixed;inset:0;background:rgba(45,37,32,.55);z-index:800;align-items:center;justify-content:center;padding:18px;" onclick="if(event.target===this)closePayModal()">
+  <div style="background:#fffdfa;border-radius:16px;max-width:440px;width:100%;max-height:90vh;overflow:auto;padding:24px;box-shadow:0 24px 70px rgba(0,0,0,.35);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div style="font-size:17px;font-weight:700;color:#2d2520;">Pilih Kaedah Bayaran</div>
+      <button onclick="closePayModal()" aria-label="Tutup" style="border:none;background:#f3ece2;color:#8a7e72;width:30px;height:30px;border-radius:50%;font-size:15px;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    <div style="font-size:12px;color:#8a7e72;margin-bottom:18px;">Jumlah bayaran: <b id="pm-total" style="color:#473f38;"></b></div>
+    <div id="pay-methods"></div>
+    <button class="btn-primary" style="width:100%;font-size:15px;padding:14px;margin-top:16px;" onclick="submitPayment()" id="pay-proceed-btn">Teruskan ke Pembayaran</button>
+    <div style="text-align:center;margin-top:12px;font-size:11px;color:#9a8d80;"><i class="ph ph-lock-simple"></i> Selamat &amp; disulitkan oleh CHIP</div>
   </div>
 </div>
 
@@ -1827,7 +1837,8 @@ function applyPromo() {
   }).catch(()=>{ showToast('Gagal semak baucar.'); });
 }
 
-function doPay() {
+// Validasi borang; kalau lengkap, papar popup kaedah bayaran
+function openPayModal() {
   if(!Object.keys(state.cart).length) { showToast('Pilih pakej dahulu.'); return; }
 
   // Semak pilihan hantar gambar
@@ -1861,10 +1872,24 @@ function doPay() {
     return;
   }
 
-  const { items, total } = getCheckoutTotals();
+  const { total } = getCheckoutTotals();
   if(total <= 0) { showToast('Jumlah bayaran tidak sah.'); return; }
 
-  const btn = document.getElementById('pay-btn');
+  // OK — papar popup kaedah bayaran
+  renderCheckout(); // pastikan pilihan kaedah dirender
+  const pmt = document.getElementById('pm-total'); if(pmt) pmt.textContent = money(total);
+  const pb = document.getElementById('pay-proceed-btn'); if(pb){ pb.disabled = false; pb.textContent = 'Teruskan · ' + money(total); }
+  const modal = document.getElementById('pay-modal'); if(modal) modal.style.display = 'flex';
+}
+function closePayModal(){ const m = document.getElementById('pay-modal'); if(m) m.style.display = 'none'; }
+
+// Cipta pembayaran CHIP ikut kaedah dipilih & redirect
+function submitPayment() {
+  const { items, total } = getCheckoutTotals();
+  if(total <= 0) { showToast('Jumlah bayaran tidak sah.'); return; }
+  const medium = document.getElementById('medium-select')?.value || '';
+
+  const btn = document.getElementById('pay-proceed-btn');
   btn.disabled = true;
   btn.textContent = 'Memproses...';
 
@@ -1910,13 +1935,13 @@ function doPay() {
     } else {
       showToast('Gagal: ' + (res.error || 'Cuba semula'));
       btn.disabled = false;
-      btn.textContent = 'Buat Bayaran · RM ' + total.toFixed(2);
+      btn.textContent = 'Teruskan · RM ' + total.toFixed(2);
     }
   })
   .catch(() => {
     showToast('Gagal sambung ke server.');
     btn.disabled = false;
-    btn.textContent = 'Buat Bayaran · RM ' + total.toFixed(2);
+    btn.textContent = 'Teruskan · RM ' + total.toFixed(2);
   });
 }
 
