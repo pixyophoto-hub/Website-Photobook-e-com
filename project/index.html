@@ -1669,7 +1669,6 @@ function renderCheckout() {
   } else {
     lines.innerHTML = items.map(({pkg,qty}) => `
       <div class="cart-line">
-        <div class="cart-thumb"></div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:14px;font-weight:600;color:#473f38;">${pkg.name}</div>
           <div style="font-size:12px;color:#9a8d80;margin-top:2px;">${pkg.pages ? String(pkg.pages).replace(/\D/g,'')+ ' muka surat' : ''}</div>
