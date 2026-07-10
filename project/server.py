@@ -881,8 +881,10 @@ class Handler(SimpleHTTPRequestHandler):
             failure_redirect = f"{scheme}://{host}/index.html?payment=return&ref={reference}&status=failed"
             # Callback server-ke-server tak boleh ke localhost
             callback_url = "" if is_local else f"{scheme}://{host}/api/chip-callback"
-            # Hadkan kaedah bayaran di CHIP ikut pilihan pelanggan (auto-pilih kaedah tu)
-            wl_map = {"duitnow_qr": ["duitnow_qr"], "fpx": ["fpx"]}
+            # Whitelist DIMATIKAN buat masa ini — kod kaedah perlu disahkan dgn akaun CHIP
+            # (whitelist salah kod -> CHIP jana invoice terkunci yg tak boleh bayar).
+            # Auto-pilih kaedah dibuat melalui Direct Post (preferred=...) di sisi client.
+            wl_map = {}
             whitelist = wl_map.get(pay_method)
             result = chip_create_purchase(total, reference, success_redirect, failure_redirect, callback_url, name, email, whitelist)
             if result["ok"]:
