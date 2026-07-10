@@ -1217,6 +1217,21 @@ class Handler(SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     # SECURITY: Amaran jika kredential / secret default masih digunakan
     _d = load_data()
+    # RESET admin sekali guna: set ADMIN_RESET=1 + ADMIN_PASSWORD di env, deploy, login,
+    # kemudian BUANG ADMIN_RESET & deploy semula supaya ia tak reset setiap kali start.
+    if os.environ.get("ADMIN_RESET", "").strip().lower() in ("1", "true", "yes"):
+        _email = os.environ.get("ADMIN_EMAIL", "admin@pixyoprint.com")
+        _newpw = os.environ.get("ADMIN_PASSWORD", "admin123")
+        _u = next((u for u in _d.get("users", [])
+                   if u.get("role") == "admin" or u.get("email") == _email), None)
+        if _u:
+            _u["email"] = _email
+            _u["password"] = hash_password(_newpw)
+        else:
+            _d.setdefault("users", []).append({"email": _email, "password": hash_password(_newpw),
+                                                "name": "Admin", "role": "admin"})
+        save_data(_d)
+        print("ADMIN_RESET: kata laluan admin telah diset semula ikut ADMIN_PASSWORD.")
     _admin = next((u for u in _d.get("users", []) if u.get("role") == "admin"), None)
     if _admin and verify_password(_admin.get("password", ""), "admin123"):
         print("AMARAN: Kata laluan admin masih 'admin123' (default).")
