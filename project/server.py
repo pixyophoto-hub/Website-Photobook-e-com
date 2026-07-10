@@ -22,6 +22,16 @@ HITPAY_CURRENCY = "MYR"
 # SECURITY: Password hashing (PBKDF2-SHA256)
 # Mencegah: kata laluan bocor jika data.json terdedah
 # ============================================================
+# ID order pendek (6 aksara) — elak huruf keliru (O/0, I/1/L)
+_REF_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+def gen_order_ref(existing=()):
+    seen = set(existing)
+    for _ in range(30):
+        ref = "".join(secrets.choice(_REF_ALPHABET) for _ in range(6))
+        if ref not in seen:
+            return ref
+    return "".join(secrets.choice(_REF_ALPHABET) for _ in range(6))
+
 def hash_password(password: str) -> str:
     salt = secrets.token_hex(16)
     key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), 260000)
@@ -868,7 +878,7 @@ class Handler(SimpleHTTPRequestHandler):
             if total <= 0:
                 return self._json({"ok": False, "error": "Jumlah tidak sah"}, 400)
 
-            reference = secrets.token_hex(8).upper()
+            reference = gen_order_ref({o.get("reference") for o in d.get("orders", [])})
             # Simpan order dengan status 'pending'
             d["orders"].append({
                 "reference":  reference,
