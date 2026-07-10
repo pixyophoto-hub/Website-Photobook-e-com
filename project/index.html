@@ -1585,8 +1585,13 @@ function removeFromCart(pkgId) {
 }
 
 function updateCartLabel() {
-  const total = Object.values(state.cart).reduce((a,b)=>a+b, 0);
-  document.getElementById('nav-cart-label').textContent = 'Troli · ' + total;
+  const count = Object.values(state.cart).reduce((a,b)=>a+b, 0);
+  let subtotal = 0;
+  for(const [id, qty] of Object.entries(state.cart)){
+    const it = findItem(id);
+    if(it && qty > 0) subtotal += (Number(it.price)||0) * qty;
+  }
+  document.getElementById('nav-cart-label').textContent = count ? ('Troli · ' + money(subtotal)) : 'Troli · 0';
 }
 
 // ============================================================
