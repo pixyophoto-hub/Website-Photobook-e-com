@@ -124,6 +124,9 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 .review-card{flex:0 0 360px;width:360px;border-radius:14px;padding:28px 26px;box-sizing:border-box;}
 @media(max-width:768px){.review-card{flex-basis:300px;width:300px;}}
 #section-terokai{padding:48px;}
+.hc-gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+.hc-img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px;display:block;}
+@media(max-width:768px){ #section-terokai{padding:30px 14px;} .hc-gallery{grid-template-columns:1fr 1fr;gap:12px;} }
 .explore-grid{display:grid;grid-template-columns:1fr;gap:32px;align-items:center;}
 .explore-track{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;padding:4px;min-width:0;}
 .explore-card{min-width:0;}
@@ -248,10 +251,13 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
   </div>
 
 
-  <!-- Terokai Pilihan -->
+  <!-- Galeri Photobook Hardcover -->
   <div id="section-terokai" class="card" style="margin-bottom:32px;">
-    <div class="explore-grid">
-      <div class="explore-track" id="explore-track"></div>
+    <div class="hc-gallery">
+      <img src="hardcover-1.png" alt="Photobook Hardcover Travel Memories 11x8.5" class="hc-img">
+      <img src="hardcover-2.png" alt="Photobook Hardcover Graduation 6x6" class="hc-img">
+      <img src="hardcover-3.png" alt="Photobook Hardcover Little Adventures 6x8" class="hc-img">
+      <img src="hardcover-4.png" alt="Photobook Hardcover Umrah Memories 8x8" class="hc-img">
     </div>
   </div>
 
