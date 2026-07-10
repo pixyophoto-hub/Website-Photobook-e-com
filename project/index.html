@@ -1713,23 +1713,25 @@ function renderCheckout() {
     { id:'card',    name:'Kad Kredit / Debit',  note:'Visa · Mastercard',                     tag:'CARD',     icon:'ph-credit-card', color:'#3d6fd6' },
     { id:'ewallet', name:'e-Wallet',            note:"Touch 'n Go · GrabPay · Boost",         tag:'E-WALLET', icon:'ph-wallet',      color:'#f39c12' }
   ];
-  const fpxDropdown = state.pay==='fpx' ? `
-    <div style="margin-top:12px;">
-      <label style="font-size:12px;font-weight:600;color:#6f6358;display:block;margin-bottom:6px;">Pilih Bank FPX <span style="font-weight:400;color:#9a8d80;">(atau pilih di halaman bayaran nanti)</span></label>
-      <select id="fpx-bank" class="inp" onchange="state.fpxBank=this.value">
-        <option value="">— Pilih bank —</option>
-        ${FPX_BANKS.map(b=>`<option value="${b.code}" ${state.fpxBank===b.code?'selected':''}>${b.name}</option>`).join('')}
-      </select>
-    </div>` : '';
   pmEl.innerHTML = methods.map(m => `
-    <div class="pay-option ${state.pay===m.id?'selected':''}" onclick="selectPay('${m.id}')">
+    <div class="pay-option ${state.pay===m.id?'selected':''}" onclick="selectPay('${m.id}')" style="flex-direction:column;align-items:stretch;">
       <div class="pay-border"></div>
-      <div class="pay-ring"><div class="pay-dot"></div></div>
-      <div style="width:38px;height:38px;border-radius:9px;background:${m.color}1f;display:flex;align-items:center;justify-content:center;flex:none;"><i class="ph ${m.icon}" style="font-size:21px;color:${m.color};"></i></div>
-      <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:#473f38;">${m.name}</div><div style="font-size:12px;color:#9a8d80;">${m.note}</div></div>
-      <div style="font-family:'Courier New',monospace;font-size:11px;color:#b5a596;letter-spacing:0.05em;">${m.tag}</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="pay-ring"><div class="pay-dot"></div></div>
+        <div style="width:38px;height:38px;border-radius:9px;background:${m.color}1f;display:flex;align-items:center;justify-content:center;flex:none;"><i class="ph ${m.icon}" style="font-size:21px;color:${m.color};"></i></div>
+        <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:#473f38;">${m.name}</div><div style="font-size:12px;color:#9a8d80;">${m.note}</div></div>
+        <div style="font-family:'Courier New',monospace;font-size:11px;color:#b5a596;letter-spacing:0.05em;">${m.tag}</div>
+      </div>
+      ${(m.id==='fpx' && state.pay==='fpx') ? `
+      <div style="padding-top:12px;border-top:1px solid #efe6da;" onclick="event.stopPropagation();">
+        <label style="font-size:12px;font-weight:600;color:#6f6358;display:block;margin-bottom:6px;">Pilih Bank FPX <span style="font-weight:400;color:#9a8d80;">(atau pilih di halaman bayaran nanti)</span></label>
+        <select id="fpx-bank" class="inp" onchange="state.fpxBank=this.value">
+          <option value="">— Pilih bank —</option>
+          ${FPX_BANKS.map(b=>`<option value="${b.code}" ${state.fpxBank===b.code?'selected':''}>${b.name}</option>`).join('')}
+        </select>
+      </div>` : ''}
     </div>
-  `).join('') + fpxDropdown;
+  `).join('');
 }
 // Senarai bank FPX B2C (kod standard FPX yang diguna CHIP untuk Direct Post)
 const FPX_BANKS = [
