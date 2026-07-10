@@ -144,7 +144,7 @@ tbody tr{border-top:1px solid #f0e8df;}
         <div style="font-size:13px;color:#8a7e72;margin-bottom:24px;">Sabtu, 21 Jun 2026 · Ringkasan hari ini</div>
         <div class="grid-4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;" id="kpi-cards"></div>
         <div class="split" style="display:grid;grid-template-columns:1fr 340px;gap:20px;">
-          <div class="card" style="overflow:hidden;">
+          <div class="card" style="overflow-x:auto;">
             <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #ede4d8;">
               <div style="font-size:15px;font-weight:700;">Order Terkini</div>
               <div style="font-size:12px;color:#a86d69;font-weight:600;cursor:pointer;" onclick="goView('orders')">Lihat semua <i class="ph ph-arrow-right"></i></div>
@@ -154,7 +154,7 @@ tbody tr{border-top:1px solid #f0e8df;}
               <tbody id="recent-orders"></tbody>
             </table>
           </div>
-          <div class="card" style="overflow:hidden;">
+          <div class="card" style="overflow-x:auto;">
             <div style="padding:18px 22px;border-bottom:1px solid #ede4d8;font-size:15px;font-weight:700;">Beban Kerja Editor</div>
             <div style="padding:14px 22px;" id="editor-workload"></div>
           </div>
@@ -177,7 +177,7 @@ tbody tr{border-top:1px solid #f0e8df;}
             <button class="btn-primary" style="font-size:13px;padding:9px 16px;border-radius:8px;white-space:nowrap;" onclick="exportOrdersCsv()"><i class="ph ph-download-simple"></i> Muat Turun CSV</button>
           </div>
         </div>
-        <div class="card" style="overflow:hidden;">
+        <div class="card" style="overflow-x:auto;">
           <table>
             <thead><tr>
               <th>#Order</th><th>Pelanggan</th><th>Pakej</th><th>Jumlah</th><th>Status</th><th>Assign Editor</th><th>Tarikh</th><th></th>
@@ -193,7 +193,7 @@ tbody tr{border-top:1px solid #f0e8df;}
           <div class="h-title">Permintaan Data Peribadi</div>
           <div style="font-size:13px;color:#8a7e72;margin-top:2px;">Permintaan akses / pembetulan / pemadaman daripada pelanggan (PDPA). Balas dalam <b>21 hari</b>.</div>
         </div>
-        <div class="card" style="overflow:hidden;">
+        <div class="card" style="overflow-x:auto;">
           <table>
             <thead><tr>
               <th>Tarikh</th><th>Jenis</th><th>Pelanggan</th><th>Hubungi</th><th>No. Order</th><th>Mesej</th><th>Status</th><th></th>
