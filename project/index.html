@@ -123,9 +123,9 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
 @keyframes reviewScroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 .review-card{flex:0 0 360px;width:360px;border-radius:14px;padding:28px 26px;box-sizing:border-box;}
 @media(max-width:768px){.review-card{flex-basis:300px;width:300px;}}
-#section-terokai{padding:64px 48px;}
-.explore-grid{display:grid;grid-template-columns:300px 1fr;gap:32px;align-items:center;}
-.explore-track{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:4px;min-width:0;}
+#section-terokai{padding:48px;}
+.explore-grid{display:grid;grid-template-columns:1fr;gap:32px;align-items:center;}
+.explore-track{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;padding:4px;min-width:0;}
 .explore-card{min-width:0;}
 .explore-track::-webkit-scrollbar{display:none;}
 .pcard-slider::-webkit-scrollbar{display:none;}
@@ -259,10 +259,6 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#e7e5df;mi
   <!-- Terokai Pilihan -->
   <div id="section-terokai" class="card" style="margin-bottom:32px;">
     <div class="explore-grid">
-      <div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(34px,4.5vw,48px);font-weight:600;line-height:1.05;color:#2d2520;">Terokai <span style="font-style:italic;color:#c98a86;">Pilihan</span> Anda</div>
-        <p style="font-size:15px;color:#8a7e72;line-height:1.7;margin-top:16px;max-width:320px;">Abadikan setiap detik bahagia, cinta dan kenangan berharga dalam hidup anda. Pilih harga disini.</p>
-      </div>
       <div class="explore-track" id="explore-track"></div>
     </div>
   </div>
