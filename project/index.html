@@ -1731,6 +1731,11 @@ function renderCheckout() {
           ${FPX_BANKS.map(b=>`<option value="${b.code}" ${state.fpxBank===b.code?'selected':''}>${b.name}</option>`).join('')}
         </select>
       </div>` : ''}
+      ${(m.id==='duitnow_qr' && state.pay==='duitnow_qr') ? `
+      <div style="padding-top:12px;border-top:1px solid #efe6da;display:flex;align-items:center;gap:10px;">
+        <i class="ph ph-qr-code" style="font-size:30px;color:#d6336c;flex:none;"></i>
+        <div style="font-size:12px;color:#8a7e72;line-height:1.5;">Kod QR (dengan jumlah tepat) akan dipaparkan selepas anda klik <b style="color:#473f38;">Buat Bayaran</b>. Imbas guna app bank atau Shopee (SPayLater).</div>
+      </div>` : ''}
     </div>
   `).join('');
 }
