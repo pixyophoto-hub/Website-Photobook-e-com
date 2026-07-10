@@ -587,22 +587,6 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
               <span style="font-size:14px;color:#473f38;font-weight:600;">Jumlah</span>
               <span id="s-total" style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#423b36;"></span>
             </div>
-            <div style="margin:6px 0 14px;display:flex;flex-direction:column;gap:10px;">
-              <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:11.5px;color:#6f6358;line-height:1.5;">
-                <input type="checkbox" id="consent-pdpa" style="margin-top:2px;flex:none;width:15px;height:15px;accent-color:#a86d69;cursor:pointer;">
-                <span>Saya bersetuju data peribadi saya diproses untuk tujuan pesanan &amp; penghantaran, mengikut <span onclick="event.preventDefault();event.stopPropagation();goPage('privasi')" style="color:#a86d69;font-weight:600;text-decoration:underline;cursor:pointer;">Notis Privasi</span>.</span>
-              </label>
-              <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:11.5px;color:#8a7e72;line-height:1.5;">
-                <input type="checkbox" id="consent-marketing" style="margin-top:2px;flex:none;width:15px;height:15px;accent-color:#a86d69;cursor:pointer;">
-                <span>(Pilihan) Saya ingin menerima promosi &amp; tawaran melalui WhatsApp/e-mel.</span>
-              </label>
-            </div>
-            <button class="btn-primary" style="width:100%;font-size:15px;padding:15px;" onclick="doPay()" id="pay-btn">Buat Bayaran</button>
-            <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-size:11px;color:#9a8d80;">
-              <span><i class="ph ph-lock-simple"></i> Selamat &amp; disulitkan</span>
-              <span style="width:3px;height:3px;border-radius:50%;background:#cfc3b6;"></span>
-              <span>FPX · Kad · e-Wallet</span>
-            </div>
           </div>
 
           <!-- Cara Hantar Gambar -->
@@ -637,6 +621,24 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <!-- Payment -->
           <div style="font-size:15px;font-weight:700;color:#473f38;margin-bottom:14px;">Kaedah Bayaran</div>
           <div id="pay-methods"></div>
+
+          <!-- Persetujuan + Buat Bayaran -->
+          <div style="margin:20px 0 14px;display:flex;flex-direction:column;gap:10px;">
+            <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:11.5px;color:#6f6358;line-height:1.5;">
+              <input type="checkbox" id="consent-pdpa" style="margin-top:2px;flex:none;width:15px;height:15px;accent-color:#a86d69;cursor:pointer;">
+              <span>Saya bersetuju data peribadi saya diproses untuk tujuan pesanan &amp; penghantaran, mengikut <span onclick="event.preventDefault();event.stopPropagation();goPage('privasi')" style="color:#a86d69;font-weight:600;text-decoration:underline;cursor:pointer;">Notis Privasi</span>.</span>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:9px;cursor:pointer;font-size:11.5px;color:#8a7e72;line-height:1.5;">
+              <input type="checkbox" id="consent-marketing" style="margin-top:2px;flex:none;width:15px;height:15px;accent-color:#a86d69;cursor:pointer;">
+              <span>(Pilihan) Saya ingin menerima promosi &amp; tawaran melalui WhatsApp/e-mel.</span>
+            </label>
+          </div>
+          <button class="btn-primary" style="width:100%;font-size:15px;padding:15px;" onclick="doPay()" id="pay-btn">Buat Bayaran</button>
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-size:11px;color:#9a8d80;">
+            <span><i class="ph ph-lock-simple"></i> Selamat &amp; disulitkan</span>
+            <span style="width:3px;height:3px;border-radius:50%;background:#cfc3b6;"></span>
+            <span>FPX · DuitNow QR · Kad · e-Wallet</span>
+          </div>
         </div>
       </div>
     </div>
