@@ -1879,6 +1879,7 @@ function doPay() {
       email,
       phone,
       medium,
+      pay_method: state.pay || '',
       voucher: state.promoActive ? state.promoCode : '',
       consent: true,
       consent_marketing: !!(document.getElementById('consent-marketing')||{}).checked,

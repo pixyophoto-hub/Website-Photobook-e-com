@@ -296,7 +296,7 @@ def chip_request(method, path, body=None):
     except Exception as e:
         return None, str(e)
 
-def chip_create_purchase(total, reference, success_redirect, failure_redirect, success_callback, name, email):
+def chip_create_purchase(total, reference, success_redirect, failure_redirect, success_callback, name, email, whitelist=None):
     """Cipta purchase di CHIP. Amaun dalam SEN (integer). Pulangkan {ok, url, id}."""
     cfg = get_chip_cfg()
     if not cfg["secret_key"] or not cfg["brand_id"]:
@@ -315,7 +315,13 @@ def chip_create_purchase(total, reference, success_redirect, failure_redirect, s
     }
     if success_callback:
         body["success_callback"] = success_callback
+    if whitelist:
+        body["payment_method_whitelist"] = whitelist
     data, err = chip_request("POST", "/purchases/", body)
+    # Fallback selamat: jika whitelist ditolak (kaedah tak aktif untuk brand), cuba tanpa whitelist
+    if err and whitelist:
+        body.pop("payment_method_whitelist", None)
+        data, err = chip_request("POST", "/purchases/", body)
     if err:
         return {"ok": False, "error": err}
     return {"ok": True, "url": data.get("checkout_url"), "id": data.get("id")}
@@ -779,6 +785,7 @@ class Handler(SimpleHTTPRequestHandler):
             email   = str(b.get("email", ""))[:254]
             phone   = str(b.get("phone", ""))[:30]
             medium  = str(b.get("medium", ""))[:40]
+            pay_method = str(b.get("pay_method", ""))[:20]
             req_items = b.get("items", [])
             voucher_code = str(b.get("voucher", "")).strip().upper()[:40]
             consent_marketing = bool(b.get("consent_marketing", False))
@@ -874,7 +881,10 @@ class Handler(SimpleHTTPRequestHandler):
             failure_redirect = f"{scheme}://{host}/index.html?payment=return&ref={reference}&status=failed"
             # Callback server-ke-server tak boleh ke localhost
             callback_url = "" if is_local else f"{scheme}://{host}/api/chip-callback"
-            result = chip_create_purchase(total, reference, success_redirect, failure_redirect, callback_url, name, email)
+            # Hadkan kaedah bayaran di CHIP ikut pilihan pelanggan (auto-pilih kaedah tu)
+            wl_map = {"duitnow_qr": ["duitnow_qr"], "fpx": ["fpx"]}
+            whitelist = wl_map.get(pay_method)
+            result = chip_create_purchase(total, reference, success_redirect, failure_redirect, callback_url, name, email, whitelist)
             if result["ok"]:
                 for o in d["orders"]:
                     if o.get("reference") == reference:
