@@ -135,7 +135,8 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
 .hc-spec b{color:#4a4038;font-weight:600;text-align:right;}
 .hc-addon{margin-top:10px;font-size:11.5px;color:#a86d69;font-style:italic;}
 .step-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;max-width:880px;margin:0 auto;}
-.step-item{display:flex;flex-direction:column;align-items:center;gap:16px;}
+.step-item{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.step-icon{font-size:30px;color:#c98a86;}
 .step-num{width:54px;height:54px;border-radius:50%;background:#c98a86;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:25px;font-weight:600;flex:none;box-shadow:0 6px 16px rgba(201,138,134,.35);}
 .step-text{font-size:14.5px;color:#6f6358;line-height:1.6;max-width:220px;}
 @media(max-width:768px){ .step-grid{grid-template-columns:1fr;gap:26px;max-width:320px;} }
@@ -252,14 +253,17 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
     <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,4.5vw,48px);font-weight:500;color:#2d2520;margin-bottom:44px;">Mudah dalam <span style="font-style:italic;color:#c98a86;">3 langkah</span></div>
     <div class="step-grid">
       <div class="step-item">
+        <i class="ph ph-shopping-cart-simple step-icon"></i>
         <div class="step-num">1</div>
         <div class="step-text">Pilih saiz photobook &amp; tambah ke troli</div>
       </div>
       <div class="step-item">
+        <i class="ph ph-credit-card step-icon"></i>
         <div class="step-num">2</div>
         <div class="step-text">Buat pembayaran melalui payment gateway</div>
       </div>
       <div class="step-item">
+        <i class="ph ph-whatsapp-logo step-icon"></i>
         <div class="step-num">3</div>
         <div class="step-text">Terima no. WhatsApp editor untuk penghantaran gambar</div>
       </div>
