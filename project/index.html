@@ -124,6 +124,11 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
 .review-card{flex:0 0 360px;width:360px;border-radius:14px;padding:28px 26px;box-sizing:border-box;}
 @media(max-width:768px){.review-card{flex-basis:300px;width:300px;}}
 #section-terokai{padding:48px;}
+.cover-compare{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:640px;margin:0 auto 40px;}
+.cover-fig{margin:0;text-align:center;}
+.cover-fig img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:14px;display:block;box-shadow:0 6px 20px rgba(45,37,32,.12);}
+.cover-fig figcaption{margin-top:10px;font-size:14px;font-weight:700;color:#2d2520;letter-spacing:0.02em;}
+@media(max-width:768px){ .cover-compare{gap:12px;margin-bottom:28px;} .cover-fig figcaption{font-size:12.5px;} }
 .hc-gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;}
 .hc-img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px;display:block;}
 .hc-item{display:flex;flex-direction:column;}
@@ -290,6 +295,16 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
 
   <!-- Galeri Photobook Hardcover -->
   <div id="section-terokai" style="margin-bottom:32px;">
+    <div class="cover-compare">
+      <figure class="cover-fig">
+        <img src="cover-hardcover.png" alt="Photobook Hardcover">
+        <figcaption>Hardcover</figcaption>
+      </figure>
+      <figure class="cover-fig">
+        <img src="cover-softcover.png" alt="Photobook Softcover">
+        <figcaption>Softcover</figcaption>
+      </figure>
+    </div>
     <div style="text-align:center;margin-bottom:36px;">
       <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,52px);font-weight:600;line-height:1.05;color:#2d2520;">Layout <span style="font-style:italic;color:#c98a86;">Gallery</span> Photo</div>
     </div>
