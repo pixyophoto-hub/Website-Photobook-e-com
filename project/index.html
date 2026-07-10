@@ -573,6 +573,18 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           </div>
           <div id="cart-lines"></div>
 
+          <!-- Cara Hantar Gambar -->
+          <div style="font-size:15px;font-weight:700;color:#473f38;margin-top:24px;margin-bottom:6px;">Cara Hantar Gambar</div>
+          <div style="font-size:12px;color:#8a7e72;margin-bottom:16px;">Pilih medium yang anda akan gunakan untuk menghantar gambar.</div>
+          <div style="margin-bottom:28px;">
+            <select id="medium-select" class="inp" onchange="onMediumChange(this.value)">
+              <option value="">— Pilih cara hantar gambar —</option>
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="Telegram">Telegram</option>
+              <option value="Google Drive">Google Drive</option>
+            </select>
+          </div>
+
           <!-- Delivery -->
           <div style="font-size:13px;font-weight:700;color:#473f38;margin-top:24px;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;">Maklumat Penghantaran</div>
           <div style="max-width:480px;">
@@ -588,18 +600,6 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
               <input type="text" id="ship-bandar" placeholder="Bandar / Kawasan" class="inp" style="padding:9px 12px;font-size:13px;">
               <input type="text" id="ship-negeri" placeholder="Negeri" class="inp" readonly style="padding:9px 12px;font-size:13px;background:#faf6f2;color:#473f38;">
             </div>
-          </div>
-
-          <!-- Cara Hantar Gambar -->
-          <div style="font-size:15px;font-weight:700;color:#473f38;margin-bottom:6px;">Cara Hantar Gambar</div>
-          <div style="font-size:12px;color:#8a7e72;margin-bottom:16px;">Pilih medium yang anda akan gunakan untuk menghantar gambar.</div>
-          <div style="margin-bottom:28px;">
-            <select id="medium-select" class="inp" onchange="onMediumChange(this.value)">
-              <option value="">— Pilih cara hantar gambar —</option>
-              <option value="WhatsApp">WhatsApp</option>
-              <option value="Telegram">Telegram</option>
-              <option value="Google Drive">Google Drive</option>
-            </select>
           </div>
 
           <!-- Payment -->
