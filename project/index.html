@@ -1713,6 +1713,14 @@ function renderCheckout() {
     { id:'card',    name:'Kad Kredit / Debit',  note:'Visa · Mastercard',                     tag:'CARD',     icon:'ph-credit-card', color:'#3d6fd6' },
     { id:'ewallet', name:'e-Wallet',            note:"Touch 'n Go · GrabPay · Boost",         tag:'E-WALLET', icon:'ph-wallet',      color:'#f39c12' }
   ];
+  const fpxDropdown = state.pay==='fpx' ? `
+    <div style="margin-top:12px;">
+      <label style="font-size:12px;font-weight:600;color:#6f6358;display:block;margin-bottom:6px;">Pilih Bank FPX <span style="font-weight:400;color:#9a8d80;">(atau pilih di halaman bayaran nanti)</span></label>
+      <select id="fpx-bank" class="inp" onchange="state.fpxBank=this.value">
+        <option value="">— Pilih bank —</option>
+        ${FPX_BANKS.map(b=>`<option value="${b.code}" ${state.fpxBank===b.code?'selected':''}>${b.name}</option>`).join('')}
+      </select>
+    </div>` : '';
   pmEl.innerHTML = methods.map(m => `
     <div class="pay-option ${state.pay===m.id?'selected':''}" onclick="selectPay('${m.id}')">
       <div class="pay-border"></div>
@@ -1721,8 +1729,29 @@ function renderCheckout() {
       <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:#473f38;">${m.name}</div><div style="font-size:12px;color:#9a8d80;">${m.note}</div></div>
       <div style="font-family:'Courier New',monospace;font-size:11px;color:#b5a596;letter-spacing:0.05em;">${m.tag}</div>
     </div>
-  `).join('');
+  `).join('') + fpxDropdown;
 }
+// Senarai bank FPX B2C (kod standard FPX yang diguna CHIP untuk Direct Post)
+const FPX_BANKS = [
+  {code:'MB2U0227', name:'Maybank2u'},
+  {code:'BCBB0235', name:'CIMB Clicks'},
+  {code:'PBB0233',  name:'Public Bank'},
+  {code:'RHB0218',  name:'RHB Bank'},
+  {code:'HLB0224',  name:'Hong Leong Bank'},
+  {code:'AMBB0209', name:'AmBank'},
+  {code:'BIMB0340', name:'Bank Islam'},
+  {code:'BKRM0602', name:'Bank Rakyat'},
+  {code:'BMMB0341', name:'Bank Muamalat'},
+  {code:'BSN0601',  name:'Bank Simpanan Nasional (BSN)'},
+  {code:'UOB0226',  name:'UOB Bank'},
+  {code:'OCBC0229', name:'OCBC Bank'},
+  {code:'HSBC0223', name:'HSBC Bank'},
+  {code:'SCB0216',  name:'Standard Chartered'},
+  {code:'ABB0233',  name:'Affin Bank'},
+  {code:'ABMB0212', name:'Alliance Bank'},
+  {code:'KFH0346',  name:'Kuwait Finance House'},
+  {code:'AGRO01',   name:'Agrobank'},
+];
 
 function selectPay(id) {
   state.pay = id;
@@ -1860,7 +1889,12 @@ function doPay() {
         items: items.map(({pkg, qty}) => ({ name: pkg.name, qty, price: pkg.price })),
         total: total
       }));
-      window.location.href = res.url;
+      // Direct Post: kalau FPX + bank dipilih, terus ke halaman bank (skip halaman pilih bank CHIP)
+      var payUrl = res.url;
+      if(state.pay === 'fpx' && state.fpxBank){
+        payUrl += (payUrl.indexOf('?') >= 0 ? '&' : '?') + 'preferred=fpx&fpx_bank_code=' + encodeURIComponent(state.fpxBank);
+      }
+      window.location.href = payUrl;
     } else {
       showToast('Gagal: ' + (res.error || 'Cuba semula'));
       btn.disabled = false;
