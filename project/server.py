@@ -150,6 +150,14 @@ DEFAULT_DATA = {
         {"name": "Add-On Editor Pilih Gambar 8x8",     "price": "40", "weight": 0, "category": "ADDON"},
         {"name": "Add-On Layout 11x8.5 (10 foto)",    "price": "4",  "weight": 0, "category": "ADDON"},
         {"name": "Add-On Editor Pilih Gambar 11x8.5",  "price": "40", "weight": 0, "category": "ADDON"},
+        {"name": "Photobook 6x6 (Softcover)",     "price": "65",  "weight": 0.5, "category": "PHOTOBOOK"},
+        {"name": "Photobook 6x6 (Hardcover)",     "price": "68",  "weight": 0.5, "category": "PHOTOBOOK"},
+        {"name": "Photobook 6x8 (Softcover)",     "price": "68",  "weight": 0.5, "category": "PHOTOBOOK"},
+        {"name": "Photobook 6x8 (Hardcover)",     "price": "78",  "weight": 0.5, "category": "PHOTOBOOK"},
+        {"name": "Photobook 8x8 (Softcover)",     "price": "85",  "weight": 0.5, "category": "PHOTOBOOK"},
+        {"name": "Photobook 8x8 (Hardcover)",     "price": "115", "weight": 0.5, "category": "PHOTOBOOK"},
+        {"name": "Photobook 11x8.5 (Softcover)",  "price": "95",  "weight": 0.5, "category": "PHOTOBOOK"},
+        {"name": "Photobook 11x8.5 (Hardcover)",  "price": "135", "weight": 0.5, "category": "PHOTOBOOK"},
     ],
     "media_links": {
         "whatsapp": "",
@@ -414,6 +422,13 @@ def _migrate_data(data):
     if "addons" not in data:
         data["addons"] = json.loads(json.dumps(DEFAULT_DATA["addons"]))
         changed = True
+    else:
+        # Merge: tambah add-on lalai yang belum wujud (ikut nama) — tanpa ubah harga sedia ada
+        _have = {a.get("name") for a in data["addons"]}
+        for _a in DEFAULT_DATA["addons"]:
+            if _a.get("name") not in _have:
+                data["addons"].append(json.loads(json.dumps(_a)))
+                changed = True
     if "hitpay" not in data:
         data["hitpay"] = DEFAULT_DATA["hitpay"].copy()
         changed = True
