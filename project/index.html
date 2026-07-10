@@ -221,9 +221,6 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
     <span class="nav-link" id="nl-status" onclick="goPage('status')">Status Tempahan</span>
     <span class="nav-link" id="nl-hubungi" onclick="goPage('hubungi')">Hubungi</span>
     <span class="nav-link" onclick="openLogin()" style="display:flex;align-items:center;gap:5px;"><i class="ph ph-user-circle"></i> Log Masuk</span>
-    <button class="nav-cart" onclick="goPage('checkout')">
-      <i class="ph ph-shopping-cart"></i> <span id="nav-cart-label">Troli · 0</span>
-    </button>
     <button class="nav-burger" onclick="toggleMobileMenu()" aria-label="Menu"><i class="ph ph-list" id="burger-icon"></i></button>
   </div>
   <!-- Menu mobile (dropdown) -->
@@ -916,6 +913,9 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
     <a href="#" onclick="vaWhatsApp();return false;" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;font-size:14px;font-weight:600;padding:11px;border-radius:10px;text-decoration:none;"><i class="ph-fill ph-whatsapp-logo" style="font-size:18px;"></i> Chat WhatsApp</a>
   </div>
 </div>
+<button id="cart-fab" class="nav-cart" onclick="goPage('checkout')" aria-label="Troli" style="position:fixed;bottom:88px;right:20px;z-index:600;padding:12px 18px;font-size:14px;box-shadow:0 6px 20px rgba(201,138,134,.5);">
+  <i class="ph ph-shopping-cart"></i> <span id="nav-cart-label">Troli · 0</span>
+</button>
 <button id="va-fab" onclick="toggleVA()" aria-label="Bantuan" style="position:fixed;bottom:20px;right:20px;width:58px;height:58px;border-radius:50%;border:none;background:#25D366;color:#fff;font-size:26px;cursor:pointer;z-index:600;box-shadow:0 6px 20px rgba(37,211,102,.5);display:flex;align-items:center;justify-content:center;transition:transform .15s;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'">
   <i id="va-fab-icon" class="ph-fill ph-chat-circle-dots"></i>
 </button>
