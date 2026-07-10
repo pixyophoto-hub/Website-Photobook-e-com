@@ -141,6 +141,16 @@ DEFAULT_DATA = {
         "ga4_id": "",
         "tiktok_pixel_id": "",
     },
+    "addons": [
+        {"name": "Add-On Layout 6x6 (10 foto)",       "price": "2",  "weight": 0, "category": "ADDON"},
+        {"name": "Add-On Editor Pilih Gambar 6x6",     "price": "20", "weight": 0, "category": "ADDON"},
+        {"name": "Add-On Layout 6x8 (10 foto)",       "price": "2",  "weight": 0, "category": "ADDON"},
+        {"name": "Add-On Editor Pilih Gambar 6x8",     "price": "20", "weight": 0, "category": "ADDON"},
+        {"name": "Add-On Layout 8x8 (10 foto)",       "price": "4",  "weight": 0, "category": "ADDON"},
+        {"name": "Add-On Editor Pilih Gambar 8x8",     "price": "40", "weight": 0, "category": "ADDON"},
+        {"name": "Add-On Layout 11x8.5 (10 foto)",    "price": "4",  "weight": 0, "category": "ADDON"},
+        {"name": "Add-On Editor Pilih Gambar 11x8.5",  "price": "40", "weight": 0, "category": "ADDON"},
+    ],
     "media_links": {
         "whatsapp": "",
         "telegram": "",
@@ -395,6 +405,9 @@ def _migrate_data(data):
     if "tracking" not in data:
         data["tracking"] = DEFAULT_DATA["tracking"].copy()
         changed = True
+    if "addons" not in data:
+        data["addons"] = json.loads(json.dumps(DEFAULT_DATA["addons"]))
+        changed = True
     if "hitpay" not in data:
         data["hitpay"] = DEFAULT_DATA["hitpay"].copy()
         changed = True
@@ -560,6 +573,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(load_data().get("flow", []))
         if self.path == "/api/packages":
             return self._json(load_data().get("packages", []))
+        if self.path == "/api/addons":
+            return self._json(load_data().get("addons", []))
         if self.path == "/api/categories":
             return self._json(load_data().get("categoryOrder", []))
         if self.path == "/api/vouchers":
@@ -776,6 +791,8 @@ class Handler(SimpleHTTPRequestHandler):
             # SECURITY: Kira semula harga dari pakej tersimpan di server —
             # JANGAN percaya 'total' atau 'price' yang dihantar client.
             pkg_by_name = {p.get("name"): p for p in d.get("packages", [])}
+            for _a in d.get("addons", []):
+                pkg_by_name[_a.get("name")] = _a
             server_items = []
             subtotal = 0.0
             for it in req_items:

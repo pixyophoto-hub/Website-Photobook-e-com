@@ -136,7 +136,9 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
 .hc-spec b{color:#4a4038;font-weight:600;text-align:right;}
 .hc-size b{font-size:17px;font-weight:800;color:#2d2520;}
 .hc-addons{margin-top:12px;margin-bottom:14px;display:flex;flex-direction:column;gap:5px;}
-.hc-addon{font-size:11.5px;color:#a86d69;font-style:italic;}
+.hc-addon{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11.5px;color:#a86d69;font-style:italic;}
+.hc-addbtn{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid #c98a86;background:#fff;color:#c98a86;font-size:15px;font-weight:700;line-height:1;cursor:pointer;font-style:normal;transition:all .15s;}
+.hc-addbtn:hover{background:#c98a86;color:#fff;}
 .hc-btn{margin-top:auto;width:100%;display:flex;align-items:center;justify-content:center;gap:7px;border:none;background:#c98a86;color:#fff;font-family:inherit;font-size:13.5px;font-weight:600;padding:11px;border-radius:8px;cursor:pointer;transition:background .15s;}
 .hc-btn:hover{background:#b9786f;}
 .hc-btn i{font-size:16px;}
@@ -292,8 +294,8 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <div class="hc-spec"><span>Muatan</span><b>100 gambar</b></div>
           <div class="hc-spec"><span>Semakan draf</span><b style="color:#4a7a4a;">Percuma 1×</b></div>
           <div class="hc-addons">
-            <div class="hc-addon">+ Add-On Layout: RM2 (10 foto)</div>
-            <div class="hc-addon">+ Add-On Editor pilihkan gambar: RM20</div>
+            <div class="hc-addon"><span>+ Add-On Layout: RM2 (10 foto)</span><button class="hc-addbtn" title="Tambah add-on" onclick="addAddonToCart('Add-On Layout 6x6 (10 foto)')">+</button></div>
+            <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM20</span><button class="hc-addbtn" title="Tambah add-on" onclick="addAddonToCart('Add-On Editor Pilih Gambar 6x6')">+</button></div>
           </div>
           <button class="hc-btn" onclick="addSizeToCart('PHOTOBOOK HARDCOVER 6x6')"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
         </div>
@@ -307,8 +309,8 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <div class="hc-spec"><span>Muatan</span><b>150 gambar</b></div>
           <div class="hc-spec"><span>Semakan draf</span><b style="color:#4a7a4a;">Percuma 1×</b></div>
           <div class="hc-addons">
-            <div class="hc-addon">+ Add-On Layout: RM2 (10 foto)</div>
-            <div class="hc-addon">+ Add-On Editor pilihkan gambar: RM20</div>
+            <div class="hc-addon"><span>+ Add-On Layout: RM2 (10 foto)</span><button class="hc-addbtn" title="Tambah add-on" onclick="addAddonToCart('Add-On Layout 6x8 (10 foto)')">+</button></div>
+            <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM20</span><button class="hc-addbtn" title="Tambah add-on" onclick="addAddonToCart('Add-On Editor Pilih Gambar 6x8')">+</button></div>
           </div>
           <button class="hc-btn" onclick="addSizeToCart('PHOTOBOOK HARDCOVER 6x8')"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
         </div>
@@ -322,8 +324,8 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <div class="hc-spec"><span>Muatan</span><b>200 gambar</b></div>
           <div class="hc-spec"><span>Semakan draf</span><b style="color:#4a7a4a;">Percuma 1×</b></div>
           <div class="hc-addons">
-            <div class="hc-addon">+ Add-On Layout: RM4 (10 foto)</div>
-            <div class="hc-addon">+ Add-On Editor pilihkan gambar: RM40</div>
+            <div class="hc-addon"><span>+ Add-On Layout: RM4 (10 foto)</span><button class="hc-addbtn" title="Tambah add-on" onclick="addAddonToCart('Add-On Layout 8x8 (10 foto)')">+</button></div>
+            <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM40</span><button class="hc-addbtn" title="Tambah add-on" onclick="addAddonToCart('Add-On Editor Pilih Gambar 8x8')">+</button></div>
           </div>
           <button class="hc-btn" onclick="addSizeToCart('PHOTOBOOK HARDCOVER 8x8')"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
         </div>
@@ -337,8 +339,8 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <div class="hc-spec"><span>Muatan</span><b>250 gambar</b></div>
           <div class="hc-spec"><span>Semakan draf</span><b style="color:#4a7a4a;">Percuma 1×</b></div>
           <div class="hc-addons">
-            <div class="hc-addon">+ Add-On Layout: RM4 (10 foto)</div>
-            <div class="hc-addon">+ Add-On Editor pilihkan gambar: RM40</div>
+            <div class="hc-addon"><span>+ Add-On Layout: RM4 (10 foto)</span><button class="hc-addbtn" title="Tambah add-on" onclick="addAddonToCart('Add-On Layout 11x8.5 (10 foto)')">+</button></div>
+            <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM40</span><button class="hc-addbtn" title="Tambah add-on" onclick="addAddonToCart('Add-On Editor Pilih Gambar 11x8.5')">+</button></div>
           </div>
           <button class="hc-btn" onclick="addSizeToCart('PHOTOBOOK HARDCOVER 11x8.5')"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
         </div>
@@ -1125,6 +1127,7 @@ loadExplore();
 _initExploreSwipe();
 // load packages awal supaya catalog sedia bila user klik Terokai
 loadPackages().then(()=>{ loadCategories(); loadPostageCfg(); if(_isCatalogActive()) renderCatalog(_activeCatalogCat); });
+loadAddons();
 function heroCheckStatus(){
   const ref = document.getElementById('hero-status-ref').value.trim();
   if(!ref){ showToast('Masukkan nombor order dahulu.'); return; }
@@ -1196,6 +1199,25 @@ function loadPackages(){
       if(PKG.length && !PKG.find(p=>p.id===state.selPkg)) state.selPkg = PKG[0].id;
     }
   }).catch(()=>{});
+}
+
+// Add-on (item troli tambahan — harga dikira semula di server)
+let ADDONS = [];
+function loadAddons(){
+  return fetch('/api/addons').then(r=>r.json()).then(list=>{
+    if(Array.isArray(list)){
+      ADDONS = list.map(a => ({
+        id: slug(a.name), name: a.name, price: Number(a.price) || 0,
+        category: a.category || 'ADDON', pages: '', weight: 0, isAddon: true,
+      }));
+    }
+  }).catch(()=>{});
+}
+function findItem(id){ return PKG.find(p=>p.id===id) || ADDONS.find(a=>a.id===id) || null; }
+function addAddonToCart(name){
+  var a = ADDONS.find(function(x){ return x.name === name; });
+  if(!a){ showToast('Add-on belum sedia, cuba sekejap lagi.'); return; }
+  addToCart(a.id);
 }
 
 let CATEGORIES = [];
@@ -1541,7 +1563,7 @@ function addToCart(pkgId) {
   updateCartLabel();
   if(_isCatalogActive()) renderCatalog(_activeCatalogCat); else renderPkgList();
   renderCheckout();
-  const pkg = PKG.find(p => p.id === pkgId);
+  const pkg = findItem(pkgId);
   if(state.cart[pkgId] === 1) showToast((pkg ? pkg.name : '') + ' ditambah ke troli ✓');
   try { if(pkg) trackEvent('AddToCart', 'add_to_cart', { value: parseFloat(pkg.price)||0, currency: 'MYR', content_name: pkg.name }); } catch(e){}
 }
@@ -1592,7 +1614,7 @@ function calcPostage(items) {
 function getCheckoutTotals() {
   const items = [];
   for(const [pkgId, qty] of Object.entries(state.cart)){
-    const pkg = PKG.find(p => p.id === pkgId);
+    const pkg = findItem(pkgId);
     if(pkg && qty > 0) items.push({pkg, qty});
   }
   const subtotal = items.reduce((s,{pkg,qty})=>s + pkg.price*qty, 0);
