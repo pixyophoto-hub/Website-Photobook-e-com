@@ -137,8 +137,14 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
 .hc-size b{font-size:17px;font-weight:800;color:#2d2520;}
 .hc-addons{margin-top:12px;margin-bottom:14px;display:flex;flex-direction:column;gap:5px;}
 .hc-addon{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11.5px;color:#a86d69;font-style:italic;}
-.hc-addbtn{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid #c98a86;background:#fff;color:#c98a86;font-size:15px;font-weight:700;line-height:1;cursor:pointer;font-style:normal;transition:all .15s;}
-.hc-addbtn:hover{background:#c98a86;color:#fff;}
+.hc-tick{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid #c98a86;background:#fff;cursor:pointer;position:relative;transition:all .15s;}
+.hc-tick::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;opacity:0;transition:opacity .15s;}
+.hc-tick:hover{border-color:#4a7a4a;}
+.hc-tick.on{background:#4a7a4a;border-color:#4a7a4a;}
+.hc-tick.on::after{opacity:1;}
+.hc-total{margin-top:14px;display:flex;align-items:baseline;justify-content:space-between;padding-top:12px;border-top:1px dashed #e3d8cb;}
+.hc-total span{font-size:12.5px;color:#8a7e72;}
+.hc-total b{font-size:19px;font-weight:800;color:#2d2520;}
 .hc-btn{margin-top:auto;width:100%;display:flex;align-items:center;justify-content:center;gap:7px;border:none;background:#c98a86;color:#fff;font-family:inherit;font-size:13.5px;font-weight:600;padding:11px;border-radius:8px;cursor:pointer;transition:background .15s;}
 .hc-btn:hover{background:#b9786f;}
 .hc-btn i{font-size:16px;}
@@ -285,7 +291,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
       <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,52px);font-weight:600;line-height:1.05;color:#2d2520;">Layout <span style="font-style:italic;color:#c98a86;">Gallery</span> Photo</div>
     </div>
     <div class="hc-gallery">
-      <div class="hc-item">
+      <div class="hc-item" data-base="68" data-pkg="PHOTOBOOK HARDCOVER 6x6">
         <img src="hardcover-2.png" alt="Photobook Hardcover Graduation 6x6" class="hc-img">
         <div class="hc-cap">
           <div class="hc-price"><span class="hc-old">RM99</span><span class="hc-now">RM68</span></div>
@@ -294,13 +300,14 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <div class="hc-spec"><span>Muatan</span><b>100 gambar</b></div>
           <div class="hc-spec"><span>Semakan draf</span><b style="color:#4a7a4a;">Percuma 1×</b></div>
           <div class="hc-addons">
-            <div class="hc-addon"><span>+ Add-On Layout: RM2 (10 foto)</span><button class="hc-addbtn" title="Tambah add-on" onclick="addAddonToCart('Add-On Layout 6x6 (10 foto)')">+</button></div>
-            <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM20</span><button class="hc-addbtn" title="Tambah add-on" onclick="addAddonToCart('Add-On Editor Pilih Gambar 6x6')">+</button></div>
+            <div class="hc-addon"><span>+ Add-On Layout: RM2 (10 foto)</span><button class="hc-tick" data-addon="Add-On Layout 6x6 (10 foto)" data-price="2" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
+            <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM20</span><button class="hc-tick" data-addon="Add-On Editor Pilih Gambar 6x6" data-price="20" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
           </div>
-          <button class="hc-btn" onclick="addSizeToCart('PHOTOBOOK HARDCOVER 6x6')"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
+          <div class="hc-total"><span>Jumlah</span><b>RM 68.00</b></div>
+          <button class="hc-btn" onclick="addCardToCart(this)"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
         </div>
       </div>
-      <div class="hc-item">
+      <div class="hc-item" data-base="78" data-pkg="PHOTOBOOK HARDCOVER 6x8">
         <img src="hardcover-3.png" alt="Photobook Hardcover Little Adventures 6x8" class="hc-img">
         <div class="hc-cap">
           <div class="hc-price"><span class="hc-old">RM119</span><span class="hc-now">RM78</span></div>
@@ -309,13 +316,14 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <div class="hc-spec"><span>Muatan</span><b>150 gambar</b></div>
           <div class="hc-spec"><span>Semakan draf</span><b style="color:#4a7a4a;">Percuma 1×</b></div>
           <div class="hc-addons">
-            <div class="hc-addon"><span>+ Add-On Layout: RM2 (10 foto)</span><button class="hc-addbtn" title="Tambah add-on" onclick="addAddonToCart('Add-On Layout 6x8 (10 foto)')">+</button></div>
-            <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM20</span><button class="hc-addbtn" title="Tambah add-on" onclick="addAddonToCart('Add-On Editor Pilih Gambar 6x8')">+</button></div>
+            <div class="hc-addon"><span>+ Add-On Layout: RM2 (10 foto)</span><button class="hc-tick" data-addon="Add-On Layout 6x8 (10 foto)" data-price="2" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
+            <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM20</span><button class="hc-tick" data-addon="Add-On Editor Pilih Gambar 6x8" data-price="20" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
           </div>
-          <button class="hc-btn" onclick="addSizeToCart('PHOTOBOOK HARDCOVER 6x8')"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
+          <div class="hc-total"><span>Jumlah</span><b>RM 78.00</b></div>
+          <button class="hc-btn" onclick="addCardToCart(this)"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
         </div>
       </div>
-      <div class="hc-item">
+      <div class="hc-item" data-base="115" data-pkg="PHOTOBOOK HARDCOVER 8x8">
         <img src="hardcover-4.png" alt="Photobook Hardcover Umrah Memories 8x8" class="hc-img">
         <div class="hc-cap">
           <div class="hc-price"><span class="hc-old">RM169</span><span class="hc-now">RM115</span></div>
@@ -324,13 +332,14 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <div class="hc-spec"><span>Muatan</span><b>200 gambar</b></div>
           <div class="hc-spec"><span>Semakan draf</span><b style="color:#4a7a4a;">Percuma 1×</b></div>
           <div class="hc-addons">
-            <div class="hc-addon"><span>+ Add-On Layout: RM4 (10 foto)</span><button class="hc-addbtn" title="Tambah add-on" onclick="addAddonToCart('Add-On Layout 8x8 (10 foto)')">+</button></div>
-            <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM40</span><button class="hc-addbtn" title="Tambah add-on" onclick="addAddonToCart('Add-On Editor Pilih Gambar 8x8')">+</button></div>
+            <div class="hc-addon"><span>+ Add-On Layout: RM4 (10 foto)</span><button class="hc-tick" data-addon="Add-On Layout 8x8 (10 foto)" data-price="4" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
+            <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM40</span><button class="hc-tick" data-addon="Add-On Editor Pilih Gambar 8x8" data-price="40" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
           </div>
-          <button class="hc-btn" onclick="addSizeToCart('PHOTOBOOK HARDCOVER 8x8')"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
+          <div class="hc-total"><span>Jumlah</span><b>RM 115.00</b></div>
+          <button class="hc-btn" onclick="addCardToCart(this)"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
         </div>
       </div>
-      <div class="hc-item">
+      <div class="hc-item" data-base="135" data-pkg="PHOTOBOOK HARDCOVER 11x8.5">
         <img src="hardcover-1.png" alt="Photobook Hardcover Travel Memories 11x8.5" class="hc-img">
         <div class="hc-cap">
           <div class="hc-price"><span class="hc-old">RM199</span><span class="hc-now">RM135</span></div>
@@ -339,10 +348,11 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <div class="hc-spec"><span>Muatan</span><b>250 gambar</b></div>
           <div class="hc-spec"><span>Semakan draf</span><b style="color:#4a7a4a;">Percuma 1×</b></div>
           <div class="hc-addons">
-            <div class="hc-addon"><span>+ Add-On Layout: RM4 (10 foto)</span><button class="hc-addbtn" title="Tambah add-on" onclick="addAddonToCart('Add-On Layout 11x8.5 (10 foto)')">+</button></div>
-            <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM40</span><button class="hc-addbtn" title="Tambah add-on" onclick="addAddonToCart('Add-On Editor Pilih Gambar 11x8.5')">+</button></div>
+            <div class="hc-addon"><span>+ Add-On Layout: RM4 (10 foto)</span><button class="hc-tick" data-addon="Add-On Layout 11x8.5 (10 foto)" data-price="4" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
+            <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM40</span><button class="hc-tick" data-addon="Add-On Editor Pilih Gambar 11x8.5" data-price="40" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
           </div>
-          <button class="hc-btn" onclick="addSizeToCart('PHOTOBOOK HARDCOVER 11x8.5')"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
+          <div class="hc-total"><span>Jumlah</span><b>RM 135.00</b></div>
+          <button class="hc-btn" onclick="addCardToCart(this)"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
         </div>
       </div>
     </div>
@@ -1218,6 +1228,29 @@ function addAddonToCart(name){
   var a = ADDONS.find(function(x){ return x.name === name; });
   if(!a){ showToast('Add-on belum sedia, cuba sekejap lagi.'); return; }
   addToCart(a.id);
+}
+// Toggle add-on (tanda ✓) & kemas kini "Jumlah" pada kad
+function toggleAddon(btn){
+  btn.classList.toggle('on');
+  recalcCard(btn.closest('.hc-item'));
+}
+function recalcCard(item){
+  if(!item) return;
+  var sum = Number(item.dataset.base) || 0;
+  item.querySelectorAll('.hc-tick.on').forEach(function(t){ sum += Number(t.dataset.price) || 0; });
+  var el = item.querySelector('.hc-total b');
+  if(el) el.textContent = money(sum);
+}
+// Tambah pakej + add-on yang ditanda ke troli, kemudian reset tanda
+function addCardToCart(btn){
+  var item = btn.closest('.hc-item');
+  if(!item) return;
+  addSizeToCart(item.dataset.pkg);
+  item.querySelectorAll('.hc-tick.on').forEach(function(t){
+    addAddonToCart(t.dataset.addon);
+    t.classList.remove('on');
+  });
+  recalcCard(item);
 }
 
 let CATEGORIES = [];
