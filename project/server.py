@@ -9,6 +9,9 @@ import json
 import os
 import secrets
 import datetime
+def now_myt():
+    """Waktu Malaysia (UTC+8) sebagai datetime naive (wall-clock)."""
+    return datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).replace(tzinfo=None)
 import hashlib
 import hmac as hmac_lib
 import time
@@ -557,7 +560,7 @@ def _order_age_days(order):
             dt = datetime.datetime.strptime(order.get("created_at", ""), "%d %b %Y, %H:%M")
         except (ValueError, TypeError):
             return None
-    return (datetime.datetime.now() - dt).days
+    return (now_myt() - dt).days
 
 def purge_old_orders(d):
     """Buang order yang melebihi RETENTION_DAYS. Pulangkan bilangan dipadam.
@@ -865,8 +868,8 @@ class Handler(SimpleHTTPRequestHandler):
                 "order_ref":  str(b.get("order_ref", "")).strip()[:40],
                 "message":    str(b.get("message", "")).strip()[:1000],
                 "status":     "open",
-                "created_at": datetime.datetime.now().strftime("%d %b %Y, %H:%M"),
-                "created_ts": datetime.datetime.now().isoformat(timespec="seconds"),
+                "created_at": now_myt().strftime("%d %b %Y, %H:%M"),
+                "created_ts": now_myt().isoformat(timespec="seconds"),
             })
             save_data(d)
             return self._json({"ok": True})
@@ -958,15 +961,15 @@ class Handler(SimpleHTTPRequestHandler):
                 "bandar":     bandar,
                 "negeri":     negeri,
                 "medium":     medium,
-                "created_at": datetime.datetime.now().strftime("%d %b %Y, %H:%M"),
-                "created_ts": datetime.datetime.now().isoformat(timespec="seconds"),
+                "created_at": now_myt().strftime("%d %b %Y, %H:%M"),
+                "created_ts": now_myt().isoformat(timespec="seconds"),
                 "items":      server_items,
                 # Rekod persetujuan PDPA (s.7/s.40 — bukti kebenaran)
                 "consent": {
                     "given":     True,
                     "marketing": consent_marketing,
                     "version":   consent_version,
-                    "at":        datetime.datetime.now().strftime("%d %b %Y, %H:%M"),
+                    "at":        now_myt().strftime("%d %b %Y, %H:%M"),
                 },
             })
             save_data(d)
