@@ -692,6 +692,9 @@ tbody tr{border-top:1px solid #f0e8df;}
           <option value="Siap">Siap</option>
         </select>
       </div>
+      <button onclick="printSalesOrder()" style="width:100%;padding:13px;background:#2d2520;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <i class="ph ph-printer" style="font-size:18px;"></i> Print Order (Sales Order)
+      </button>
     </div>
   </div>
 </div>
@@ -1772,6 +1775,91 @@ function showOrderDetail(id){
 function closeOrderModal(){
   document.getElementById('order-modal-overlay').style.display = 'none';
   _currentOrderId = null;
+}
+
+function printSalesOrder(){
+  const o = ORDERS.find(x=>x.id===_currentOrderId);
+  if(!o){ alert('Order tidak dijumpai'); return; }
+  const r = o._raw || {};
+  const items = r.items || [];
+  const phone = r.phone ? String(r.phone) : '';
+  const addrParts = [r.alamat, [r.poskod, r.bandar].filter(Boolean).join(' '), r.negeri]
+    .filter(function(x){ return x && String(x).trim(); });
+
+  let sub = 0;
+  const rows = items.map(function(i){
+    const qty = Number(i.qty)||1;
+    const line = parseFloat(i.price*qty || i.price || 0);
+    sub += line;
+    const spec = [i.pages, i.material, i.size].filter(Boolean).join(' · ');
+    return '<tr>'
+      + '<td>'+esc(i.name)+(spec?'<div class="spec">'+esc(spec)+'</div>':'')+'</td>'
+      + '<td class="c">'+qty+'</td>'
+      + '<td class="r">RM '+parseFloat(i.price||0).toFixed(2)+'</td>'
+      + '<td class="r">RM '+line.toFixed(2)+'</td>'
+      + '</tr>';
+  }).join('');
+
+  const totalStr = (o.total && String(o.total).indexOf('RM')>=0) ? o.total : 'RM '+sub.toFixed(2);
+  const medium = (r.medium||'').trim();
+
+  const html = ''
+    + '<!doctype html><html><head><meta charset="utf-8"><title>Sales Order '+esc(o.id)+'</title>'
+    + '<style>'
+    + '*{box-sizing:border-box;margin:0;padding:0;}'
+    + 'body{font-family:Arial,Helvetica,sans-serif;color:#2d2520;padding:32px 36px;font-size:13px;}'
+    + '.top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #2d2520;padding-bottom:16px;margin-bottom:20px;}'
+    + '.brand{font-size:24px;font-weight:800;letter-spacing:.5px;}'
+    + '.brand span{color:#a86d69;}'
+    + '.co{font-size:11px;color:#6f6358;line-height:1.6;margin-top:4px;}'
+    + '.doc{text-align:right;}'
+    + '.doc h1{font-size:20px;letter-spacing:2px;color:#a86d69;}'
+    + '.doc .ref{font-size:13px;font-weight:700;margin-top:4px;}'
+    + '.doc .date{font-size:11px;color:#6f6358;margin-top:2px;}'
+    + '.cols{display:flex;gap:40px;margin-bottom:22px;}'
+    + '.cols .box{flex:1;}'
+    + '.label{font-size:10px;letter-spacing:1px;color:#a86d69;font-weight:700;margin-bottom:6px;text-transform:uppercase;}'
+    + '.val{font-size:13px;line-height:1.6;}'
+    + '.val b{font-size:14px;}'
+    + 'table{width:100%;border-collapse:collapse;margin-bottom:16px;}'
+    + 'th{background:#2d2520;color:#fff;font-size:10px;letter-spacing:.5px;text-transform:uppercase;padding:9px 10px;text-align:left;}'
+    + 'th.c,td.c{text-align:center;}th.r,td.r{text-align:right;}'
+    + 'td{padding:10px;border-bottom:1px solid #e8e0d8;vertical-align:top;}'
+    + '.spec{font-size:10px;color:#9a8d80;margin-top:3px;}'
+    + '.tot{display:flex;justify-content:flex-end;}'
+    + '.tot table{width:280px;}'
+    + '.tot td{border:none;padding:5px 10px;}'
+    + '.tot .grand td{border-top:2px solid #2d2520;font-size:16px;font-weight:800;color:#a86d69;padding-top:10px;}'
+    + '.note{margin-top:26px;font-size:10px;color:#9a8d80;border-top:1px solid #e8e0d8;padding-top:12px;line-height:1.7;}'
+    + '@media print{body{padding:0;}}'
+    + '</style></head><body>'
+    + '<div class="top">'
+    +   '<div><div class="brand">Pixyo<span>Print</span></div>'
+    +     '<div class="co">KHALILAH SYAFIQAH BINTI AZIZ<br>SSM 202003189981 (CA0304415-T)<br>pixyoprint.com</div></div>'
+    +   '<div class="doc"><h1>SALES ORDER</h1><div class="ref">#'+esc(o.id)+'</div><div class="date">'+esc(o.date||'')+'</div></div>'
+    + '</div>'
+    + '<div class="cols">'
+    +   '<div class="box"><div class="label">Pelanggan</div><div class="val"><b>'+esc(o.name||'')+'</b>'
+    +     (o.email?'<br>'+esc(o.email):'')+(phone?'<br>'+esc(phone):'')+'</div></div>'
+    +   '<div class="box"><div class="label">Alamat Penghantaran</div><div class="val">'
+    +     (addrParts.length?addrParts.map(esc).join('<br>'):'—')+'</div></div>'
+    + '</div>'
+    + '<table><thead><tr><th>Item</th><th class="c">Kuantiti</th><th class="r">Harga</th><th class="r">Jumlah</th></tr></thead>'
+    +   '<tbody>'+(rows||'<tr><td colspan="4">Tiada item</td></tr>')+'</tbody></table>'
+    + '<div class="tot"><table>'
+    +   (medium?'<tr><td>Cara hantar gambar</td><td class="r">'+esc(medium)+'</td></tr>':'')
+    +   '<tr class="grand"><td>JUMLAH</td><td class="r">'+esc(totalStr)+'</td></tr>'
+    + '</table></div>'
+    + '<div class="note">Terima kasih kerana membuat tempahan dengan PixyoPrint.<br>'
+    +   'Sebarang pertanyaan: WhatsApp 013-318 2285 &middot; pixyoprint.com</div>'
+    + '</body></html>';
+
+  const w = window.open('', '_blank');
+  if(!w){ alert('Popup disekat. Benarkan popup untuk print.'); return; }
+  w.document.write(html);
+  w.document.close();
+  w.onload = function(){ w.focus(); w.print(); };
+  setTimeout(function(){ try{ w.focus(); w.print(); }catch(e){} }, 400);
 }
 
 function assignEditorFromModal(){
