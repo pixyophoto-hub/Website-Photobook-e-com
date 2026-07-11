@@ -317,7 +317,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
         <figcaption>Beza Saiz</figcaption>
       </figure>
     </div>
-    <div style="text-align:center;margin-bottom:36px;">
+    <div id="galeri-pakej" style="text-align:center;margin-bottom:36px;scroll-margin-top:90px;">
       <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,52px);font-weight:600;line-height:1.05;color:#2d2520;">Layout <span style="font-style:italic;color:#c98a86;">Gallery</span> Photo</div>
     </div>
     <div class="hc-gallery">
@@ -933,7 +933,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
     <div>
       <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#7a6a5e;margin-bottom:16px;">Servis</div>
       <div style="display:flex;flex-direction:column;gap:11px;font-size:14px;">
-        <span class="foot-link" onclick="goPage('servis');setTimeout(()=>{const el=document.getElementById('section-terokai');const nav=document.querySelector('.nav');if(el)window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-(nav?nav.offsetHeight:60),behavior:'smooth'});},80)">Lihat Pakej</span>
+        <span class="foot-link" onclick="goPage('servis');setTimeout(()=>{const el=document.getElementById('galeri-pakej');const nav=document.querySelector('.nav');if(el)window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-(nav?nav.offsetHeight:60),behavior:'smooth'});},80)">Lihat Pakej</span>
         <span class="foot-link" onclick="goPage('upload')">Hantar Gambar</span>
       </div>
     </div>
