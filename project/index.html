@@ -150,7 +150,11 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
 .hc-cover-opt span{font-size:11px;font-weight:700;color:#a08878;}
 .hc-cover-opt.on{border-color:#c98a86;background:#fdf6f5;color:#2d2520;}
 .hc-cover-opt.on span{color:#c98a86;}
-.hc-addons{margin-top:12px;margin-bottom:14px;display:flex;flex-direction:column;gap:5px;}
+.hc-addons-toggle{width:100%;margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fbf3f2;border:1px solid #eaddd9;border-radius:9px;padding:10px 12px;font-family:inherit;font-size:12.5px;font-weight:700;color:#a86d69;cursor:pointer;transition:background .15s;}
+.hc-addons-toggle:hover{background:#f6e9e7;}
+.hc-addons-toggle i.ph-caret-down{transition:transform .2s;font-size:14px;}
+.hc-addons-toggle.open i.ph-caret-down{transform:rotate(180deg);}
+.hc-addons{margin-top:10px;margin-bottom:14px;display:flex;flex-direction:column;gap:5px;}
 .hc-addon{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11.5px;color:#a86d69;font-style:italic;}
 .hc-tick{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid #c98a86;background:#fff;cursor:pointer;position:relative;transition:all .15s;}
 .hc-tick::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;opacity:0;transition:opacity .15s;}
@@ -336,7 +340,8 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
             <button class="hc-cover-opt on" data-cover="soft" onclick="selectCover(this)">Softcover<span>RM65</span></button>
             <button class="hc-cover-opt" data-cover="hard" onclick="selectCover(this)">Hardcover<span>RM68</span></button>
           </div>
-          <div class="hc-addons">
+          <button type="button" class="hc-addons-toggle" onclick="toggleAddons(this)"><span><i class="ph ph-plus-circle"></i> Add-On Service</span><i class="ph ph-caret-down"></i></button>
+          <div class="hc-addons" style="display:none">
             <div class="hc-addon"><span>+ Add-On 2 muka surat kiri kanan: RM2</span><button class="hc-tick" data-addon="Add-On Layout 6x6 (10 foto)" data-price="2" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
             <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM20</span><button class="hc-tick" data-addon="Add-On Editor Pilih Gambar 6x6" data-price="20" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
             <div class="hc-addon"><span>+ Add-On Tambah ayat dalam buku: RM2/muka surat</span><input type="number" class="hc-qty" data-addon="Add-On Tambah Ayat 6x6" data-price="2" min="0" step="1" value="0" placeholder="0" aria-label="Bilangan muka surat" onclick="event.stopPropagation()" oninput="recalcCard(this.closest('.hc-item'))"></div>
@@ -361,7 +366,8 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
             <button class="hc-cover-opt on" data-cover="soft" onclick="selectCover(this)">Softcover<span>RM68</span></button>
             <button class="hc-cover-opt" data-cover="hard" onclick="selectCover(this)">Hardcover<span>RM78</span></button>
           </div>
-          <div class="hc-addons">
+          <button type="button" class="hc-addons-toggle" onclick="toggleAddons(this)"><span><i class="ph ph-plus-circle"></i> Add-On Service</span><i class="ph ph-caret-down"></i></button>
+          <div class="hc-addons" style="display:none">
             <div class="hc-addon"><span>+ Add-On 2 muka surat kiri kanan: RM2</span><button class="hc-tick" data-addon="Add-On Layout 6x8 (10 foto)" data-price="2" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
             <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM20</span><button class="hc-tick" data-addon="Add-On Editor Pilih Gambar 6x8" data-price="20" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
             <div class="hc-addon"><span>+ Add-On Tambah ayat dalam buku: RM2/muka surat</span><input type="number" class="hc-qty" data-addon="Add-On Tambah Ayat 6x8" data-price="2" min="0" step="1" value="0" placeholder="0" aria-label="Bilangan muka surat" onclick="event.stopPropagation()" oninput="recalcCard(this.closest('.hc-item'))"></div>
@@ -386,7 +392,8 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
             <button class="hc-cover-opt on" data-cover="soft" onclick="selectCover(this)">Softcover<span>RM85</span></button>
             <button class="hc-cover-opt" data-cover="hard" onclick="selectCover(this)">Hardcover<span>RM115</span></button>
           </div>
-          <div class="hc-addons">
+          <button type="button" class="hc-addons-toggle" onclick="toggleAddons(this)"><span><i class="ph ph-plus-circle"></i> Add-On Service</span><i class="ph ph-caret-down"></i></button>
+          <div class="hc-addons" style="display:none">
             <div class="hc-addon"><span>+ Add-On 2 muka surat kiri kanan: RM4</span><button class="hc-tick" data-addon="Add-On Layout 8x8 (10 foto)" data-price="4" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
             <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM40</span><button class="hc-tick" data-addon="Add-On Editor Pilih Gambar 8x8" data-price="40" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
             <div class="hc-addon"><span>+ Add-On Tambah ayat dalam buku: RM2/muka surat</span><input type="number" class="hc-qty" data-addon="Add-On Tambah Ayat 8x8" data-price="2" min="0" step="1" value="0" placeholder="0" aria-label="Bilangan muka surat" onclick="event.stopPropagation()" oninput="recalcCard(this.closest('.hc-item'))"></div>
@@ -411,7 +418,8 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
             <button class="hc-cover-opt on" data-cover="soft" onclick="selectCover(this)">Softcover<span>RM95</span></button>
             <button class="hc-cover-opt" data-cover="hard" onclick="selectCover(this)">Hardcover<span>RM135</span></button>
           </div>
-          <div class="hc-addons">
+          <button type="button" class="hc-addons-toggle" onclick="toggleAddons(this)"><span><i class="ph ph-plus-circle"></i> Add-On Service</span><i class="ph ph-caret-down"></i></button>
+          <div class="hc-addons" style="display:none">
             <div class="hc-addon"><span>+ Add-On 2 muka surat kiri kanan: RM4</span><button class="hc-tick" data-addon="Add-On Layout 11x8.5 (10 foto)" data-price="4" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
             <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM40</span><button class="hc-tick" data-addon="Add-On Editor Pilih Gambar 11x8.5" data-price="40" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
             <div class="hc-addon"><span>+ Add-On Tambah ayat dalam buku: RM2/muka surat</span><input type="number" class="hc-qty" data-addon="Add-On Tambah Ayat 11x8.5" data-price="2" min="0" step="1" value="0" placeholder="0" aria-label="Bilangan muka surat" onclick="event.stopPropagation()" oninput="recalcCard(this.closest('.hc-item'))"></div>
@@ -1311,6 +1319,14 @@ function addAddonToCart(name){
 function toggleAddon(btn){
   btn.classList.toggle('on');
   recalcCard(btn.closest('.hc-item'));
+}
+// Buka/tutup senarai Add-On Service
+function toggleAddons(btn){
+  var box = btn.nextElementSibling;
+  if(!box) return;
+  var show = (box.style.display === 'none' || !box.style.display);
+  box.style.display = show ? 'flex' : 'none';
+  btn.classList.toggle('open', show);
 }
 // Pilih cover (Softcover / Hardcover)
 function selectCover(btn){
