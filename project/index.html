@@ -1263,11 +1263,12 @@ setInterval(updatePromoCountdown, 1000);
 var SP_SIZES = ['6x6','6x8','8x8','11x8.5'];
 var SP_TIMES = ['Baru sahaja','8 minit yang lalu','23 minit yang lalu','40 minit yang lalu','Sejam yang lalu','2 jam yang lalu'];
 var SP_PLACES = ['Selangor','Kuala Lumpur','Johor','Pulau Pinang','Sabah','Sarawak','Kedah','Melaka','Perak','Pahang','Terengganu','Negeri Sembilan'];
+var SP_NAMES = ['Nurul','Aina','Farah','Siti','Aisyah','Nadia','Hana','Iman','Syafiqah','Liyana','Amir','Hafiz','Danial','Faiz','Zaki','Aiman','Haziq','Iskandar','Adam','Izzah','Balqis','Sofea','Qistina','Maisarah','Wan','Nabila'];
 function _spPick(a){ return a[Math.floor(Math.random()*a.length)]; }
 function showSocialProof(){
   var el = document.getElementById('social-proof');
   if(!el) return;
-  document.getElementById('sp-text').textContent = 'Seseorang telah membeli Photobook ' + _spPick(SP_SIZES);
+  document.getElementById('sp-text').textContent = _spPick(SP_NAMES) + ' telah membeli Photobook ' + _spPick(SP_SIZES);
   document.getElementById('sp-time').textContent = _spPick(SP_TIMES) + ' · ' + _spPick(SP_PLACES);
   el.style.display = 'flex';
   requestAnimationFrame(function(){ el.style.opacity = '1'; el.style.transform = 'translateY(0)'; });
