@@ -1768,14 +1768,17 @@ function showOrderDetail(id){
     medRow.style.display = 'none';
   }
 
-  // Postage
+  // Postage — sentiasa papar
   const postRow = document.getElementById('od-postage-row');
+  const postEl = document.getElementById('od-postage');
+  postRow.style.display = 'flex';
   if(raw.postage !== undefined && raw.postage !== null){
     const pv = parseFloat(raw.postage) || 0;
-    document.getElementById('od-postage').textContent = pv > 0 ? 'RM ' + pv.toFixed(2) : 'Percuma';
-    postRow.style.display = 'flex';
+    postEl.textContent = pv > 0 ? 'RM ' + pv.toFixed(2) : 'Percuma';
+    postEl.style.color = '#2d2520';
   } else {
-    postRow.style.display = 'none';
+    postEl.textContent = 'Tidak dicaj (order lama)';
+    postEl.style.color = '#c0b6a9';
   }
 
   // Editor select
