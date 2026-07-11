@@ -1275,10 +1275,10 @@ function showSocialProof(){
   setTimeout(function(){
     el.style.opacity = '0'; el.style.transform = 'translateY(10px)';
     setTimeout(function(){ el.style.display = 'none'; }, 300);
-  }, 3000); // muncul 3 saat
+  }, 8000); // muncul 8 saat
 }
 setTimeout(showSocialProof, 6000);          // kali pertama selepas 6s
-setInterval(showSocialProof, 22000);        // ulang setiap 22s
+setInterval(showSocialProof, 26000);        // ulang setiap 26s
 function heroCheckStatus(){
   const ref = document.getElementById('hero-status-ref').value.trim();
   if(!ref){ showToast('Masukkan nombor order dahulu.'); return; }
