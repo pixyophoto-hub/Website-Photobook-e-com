@@ -658,6 +658,10 @@ tbody tr{border-top:1px solid #f0e8df;}
           <div id="od-status-wrap" style="margin-top:6px;"></div>
         </div>
       </div>
+      <div id="od-address-card" style="background:#faf8f5;border-radius:10px;padding:14px;display:none;">
+        <div style="font-size:11px;color:#9a8d80;font-weight:600;margin-bottom:6px;">ALAMAT PENGHANTARAN</div>
+        <div id="od-address" style="font-size:13px;color:#473f38;line-height:1.6;"></div>
+      </div>
       <div style="background:#faf8f5;border-radius:10px;padding:14px;">
         <div style="font-size:11px;color:#9a8d80;font-weight:600;margin-bottom:10px;">ITEM TEMPAHAN</div>
         <div id="od-items" style="display:flex;flex-direction:column;gap:8px;"></div>
@@ -1704,6 +1708,19 @@ function showOrderDetail(id){
   document.getElementById('od-date').textContent = o.date;
   document.getElementById('od-total').textContent = o.total;
   document.getElementById('od-status-wrap').innerHTML = statusPill(o.status);
+
+  // Alamat penghantaran
+  const r = o._raw || {};
+  const addrParts = [r.alamat, [r.poskod, r.bandar].filter(Boolean).join(' '), r.negeri]
+    .filter(function(x){ return x && String(x).trim(); });
+  const addrCard = document.getElementById('od-address-card');
+  const addrEl = document.getElementById('od-address');
+  if(addrParts.length){
+    addrEl.innerHTML = addrParts.map(esc).join('<br>');
+    addrCard.style.display = 'block';
+  } else {
+    addrCard.style.display = 'none';
+  }
 
   // Items
   const raw = o._raw || {};

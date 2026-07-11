@@ -2006,6 +2006,10 @@ function submitPayment() {
   const name  = document.getElementById('ship-name')?.value.trim() || '';
   const email = document.getElementById('ship-email')?.value.trim() || '';
   const phone = document.getElementById('ship-phone')?.value.trim() || '';
+  const alamat = document.getElementById('ship-alamat')?.value.trim() || '';
+  const poskod = document.getElementById('ship-poskod')?.value.trim() || '';
+  const bandar = document.getElementById('ship-bandar')?.value.trim() || '';
+  const negeri = document.getElementById('ship-negeri')?.value.trim() || '';
 
   fetch('/api/pay', {
     method: 'POST',
@@ -2015,6 +2019,10 @@ function submitPayment() {
       name,
       email,
       phone,
+      alamat,
+      poskod,
+      bandar,
+      negeri,
       medium,
       pay_method: state.pay || '',
       voucher: state.promoActive ? state.promoCode : '',

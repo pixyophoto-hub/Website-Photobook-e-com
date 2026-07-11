@@ -817,6 +817,10 @@ class Handler(SimpleHTTPRequestHandler):
             name    = str(b.get("name", ""))[:120]
             email   = str(b.get("email", ""))[:254]
             phone   = str(b.get("phone", ""))[:30]
+            alamat  = str(b.get("alamat", ""))[:300]
+            poskod  = str(b.get("poskod", ""))[:10]
+            bandar  = str(b.get("bandar", ""))[:120]
+            negeri  = str(b.get("negeri", ""))[:120]
             medium  = str(b.get("medium", ""))[:40]
             pay_method = str(b.get("pay_method", ""))[:20]
             req_items = b.get("items", [])
@@ -890,6 +894,10 @@ class Handler(SimpleHTTPRequestHandler):
                 "name":       name,
                 "email":      email,
                 "phone":      phone,
+                "alamat":     alamat,
+                "poskod":     poskod,
+                "bandar":     bandar,
+                "negeri":     negeri,
                 "medium":     medium,
                 "created_at": datetime.datetime.now().strftime("%d %b %Y, %H:%M"),
                 "created_ts": datetime.datetime.now().isoformat(timespec="seconds"),
