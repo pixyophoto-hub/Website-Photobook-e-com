@@ -14,6 +14,9 @@ import hmac as hmac_lib
 import time
 import urllib.request
 import urllib.parse
+import smtplib
+import threading
+from email.message import EmailMessage
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 HITPAY_CURRENCY = "MYR"
@@ -31,6 +34,62 @@ def gen_order_ref(existing=()):
         if ref not in seen:
             return ref
     return "".join(secrets.choice(_REF_ALPHABET) for _ in range(6))
+
+# ============================================================
+# Notifikasi email order baru (SMTP Gmail)
+# ============================================================
+def _smtp_cfg():
+    return {
+        "host": os.environ.get("SMTP_HOST", "smtp.gmail.com"),
+        "port": int(os.environ.get("SMTP_PORT", "587") or 587),
+        "user": os.environ.get("SMTP_USER", "").strip(),
+        "password": os.environ.get("SMTP_PASS", "").strip(),
+        "to":   (os.environ.get("NOTIFY_TO", "") or os.environ.get("SMTP_USER", "")).strip(),
+    }
+
+def _send_order_email(order):
+    cfg = _smtp_cfg()
+    if not (cfg["user"] and cfg["password"] and cfg["to"]):
+        return  # SMTP belum dikonfigurasi — skip senyap
+    try:
+        items = order.get("items", []) or []
+        item_lines = "\n".join(
+            f"  - {it.get('name','')} x{it.get('qty',1)} = RM{it.get('price',0)}" for it in items
+        ) or "  -"
+        addr = " ".join(str(order.get(k, "")).strip() for k in ("alamat", "poskod", "bandar", "negeri")).strip()
+        body = (
+            "Order baru DIBAYAR! 🎉\n\n"
+            f"No. Order : {order.get('reference','')}\n"
+            f"Nama      : {order.get('name','')}\n"
+            f"Email     : {order.get('email','')}\n"
+            f"Telefon   : {order.get('phone','')}\n"
+            f"Alamat    : {addr or '-'}\n"
+            f"Hantar gambar : {order.get('medium','-')}\n\n"
+            f"Item:\n{item_lines}\n\n"
+            f"JUMLAH    : RM{order.get('total','')}\n"
+            f"Masa      : {order.get('created_at','')}\n\n"
+            "— Semak di panel admin PixyoPrint."
+        )
+        msg = EmailMessage()
+        msg["Subject"] = f"[PixyoPrint] Order baru #{order.get('reference','')} — RM{order.get('total','')}"
+        msg["From"] = cfg["user"]
+        msg["To"] = cfg["to"]
+        msg.set_content(body)
+        with smtplib.SMTP(cfg["host"], cfg["port"], timeout=20) as s:
+            s.starttls()
+            s.login(cfg["user"], cfg["password"])
+            s.send_message(msg)
+        print(f"[notify] email order {order.get('reference','')} dihantar ke {cfg['to']}")
+    except Exception as e:
+        print(f"[notify] gagal hantar email: {e}")
+
+def notify_new_order(order):
+    # Hantar di thread supaya tak lambatkan respons callback CHIP
+    try:
+        snapshot = json.loads(json.dumps(order))
+    except Exception:
+        snapshot = dict(order)
+    threading.Thread(target=_send_order_email, args=(snapshot,), daemon=True).start()
 
 def hash_password(password: str) -> str:
     salt = secrets.token_hex(16)
@@ -1006,8 +1065,13 @@ class Handler(SimpleHTTPRequestHandler):
                 d = load_data()
                 for order in d.get("orders", []):
                     if order.get("reference") == ref:
+                        _was_completed = (order.get("status") == "completed")
                         order["status"]     = "completed"
                         order["payment_id"] = str(purchase_id)
+                        # Notifikasi email — sekali sahaja (bila pertama kali jadi paid)
+                        if not _was_completed and not order.get("notified"):
+                            order["notified"] = True
+                            notify_new_order(order)
                         break
                 save_data(d)
             self.send_response(200)
