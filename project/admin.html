@@ -143,7 +143,7 @@ tbody tr{border-top:1px solid #f0e8df;}
       <!-- ============ OVERVIEW ============ -->
       <div class="view active" id="view-overview">
         <div class="h-title" style="margin-bottom:6px;">Selamat datang, <span id="overview-username">Admin</span></div>
-        <div style="font-size:13px;color:#8a7e72;margin-bottom:24px;">Sabtu, 21 Jun 2026 · Ringkasan hari ini</div>
+        <div style="font-size:13px;color:#8a7e72;margin-bottom:24px;"><span id="overview-date"></span> · Ringkasan hari ini</div>
         <div class="grid-4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;" id="kpi-cards"></div>
         <div class="split" style="display:grid;grid-template-columns:1fr 340px;gap:20px;">
           <div class="card" style="overflow-x:auto;">
@@ -2430,6 +2430,13 @@ function setAdminName(name){
   if(!name) return;
   document.querySelectorAll('.user-name').forEach(el=>el.textContent = name);
   const ov = document.getElementById('overview-username'); if(ov) ov.textContent = name;
+  const odEl = document.getElementById('overview-date');
+  if(odEl){
+    const hari = ['Ahad','Isnin','Selasa','Rabu','Khamis','Jumaat','Sabtu'];
+    const bulan = ['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogos','Sep','Okt','Nov','Dis'];
+    const now = new Date();
+    odEl.textContent = hari[now.getDay()] + ', ' + now.getDate() + ' ' + bulan[now.getMonth()] + ' ' + now.getFullYear();
+  }
   const av = document.getElementById('sidebar-avatar');
   if(av) av.textContent = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
   sessionStorage.setItem('pixyo_name', name);
