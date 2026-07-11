@@ -718,6 +718,42 @@ class Handler(SimpleHTTPRequestHandler):
                                "role": u.get("role") if u else None})
         if self.path == "/api/postage":
             return self._json(load_data().get("postage", {"base":8,"threshold":1.5,"per_kg":2,"east":{"base":15,"threshold":1.0,"per_kg":10}}))
+        if self.path.startswith("/api/orders/") and self.path.endswith("/chip"):
+            # Admin: ambil jumlah sebenar dibayar dari CHIP untuk 1 order
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            ref = self.path[len("/api/orders/"):-len("/chip")]
+            d = load_data()
+            order = next((o for o in d.get("orders", []) if o.get("reference") == ref), None)
+            if not order:
+                return self._json({"ok": False, "error": "Order tidak dijumpai"}, 404)
+            pid = order.get("chip_id") or order.get("payment_id")
+            if not pid:
+                return self._json({"ok": False, "error": "Order ini tiada rekod CHIP"}, 404)
+            p = chip_get_purchase(pid)
+            if not p or not isinstance(p, dict):
+                return self._json({"ok": False, "error": "Gagal hubungi CHIP"}, 502)
+            pur = p.get("purchase", {}) or {}
+            pay = p.get("transaction_data", {}) or {}
+            amount_cents = pur.get("total")
+            paid_on = p.get("paid_on") or p.get("updated_on")
+            paid_str = ""
+            if paid_on:
+                try:
+                    paid_str = datetime.datetime.fromtimestamp(
+                        int(paid_on), datetime.timezone(datetime.timedelta(hours=8))
+                    ).strftime("%d %b %Y, %H:%M")
+                except (ValueError, TypeError, OSError):
+                    paid_str = ""
+            return self._json({
+                "ok": True,
+                "status": p.get("status", ""),
+                "amount": round(float(amount_cents) / 100.0, 2) if amount_cents is not None else None,
+                "currency": pur.get("currency", "MYR"),
+                "method": pay.get("payment_method", "") or (pay.get("extra", {}) or {}).get("payment_method", ""),
+                "paid_on": paid_str,
+                "chip_id": str(pid),
+            })
         if self.path == "/api/media-links":
             return self._json(load_data().get("media_links", {}))
         if self.path == "/api/contact-links":
