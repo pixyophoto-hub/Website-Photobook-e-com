@@ -651,16 +651,14 @@ tbody tr{border-top:1px solid #f0e8df;}
           <div id="od-name" style="font-size:14px;font-weight:700;color:#2d2520;"></div>
           <div id="od-email" style="font-size:12px;color:#9a8d80;margin-top:2px;"></div>
           <div id="od-phone" style="font-size:12px;color:#9a8d80;margin-top:2px;"></div>
+          <div style="font-size:10px;color:#b3a89c;font-weight:700;letter-spacing:.5px;margin-top:10px;">ALAMAT</div>
+          <div id="od-address" style="font-size:12px;color:#473f38;line-height:1.5;margin-top:2px;"></div>
         </div>
         <div style="background:#faf8f5;border-radius:10px;padding:14px;">
           <div style="font-size:11px;color:#9a8d80;font-weight:600;margin-bottom:4px;">TARIKH ORDER</div>
           <div id="od-date" style="font-size:14px;font-weight:600;color:#2d2520;"></div>
           <div id="od-status-wrap" style="margin-top:6px;"></div>
         </div>
-      </div>
-      <div id="od-address-card" style="background:#faf8f5;border-radius:10px;padding:14px;display:none;">
-        <div style="font-size:11px;color:#9a8d80;font-weight:600;margin-bottom:6px;">ALAMAT PENGHANTARAN</div>
-        <div id="od-address" style="font-size:13px;color:#473f38;line-height:1.6;"></div>
       </div>
       <div style="background:#faf8f5;border-radius:10px;padding:14px;">
         <div style="font-size:11px;color:#9a8d80;font-weight:600;margin-bottom:10px;">ITEM TEMPAHAN</div>
@@ -1713,13 +1711,13 @@ function showOrderDetail(id){
   const r = o._raw || {};
   const addrParts = [r.alamat, [r.poskod, r.bandar].filter(Boolean).join(' '), r.negeri]
     .filter(function(x){ return x && String(x).trim(); });
-  const addrCard = document.getElementById('od-address-card');
   const addrEl = document.getElementById('od-address');
   if(addrParts.length){
     addrEl.innerHTML = addrParts.map(esc).join('<br>');
-    addrCard.style.display = 'block';
+    addrEl.style.color = '#473f38';
   } else {
-    addrCard.style.display = 'none';
+    addrEl.textContent = 'Tiada alamat (order lama)';
+    addrEl.style.color = '#c0b6a9';
   }
 
   // Items
