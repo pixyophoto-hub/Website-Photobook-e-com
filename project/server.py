@@ -12,6 +12,29 @@ import datetime
 def now_myt():
     """Waktu Malaysia (UTC+8) sebagai datetime naive (wall-clock)."""
     return datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).replace(tzinfo=None)
+
+def is_east_poskod(poskod):
+    """Sabah/Sarawak/Labuan: 87-91, 93-98 (ikut 2 digit pertama)."""
+    try:
+        p = int(str(poskod or "")[:2])
+    except (TypeError, ValueError):
+        return False
+    return (87 <= p <= 91) or (93 <= p <= 98)
+
+def calc_postage(data, total_weight, poskod):
+    """Kira postage ikut tetapan admin — mesti sepadan dgn calcPostage() di client."""
+    import math
+    root = data.get("postage") or {}
+    cfg = root.get("east") if (is_east_poskod(poskod) and root.get("east")) else root
+    base = float(cfg.get("base", 0) or 0)
+    if not base:
+        return 0.0
+    threshold = float(cfg.get("threshold", 1.5) or 0)
+    per_kg = float(cfg.get("per_kg", 0) or 0)
+    if total_weight <= 0 or total_weight <= threshold:
+        return round(base, 2)
+    extra = math.ceil((total_weight - threshold) * 10) / 10
+    return round(base + extra * per_kg, 2)
 import hashlib
 import hmac as hmac_lib
 import time
@@ -901,6 +924,7 @@ class Handler(SimpleHTTPRequestHandler):
                 pkg_by_name[_a.get("name")] = _a
             server_items = []
             subtotal = 0.0
+            total_weight = 0.0
             for it in req_items:
                 nm = str(it.get("name", ""))
                 try:
@@ -914,6 +938,7 @@ class Handler(SimpleHTTPRequestHandler):
                         "error": f"Pakej tidak sah: {nm}"}, 400)
                 price = float(pkg.get("price", 0) or 0)
                 subtotal += price * qty
+                total_weight += float(pkg.get("weight", 0) or 0) * qty
                 # Snapshot spesifikasi pakej waktu beli (kekal walau pakej diubah kemudian)
                 server_items.append({
                     "name":     nm,
@@ -940,7 +965,9 @@ class Handler(SimpleHTTPRequestHandler):
                         discount = subtotal * (rate / 100.0)
                     applied_voucher = voucher_code
 
-            total = round(max(0.0, subtotal - discount), 2)
+            # Postage — dikira di server (sumber kebenaran) ikut berat & zon poskod
+            postage = calc_postage(d, total_weight, poskod)
+            total = round(max(0.0, subtotal - discount) + postage, 2)
             if total <= 0:
                 return self._json({"ok": False, "error": "Jumlah tidak sah"}, 400)
 
@@ -952,6 +979,7 @@ class Handler(SimpleHTTPRequestHandler):
                 "total":      total,
                 "subtotal":   round(subtotal, 2),
                 "discount":   round(discount, 2),
+                "postage":    round(postage, 2),
                 "voucher":    applied_voucher,
                 "name":       name,
                 "email":      email,

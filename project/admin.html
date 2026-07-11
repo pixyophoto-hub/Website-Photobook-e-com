@@ -667,6 +667,10 @@ tbody tr{border-top:1px solid #f0e8df;}
           <span style="font-size:13px;color:#6f6358;">Cara hantar gambar</span>
           <span id="od-medium" style="font-size:13px;font-weight:600;color:#2d2520;"></span>
         </div>
+        <div id="od-postage-row" style="margin-top:8px;display:none;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;color:#6f6358;">Postage</span>
+          <span id="od-postage" style="font-size:13px;font-weight:600;color:#2d2520;"></span>
+        </div>
         <div style="border-top:1px solid #e8e0d8;margin-top:12px;padding-top:12px;display:flex;justify-content:space-between;align-items:center;">
           <span style="font-size:13px;font-weight:600;color:#6f6358;">JUMLAH</span>
           <span id="od-total" style="font-size:16px;font-weight:700;color:#a86d69;"></span>
@@ -1758,6 +1762,16 @@ function showOrderDetail(id){
     medRow.style.display = 'none';
   }
 
+  // Postage
+  const postRow = document.getElementById('od-postage-row');
+  if(raw.postage !== undefined && raw.postage !== null){
+    const pv = parseFloat(raw.postage) || 0;
+    document.getElementById('od-postage').textContent = pv > 0 ? 'RM ' + pv.toFixed(2) : 'Percuma';
+    postRow.style.display = 'flex';
+  } else {
+    postRow.style.display = 'none';
+  }
+
   // Editor select
   const edSel = document.getElementById('od-editor-select');
   const editorNames = ['—', ...EDITORS.map(e=>e.name.split(' ')[0])];
@@ -1800,7 +1814,8 @@ function printSalesOrder(){
       + '</tr>';
   }).join('');
 
-  const totalStr = (o.total && String(o.total).indexOf('RM')>=0) ? o.total : 'RM '+sub.toFixed(2);
+  const postage = parseFloat(r.postage) || 0;
+  const totalStr = (o.total && String(o.total).indexOf('RM')>=0) ? o.total : 'RM '+(sub+postage).toFixed(2);
   const medium = (r.medium||'').trim();
 
   const html = ''
@@ -1847,6 +1862,8 @@ function printSalesOrder(){
     + '<table><thead><tr><th>Item</th><th class="c">Kuantiti</th><th class="r">Harga</th><th class="r">Jumlah</th></tr></thead>'
     +   '<tbody>'+(rows||'<tr><td colspan="4">Tiada item</td></tr>')+'</tbody></table>'
     + '<div class="tot"><table>'
+    +   '<tr><td>Subtotal</td><td class="r">RM '+sub.toFixed(2)+'</td></tr>'
+    +   (postage>0?'<tr><td>Postage</td><td class="r">RM '+postage.toFixed(2)+'</td></tr>':'<tr><td>Postage</td><td class="r">Percuma</td></tr>')
     +   (medium?'<tr><td>Cara hantar gambar</td><td class="r">'+esc(medium)+'</td></tr>':'')
     +   '<tr class="grand"><td>JUMLAH</td><td class="r">'+esc(totalStr)+'</td></tr>'
     + '</table></div>'
