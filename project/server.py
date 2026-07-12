@@ -38,6 +38,7 @@ def calc_postage(data, total_weight, poskod):
 import hashlib
 import hmac as hmac_lib
 import time
+import base64
 import urllib.request
 import urllib.parse
 import smtplib
@@ -443,47 +444,121 @@ def chip_get_purchase(purchase_id):
     return data
 
 
-# ── EasyParcel (booking penghantaran oleh admin) ─────────────
+# ── EasyParcel Open API (OAuth 2.0) ──────────────────────────
+EP_API_BASE = "https://api.easyparcel.com"
+EP_OPENAPI  = EP_API_BASE + "/open_api/2026-06"
+
+# Nama negeri Malaysia → kod ISO 3166-2 (subdivision_code)
+MY_STATE_CODES = {
+    "johor": "MY-01", "kedah": "MY-02", "kelantan": "MY-03", "melaka": "MY-04",
+    "malacca": "MY-04", "negeri sembilan": "MY-05", "pahang": "MY-06",
+    "pulau pinang": "MY-07", "penang": "MY-07", "perak": "MY-08", "perlis": "MY-09",
+    "selangor": "MY-10", "terengganu": "MY-11", "sabah": "MY-12", "sarawak": "MY-13",
+    "kuala lumpur": "MY-14", "wp kuala lumpur": "MY-14", "wilayah persekutuan kuala lumpur": "MY-14",
+    "labuan": "MY-15", "wp labuan": "MY-15", "putrajaya": "MY-16", "wp putrajaya": "MY-16",
+}
+
+def ep_state_code(negeri):
+    key = str(negeri or "").strip().lower()
+    key = key.replace("w.p. ", "wp ").replace("w.p ", "wp ")
+    return MY_STATE_CODES.get(key, "")
+
 def get_easyparcel_cfg():
-    """Config EasyParcel dari data.json (+ fallback env)."""
+    """Config EasyParcel Open API dari data.json."""
     cfg = load_data().get("easyparcel", {}) or {}
     return {
-        "api_key":      cfg.get("api_key", "") or os.environ.get("EASYPARCEL_API_KEY", ""),
-        "demo":         bool(cfg.get("demo", True)),
-        "pick_name":    cfg.get("pick_name", ""),
-        "pick_contact": cfg.get("pick_contact", ""),
-        "pick_addr1":   cfg.get("pick_addr1", ""),
-        "pick_city":    cfg.get("pick_city", ""),
-        "pick_code":    cfg.get("pick_code", ""),
-        "pick_state":   cfg.get("pick_state", ""),
-        "content":      cfg.get("content", "Photobook"),
-        "def_weight":   float(cfg.get("def_weight", 0.5) or 0.5),
-        "width":        cfg.get("width", 25),
-        "length":       cfg.get("length", 20),
-        "height":       cfg.get("height", 5),
+        "client_id":     cfg.get("client_id", "") or os.environ.get("EASYPARCEL_CLIENT_ID", ""),
+        "client_secret": cfg.get("client_secret", "") or os.environ.get("EASYPARCEL_CLIENT_SECRET", ""),
+        "access_token":  cfg.get("access_token", ""),
+        "refresh_token": cfg.get("refresh_token", ""),
+        "token_expiry":  int(cfg.get("token_expiry", 0) or 0),
+        "oauth_state":   cfg.get("oauth_state", ""),
+        "pick_name":     cfg.get("pick_name", ""),
+        "pick_contact":  cfg.get("pick_contact", ""),
+        "pick_email":    cfg.get("pick_email", ""),
+        "pick_addr1":    cfg.get("pick_addr1", ""),
+        "pick_addr2":    cfg.get("pick_addr2", ""),
+        "pick_city":     cfg.get("pick_city", ""),
+        "pick_code":     cfg.get("pick_code", ""),
+        "pick_state":    cfg.get("pick_state", ""),
+        "content":       cfg.get("content", "Photobook"),
+        "def_weight":    float(cfg.get("def_weight", 0.5) or 0.5),
+        "width":         cfg.get("width", 25),
+        "length":        cfg.get("length", 20),
+        "height":        cfg.get("height", 5),
     }
 
-def ep_base_url(cfg):
-    return ("http://demo.connect.easyparcel.my/" if cfg["demo"]
-            else "https://connect.easyparcel.my/")
+def ep_set_cfg(**kv):
+    """Kemas kini sebahagian config easyparcel dalam data.json."""
+    d = load_data()
+    ep = d.get("easyparcel", {}) or {}
+    ep.update(kv)
+    d["easyparcel"] = ep
+    save_data(d)
 
-def ep_request(action, bulk):
-    """POST form-encoded ke EasyParcel. `bulk` = list of dict. Pulangkan (data, error)."""
+def ep_oauth_token(grant_type, code=None, refresh_token=None, redirect_uri=None):
+    """Tukar code/refresh_token → access_token. Pulangkan (data, error)."""
     cfg = get_easyparcel_cfg()
-    if not cfg["api_key"]:
-        return None, "EasyParcel API key belum dikonfigurasi"
-    fields = {"api": cfg["api_key"]}
-    for i, row in enumerate(bulk):
-        for k, v in row.items():
-            fields["bulk[%d][%s]" % (i, k)] = str(v)
-    data = urllib.parse.urlencode(fields).encode("utf-8")
-    url = ep_base_url(cfg) + "?ac=" + action
-    req = urllib.request.Request(url, data=data, headers={
-        "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": "PixyoPrint/1.0",
-    }, method="POST")
+    if not cfg["client_id"] or not cfg["client_secret"]:
+        return None, "Client ID / Secret EasyParcel belum ditetapkan"
+    basic = base64.b64encode(
+        (cfg["client_id"] + ":" + cfg["client_secret"]).encode("utf-8")).decode("ascii")
+    body = {"grant_type": grant_type}
+    if code:          body["code"] = code
+    if refresh_token: body["refresh_token"] = refresh_token
+    if redirect_uri:  body["redirect_uri"] = redirect_uri
+    req = urllib.request.Request(
+        EP_API_BASE + "/oauth/token",
+        data=json.dumps(body).encode("utf-8"),
+        headers={"Authorization": "Basic " + basic,
+                 "Content-Type": "application/json",
+                 "Accept": "application/json",
+                 "User-Agent": "PixyoPrint/1.0"}, method="POST")
     try:
-        with urllib.request.urlopen(req, timeout=25) as resp:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            return json.loads(resp.read().decode("utf-8")), None
+    except urllib.error.HTTPError as e:
+        return None, e.read().decode("utf-8")
+    except Exception as e:
+        return None, str(e)
+
+def ep_store_token(data):
+    """Simpan access/refresh token dari respons OAuth."""
+    ep_set_cfg(
+        access_token=data.get("access_token", ""),
+        refresh_token=data.get("refresh_token", "") or get_easyparcel_cfg()["refresh_token"],
+        token_expiry=int(time.time()) + int(data.get("expires_in", 36000) or 36000) - 120,
+    )
+
+def ep_get_access_token():
+    """Access token sah — refresh automatik jika tamat tempoh. None jika belum connect."""
+    cfg = get_easyparcel_cfg()
+    if not cfg["access_token"]:
+        return None
+    if time.time() < cfg["token_expiry"]:
+        return cfg["access_token"]
+    if not cfg["refresh_token"]:
+        return None
+    data, err = ep_oauth_token("refresh_token", refresh_token=cfg["refresh_token"])
+    if err or not data or not data.get("access_token"):
+        return None
+    ep_store_token(data)
+    return data.get("access_token")
+
+def ep_api(method, path, body=None):
+    """Panggil Open API dgn Bearer token. Pulangkan (data, error)."""
+    token = ep_get_access_token()
+    if not token:
+        return None, "EasyParcel belum disambung (OAuth). Sila Sambung Akaun di Tetapan."
+    data = json.dumps(body).encode("utf-8") if body is not None else None
+    req = urllib.request.Request(
+        EP_OPENAPI + path, data=data,
+        headers={"Authorization": "Bearer " + token,
+                 "Content-Type": "application/json",
+                 "Accept": "application/json",
+                 "User-Agent": "PixyoPrint/1.0"}, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
             return json.loads(resp.read().decode("utf-8")), None
     except urllib.error.HTTPError as e:
         return None, e.read().decode("utf-8")
@@ -511,90 +586,102 @@ def ep_order_weight(order):
             pass
     return max(0.1, total or get_easyparcel_cfg()["def_weight"])
 
-def ep_addr_row(cfg, order):
-    """Baris alamat pick+send untuk order (dikongsi rate/submit)."""
+def ep_sender(cfg):
     return {
-        "pick_name":    cfg["pick_name"],
-        "pick_contact": cfg["pick_contact"],
-        "pick_addr1":   cfg["pick_addr1"],
-        "pick_city":    cfg["pick_city"],
-        "pick_code":    cfg["pick_code"],
-        "pick_state":   cfg["pick_state"],
-        "pick_country": "MY",
-        "send_name":    order.get("name", "") or "Pelanggan",
-        "send_contact": order.get("phone", ""),
-        "send_addr1":   order.get("alamat", ""),
-        "send_city":    order.get("bandar", ""),
-        "send_code":    order.get("poskod", ""),
-        "send_state":   order.get("negeri", ""),
-        "send_country": "MY",
+        "name":          cfg["pick_name"],
+        "phone_number":  cfg["pick_contact"],
+        "email":         cfg["pick_email"],
+        "address_1":     cfg["pick_addr1"],
+        "address_2":     cfg["pick_addr2"],
+        "city":          cfg["pick_city"],
+        "postcode":      cfg["pick_code"],
+        "subdivision_code": ep_state_code(cfg["pick_state"]),
+        "country_code":  "MY",
+    }
+
+def ep_receiver(order):
+    return {
+        "name":          order.get("name", "") or "Pelanggan",
+        "phone_number":  order.get("phone", ""),
+        "email":         order.get("email", ""),
+        "address_1":     order.get("alamat", ""),
+        "address_2":     "",
+        "city":          order.get("bandar", ""),
+        "postcode":      order.get("poskod", ""),
+        "subdivision_code": ep_state_code(order.get("negeri", "")),
+        "country_code":  "MY",
     }
 
 def ep_check_rates(order):
-    """Semak kadar semua courier untuk order. Pulangkan {ok, rates:[...]}."""
+    """Semak kadar (quotations) untuk order. Pulangkan {ok, rates:[...], weight}."""
     cfg = get_easyparcel_cfg()
-    row = ep_addr_row(cfg, order)
-    row["weight"] = ep_order_weight(order)
-    data, err = ep_request("EPRateCheckingBulk", [row])
+    weight = ep_order_weight(order)
+    snd, rcv = ep_sender(cfg), ep_receiver(order)
+    body = {"shipment": [{
+        "sender":       {"postcode": snd["postcode"], "subdivision_code": snd["subdivision_code"], "country": "MY"},
+        "receiver":     {"postcode": rcv["postcode"], "subdivision_code": rcv["subdivision_code"], "country": "MY"},
+        "parcel_value": float(order.get("subtotal", order.get("total", 1)) or 1),
+        "weight":       weight,
+        "width":        cfg["width"], "length": cfg["length"], "height": cfg["height"],
+    }]}
+    data, err = ep_api("POST", "/shipment/quotations", body)
     if err:
         return {"ok": False, "error": err}
     try:
-        res = (data.get("result") or [{}])[0]
-        rates = res.get("rates") or res.get("Rates") or []
+        block = (data.get("data") or [{}])[0]
+        quotes = block.get("quotations") or []
         out = []
-        for r in rates:
+        for q in quotes:
+            c = q.get("courier", {}) or {}
+            p = q.get("pricing", {}) or {}
             out.append({
-                "service_id":   r.get("service_id") or r.get("ServiceID"),
-                "courier_name": r.get("courier_name") or r.get("provider") or r.get("ServiceName") or r.get("service_name"),
-                "service_name": r.get("service_name") or r.get("ServiceName"),
-                "price":        float(r.get("price") or r.get("Price") or 0),
-                "delivery":     r.get("delivery") or r.get("Delivery") or "",
+                "service_id":   c.get("service_id"),
+                "courier_name": c.get("courier_name") or c.get("service_name"),
+                "service_name": c.get("service_name"),
+                "price":        float(p.get("total_amount") or p.get("shipment_price") or 0),
+                "delivery":     c.get("delivery_duration") or "",
             })
-        return {"ok": True, "rates": out, "weight": row["weight"]}
+        return {"ok": True, "rates": out, "weight": weight}
     except Exception as e:
-        return {"ok": False, "error": "Respons tak dijangka: " + str(e)}
+        return {"ok": False, "error": "Respons quotation tak dijangka: " + str(e)}
 
 def ep_book(order, service_id):
-    """Submit + bayar order EasyParcel. Pulangkan {ok, awb, tracking_url, awb_link, order_no, courier, cost}."""
+    """Submit shipment (auto-tolak wallet). Pulangkan {ok, awb, order_no, tracking_url, awb_link, cost, courier}."""
     cfg = get_easyparcel_cfg()
-    row = ep_addr_row(cfg, order)
-    row.update({
-        "weight":       ep_order_weight(order),
-        "width":        cfg["width"],
-        "length":       cfg["length"],
-        "height":       cfg["height"],
-        "content":      cfg["content"],
-        "value":        order.get("subtotal", order.get("total", 0)) or 1,
-        "service_id":   service_id,
-        "collect_date": now_myt().strftime("%Y-%m-%d"),
-    })
-    sub, err = ep_request("EPSubmitOrderBulk", [row])
+    weight = ep_order_weight(order)
+    body = {"shipment": [{
+        "sender":   ep_sender(cfg),
+        "receiver": ep_receiver(order),
+        "service_id":      service_id,
+        "collection_date": now_myt().strftime("%Y-%m-%d"),
+        "reference":       order.get("reference", ""),
+        "weight": weight, "width": cfg["width"], "length": cfg["length"], "height": cfg["height"],
+        "items": [{
+            "content":       cfg["content"],
+            "quantity":      1,
+            "value":         float(order.get("subtotal", order.get("total", 1)) or 1),
+            "currency_code": "MYR",
+            "weight": weight, "width": cfg["width"], "length": cfg["length"], "height": cfg["height"],
+        }],
+    }]}
+    data, err = ep_api("POST", "/shipment/submit", body)
     if err:
         return {"ok": False, "error": err}
     try:
-        sres = (sub.get("result") or [{}])[0]
-        order_no = sres.get("order_number") or sres.get("orderno") or sres.get("OrderNo")
-        if not order_no:
-            return {"ok": False, "error": sub.get("error_remark") or "Gagal submit order EasyParcel"}
-    except Exception as e:
-        return {"ok": False, "error": "Respons submit tak dijangka: " + str(e)}
-    pay, perr = ep_request("EPPayOrderBulk", [{"order_no": order_no}])
-    if perr:
-        return {"ok": False, "error": "Order dicipta tapi bayaran gagal: " + perr, "order_no": order_no}
-    try:
-        pres = (pay.get("result") or [{}])[0]
-        parcel = (pres.get("parcel") or [{}])[0]
+        block = (data.get("data") or [{}])[0]
+        if block.get("status") and block.get("status") != "success":
+            return {"ok": False, "error": block.get("message") or "Gagal submit shipment"}
         return {
             "ok": True,
-            "order_no":     order_no,
-            "awb":          parcel.get("awb", ""),
-            "awb_link":     parcel.get("awb_id_link", "") or parcel.get("awb_link", ""),
-            "tracking_url": parcel.get("tracking_url", ""),
-            "courier":      pres.get("courier") or "",
-            "cost":         float(pres.get("price") or 0),
+            "order_no":     block.get("order_number") or block.get("shipment_id") or "",
+            "awb":          block.get("awb") or block.get("tracking_number") or "",
+            "awb_link":     block.get("awb_url") or block.get("label_url") or "",
+            "tracking_url": block.get("tracking_url") or "",
+            "courier":      block.get("courier_name") or "",
+            "cost":         float((block.get("pricing") or {}).get("total_amount") or block.get("price") or 0),
         }
     except Exception as e:
-        return {"ok": False, "error": "Order dibayar tapi respons AWB tak dijangka: " + str(e), "order_no": order_no}
+        return {"ok": False, "error": "Respons submit tak dijangka: " + str(e)}
 
 
 def load_data():
@@ -941,14 +1028,18 @@ class Handler(SimpleHTTPRequestHandler):
             if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
             cfg = load_data().get("easyparcel", {}) or {}
-            ak = cfg.get("api_key", "")
+            cid = cfg.get("client_id", "")
+            csec = cfg.get("client_secret", "")
+            connected = bool(cfg.get("refresh_token")) and int(cfg.get("token_expiry", 0) or 0) > 0
             return self._json({
-                "api_key_masked": (ak[:5] + "..." + ak[-4:]) if len(ak) > 10 else ak,
-                "api_key_set": bool(ak),
-                "demo": bool(cfg.get("demo", True)),
+                "client_id": cid,
+                "client_secret_set": bool(csec),
+                "connected": connected,
                 "pick_name": cfg.get("pick_name", ""),
                 "pick_contact": cfg.get("pick_contact", ""),
+                "pick_email": cfg.get("pick_email", ""),
                 "pick_addr1": cfg.get("pick_addr1", ""),
+                "pick_addr2": cfg.get("pick_addr2", ""),
                 "pick_city": cfg.get("pick_city", ""),
                 "pick_code": cfg.get("pick_code", ""),
                 "pick_state": cfg.get("pick_state", ""),
@@ -957,6 +1048,52 @@ class Handler(SimpleHTTPRequestHandler):
                 "length": cfg.get("length", 20),
                 "height": cfg.get("height", 5),
             })
+        if self.path == "/api/easyparcel/auth-url":
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            cfg = get_easyparcel_cfg()
+            if not cfg["client_id"]:
+                return self._json({"ok": False, "error": "Client ID belum ditetapkan"}, 400)
+            host = self.headers.get("Host", f"localhost:{PORT}")
+            scheme = "http" if ("localhost" in host or "127.0.0.1" in host) else "https"
+            redirect_uri = f"{scheme}://{host}/api/easyparcel-oauth-callback"
+            state = secrets.token_hex(16)
+            ep_set_cfg(oauth_state=state, oauth_redirect=redirect_uri)
+            url = EP_API_BASE + "/oauth/login?" + urllib.parse.urlencode({
+                "client_id": cfg["client_id"],
+                "redirect_uri": redirect_uri,
+                "state": state,
+            })
+            return self._json({"ok": True, "url": url})
+        if self.path.startswith("/api/easyparcel-oauth-callback"):
+            # Callback OAuth EasyParcel — tukar code → token
+            q = urllib.parse.urlparse(self.path).query
+            params = dict(urllib.parse.parse_qsl(q))
+            code = params.get("code", "")
+            state = params.get("state", "")
+            cfg = load_data().get("easyparcel", {}) or {}
+            def _html(msg, ok=True):
+                color = "#2e7d32" if ok else "#c0392b"
+                body = ("<!doctype html><meta charset='utf-8'><title>EasyParcel</title>"
+                        "<div style=\"font-family:system-ui;max-width:460px;margin:80px auto;text-align:center;\">"
+                        f"<div style='font-size:46px'>{'✓' if ok else '✕'}</div>"
+                        f"<h2 style='color:{color}'>{msg}</h2>"
+                        "<p style='color:#666'>Anda boleh tutup tetingkap ini dan kembali ke admin.</p></div>")
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(body.encode("utf-8"))
+            if not code:
+                return _html("Tiada kod kebenaran diterima.", False)
+            if not state or state != cfg.get("oauth_state"):
+                return _html("State tidak sah (kemungkinan sesi tamat). Cuba sambung semula.", False)
+            redirect_uri = cfg.get("oauth_redirect", "")
+            data, err = ep_oauth_token("authorization_code", code=code, redirect_uri=redirect_uri)
+            if err or not data or not data.get("access_token"):
+                return _html("Gagal tukar token: " + str(err or "tiada access_token"), False)
+            ep_store_token(data)
+            ep_set_cfg(oauth_state="")
+            return _html("EasyParcel berjaya disambung!", True)
         if self.path == "/api/tracking":
             # Awam — laman perlu tahu pixel mana nak dimuat (ID pixel memang awam di sisi klien)
             t = load_data().get("tracking", {})
@@ -1418,14 +1555,17 @@ class Handler(SimpleHTTPRequestHandler):
             b = self._read_body()
             d = load_data()
             ep = d.get("easyparcel", {}) or {}
-            # api_key: hanya tukar jika dihantar (elak padam bila borang hantar mask)
-            ak = str(b.get("api_key", "")).strip()
-            if ak and "..." not in ak:
-                ep["api_key"] = ak
-            ep["demo"]         = bool(b.get("demo", ep.get("demo", True)))
+            cid = str(b.get("client_id", "")).strip()
+            if cid:
+                ep["client_id"] = cid[:120]
+            csec = str(b.get("client_secret", "")).strip()
+            if csec and "..." not in csec:
+                ep["client_secret"] = csec[:200]
             ep["pick_name"]    = str(b.get("pick_name", ep.get("pick_name", "")))[:120]
             ep["pick_contact"] = str(b.get("pick_contact", ep.get("pick_contact", "")))[:30]
+            ep["pick_email"]   = str(b.get("pick_email", ep.get("pick_email", "")))[:120]
             ep["pick_addr1"]   = str(b.get("pick_addr1", ep.get("pick_addr1", "")))[:300]
+            ep["pick_addr2"]   = str(b.get("pick_addr2", ep.get("pick_addr2", "")))[:300]
             ep["pick_city"]    = str(b.get("pick_city", ep.get("pick_city", "")))[:120]
             ep["pick_code"]    = str(b.get("pick_code", ep.get("pick_code", "")))[:10]
             ep["pick_state"]   = str(b.get("pick_state", ep.get("pick_state", "")))[:120]

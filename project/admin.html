@@ -619,26 +619,25 @@ tbody tr{border-top:1px solid #f0e8df;}
               <i class="ph ph-truck" style="color:#a86d69;font-size:16px;"></i>
               <div style="font-size:13px;font-weight:700;color:#2d2520;">EasyParcel — Booking Kurier</div>
             </div>
-            <div style="font-size:12px;color:#8a7e72;margin-bottom:18px;">Book penghantaran terus dari order (jana tracking + AWB). Customer tetap bayar postage tetap; ini untuk anda tempah kurier.</div>
+            <div style="font-size:12px;color:#8a7e72;margin-bottom:18px;">Book penghantaran terus dari order (jana tracking + AWB). Customer tetap bayar postage tetap; ini untuk anda tempah kurier. Guna EasyParcel Open API (OAuth).</div>
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-              <div style="grid-column:1 / -1;">
-                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">API Key EasyParcel</label>
-                <input id="ep-api-key" class="inp" style="width:100%;box-sizing:border-box;" placeholder="Tampal API key (kekal jika biar kosong)">
-                <div id="ep-api-status" style="font-size:11px;color:#8a7e72;margin-top:3px;"></div>
-              </div>
-              <div style="grid-column:1 / -1;display:flex;align-items:center;gap:8px;">
-                <input type="checkbox" id="ep-demo" style="width:16px;height:16px;">
-                <label for="ep-demo" style="font-size:12px;color:#473f38;">Mod Demo (ujian — tiada kredit sebenar ditolak)</label>
-              </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Client ID</label><input id="ep-client-id" class="inp" style="width:100%;box-sizing:border-box;" placeholder="Dari Developer Hub"></div>
+              <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Client Secret</label><input id="ep-client-secret" class="inp" style="width:100%;box-sizing:border-box;" placeholder="Kekal jika biar kosong"></div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:12px;background:#faf8f5;border:1px solid #e8e0d8;border-radius:8px;padding:10px 12px;margin-bottom:18px;">
+              <div id="ep-conn-status" style="flex:1;font-size:12px;color:#8a7e72;">Status: belum disambung</div>
+              <button onclick="epConnect()" style="flex:none;padding:8px 16px;background:#c98a86;color:#fff;border:none;border-radius:7px;font-size:12.5px;font-weight:700;cursor:pointer;"><i class="ph ph-link"></i> Sambung Akaun</button>
             </div>
 
             <div style="font-size:12px;font-weight:700;color:#473f38;text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px;">Alamat Pengirim (Pickup)</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
               <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Nama</label><input id="ep-pick-name" class="inp" style="width:100%;box-sizing:border-box;"></div>
               <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">No. Telefon</label><input id="ep-pick-contact" class="inp" style="width:100%;box-sizing:border-box;"></div>
-              <div style="grid-column:1 / -1;"><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Alamat</label><input id="ep-pick-addr1" class="inp" style="width:100%;box-sizing:border-box;"></div>
+              <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Email</label><input id="ep-pick-email" class="inp" style="width:100%;box-sizing:border-box;"></div>
               <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Bandar</label><input id="ep-pick-city" class="inp" style="width:100%;box-sizing:border-box;"></div>
+              <div style="grid-column:1 / -1;"><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Alamat</label><input id="ep-pick-addr1" class="inp" style="width:100%;box-sizing:border-box;"></div>
               <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Poskod</label><input id="ep-pick-code" class="inp" style="width:100%;box-sizing:border-box;"></div>
               <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Negeri</label><input id="ep-pick-state" class="inp" style="width:100%;box-sizing:border-box;" placeholder="cth: Selangor"></div>
             </div>
@@ -2811,17 +2810,21 @@ function savePostage(){
     .then(r=>r.json()).then(res=>showToast(res.ok ? 'Tetapan penghantaran disimpan' : 'Gagal simpan'));
 }
 
-// ── EasyParcel Config ─────────────────────────────────────
+// ── EasyParcel Config (Open API / OAuth) ──────────────────
 function loadEasyparcel(){
   fetch('/api/easyparcel-config', { headers: authHeaders() })
     .then(r=>r.json()).then(d=>{
       if(d.error) return;
-      const st = document.getElementById('ep-api-status');
-      if(st) st.textContent = d.api_key_set ? '✓ API key ditetapkan ('+d.api_key_masked+')' : '⚠ Belum ditetapkan';
-      document.getElementById('ep-api-key').value = '';
-      document.getElementById('ep-demo').checked        = d.demo !== false;
+      const st = document.getElementById('ep-conn-status');
+      if(st) st.innerHTML = d.connected
+        ? '<span style="color:#2e7d32;font-weight:700;"><i class="ph ph-check-circle"></i> Tersambung ✓</span>'
+        : (d.client_id ? 'Status: belum disambung — klik Sambung Akaun' : 'Isi Client ID & Secret dahulu, Simpan, kemudian Sambung');
+      document.getElementById('ep-client-id').value     = d.client_id || '';
+      document.getElementById('ep-client-secret').value = '';
+      document.getElementById('ep-client-secret').placeholder = d.client_secret_set ? '•••••• (tersimpan)' : 'Client Secret';
       document.getElementById('ep-pick-name').value     = d.pick_name || '';
       document.getElementById('ep-pick-contact').value  = d.pick_contact || '';
+      document.getElementById('ep-pick-email').value    = d.pick_email || '';
       document.getElementById('ep-pick-addr1').value    = d.pick_addr1 || '';
       document.getElementById('ep-pick-city').value     = d.pick_city || '';
       document.getElementById('ep-pick-code').value     = d.pick_code || '';
@@ -2834,10 +2837,11 @@ function loadEasyparcel(){
 }
 function saveEasyparcel(){
   const body = {
-    api_key:      document.getElementById('ep-api-key').value.trim(),
-    demo:         document.getElementById('ep-demo').checked,
+    client_id:     document.getElementById('ep-client-id').value.trim(),
+    client_secret: document.getElementById('ep-client-secret').value.trim(),
     pick_name:    document.getElementById('ep-pick-name').value,
     pick_contact: document.getElementById('ep-pick-contact').value,
+    pick_email:   document.getElementById('ep-pick-email').value,
     pick_addr1:   document.getElementById('ep-pick-addr1').value,
     pick_city:    document.getElementById('ep-pick-city').value,
     pick_code:    document.getElementById('ep-pick-code').value,
@@ -2849,6 +2853,14 @@ function saveEasyparcel(){
   };
   fetch('/api/easyparcel-config', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body: JSON.stringify(body) })
     .then(r=>r.json()).then(res=>{ showToast(res.ok ? 'Tetapan EasyParcel disimpan' : 'Gagal simpan'); if(res.ok) loadEasyparcel(); });
+}
+function epConnect(){
+  fetch('/api/easyparcel/auth-url', { headers: authHeaders() })
+    .then(r=>r.json()).then(d=>{
+      if(!d.ok){ showToast(d.error || 'Simpan Client ID/Secret dahulu'); return; }
+      window.open(d.url, '_blank');
+      showToast('Benarkan akses di tab EasyParcel, kemudian refresh halaman ini');
+    }).catch(()=>showToast('Ralat rangkaian'));
 }
 
 // ── HitPay Config ─────────────────────────────────────────
