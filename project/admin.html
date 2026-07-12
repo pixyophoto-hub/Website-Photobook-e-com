@@ -612,6 +612,51 @@ tbody tr{border-top:1px solid #f0e8df;}
           </div>
         </div>
 
+        <!-- PANEL: EasyParcel (bawah Pembayaran) -->
+        <div id="settings-easyparcel" style="display:none;max-width:760px;margin-top:20px;">
+          <div class="card" style="padding:18px 20px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <i class="ph ph-truck" style="color:#a86d69;font-size:16px;"></i>
+              <div style="font-size:13px;font-weight:700;color:#2d2520;">EasyParcel — Booking Kurier</div>
+            </div>
+            <div style="font-size:12px;color:#8a7e72;margin-bottom:18px;">Book penghantaran terus dari order (jana tracking + AWB). Customer tetap bayar postage tetap; ini untuk anda tempah kurier.</div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div style="grid-column:1 / -1;">
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">API Key EasyParcel</label>
+                <input id="ep-api-key" class="inp" style="width:100%;box-sizing:border-box;" placeholder="Tampal API key (kekal jika biar kosong)">
+                <div id="ep-api-status" style="font-size:11px;color:#8a7e72;margin-top:3px;"></div>
+              </div>
+              <div style="grid-column:1 / -1;display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" id="ep-demo" style="width:16px;height:16px;">
+                <label for="ep-demo" style="font-size:12px;color:#473f38;">Mod Demo (ujian — tiada kredit sebenar ditolak)</label>
+              </div>
+            </div>
+
+            <div style="font-size:12px;font-weight:700;color:#473f38;text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px;">Alamat Pengirim (Pickup)</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+              <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Nama</label><input id="ep-pick-name" class="inp" style="width:100%;box-sizing:border-box;"></div>
+              <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">No. Telefon</label><input id="ep-pick-contact" class="inp" style="width:100%;box-sizing:border-box;"></div>
+              <div style="grid-column:1 / -1;"><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Alamat</label><input id="ep-pick-addr1" class="inp" style="width:100%;box-sizing:border-box;"></div>
+              <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Bandar</label><input id="ep-pick-city" class="inp" style="width:100%;box-sizing:border-box;"></div>
+              <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Poskod</label><input id="ep-pick-code" class="inp" style="width:100%;box-sizing:border-box;"></div>
+              <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Negeri</label><input id="ep-pick-state" class="inp" style="width:100%;box-sizing:border-box;" placeholder="cth: Selangor"></div>
+            </div>
+
+            <div style="font-size:12px;font-weight:700;color:#473f38;text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px;">Parcel (default)</div>
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;margin-bottom:18px;">
+              <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Kandungan</label><input id="ep-content" class="inp" style="width:100%;box-sizing:border-box;" placeholder="Photobook"></div>
+              <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Lebar (cm)</label><input id="ep-width" type="number" class="inp" style="width:100%;box-sizing:border-box;"></div>
+              <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Panjang (cm)</label><input id="ep-length" type="number" class="inp" style="width:100%;box-sizing:border-box;"></div>
+              <div><label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Tinggi (cm)</label><input id="ep-height" type="number" class="inp" style="width:100%;box-sizing:border-box;"></div>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;">
+              <button class="btn-primary" style="font-size:13px;padding:9px 18px;border-radius:8px;" onclick="saveEasyparcel()"><i class="ph ph-floppy-disk"></i> Simpan Tetapan</button>
+            </div>
+          </div>
+        </div>
+
         <!-- PANEL: Flow Kerja -->
         <div id="settings-flow">
           <div class="card" style="padding:18px 20px;max-width:760px;margin-top:20px;">
@@ -681,6 +726,13 @@ tbody tr{border-top:1px solid #f0e8df;}
           </button>
           <div id="od-chip-result" style="display:none;margin-top:10px;font-size:12px;line-height:1.7;"></div>
         </div>
+      </div>
+      <div style="background:#faf8f5;border-radius:10px;padding:14px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <i class="ph ph-truck" style="color:#a86d69;"></i>
+          <div style="font-size:11px;color:#9a8d80;font-weight:600;">PENGHANTARAN (EASYPARCEL)</div>
+        </div>
+        <div id="od-ep-body"></div>
       </div>
       <div style="background:#faf8f5;border-radius:10px;padding:14px;">
         <div style="font-size:11px;color:#9a8d80;font-weight:600;margin-bottom:8px;">ASSIGN EDITOR</div>
@@ -1589,6 +1641,8 @@ function goSettingsGroup(groupId){
   if(wrapPembayaran) wrapPembayaran.style.display = group.id === 'pembayaran' ? 'grid' : 'none';
   const postagePanel = document.getElementById('settings-postage');
   if(postagePanel) postagePanel.style.display = group.id === 'pembayaran' ? 'block' : 'none';
+  const epPanel = document.getElementById('settings-easyparcel');
+  if(epPanel) epPanel.style.display = group.id === 'pembayaran' ? 'block' : 'none';
   const wrapKandungan = document.getElementById('settings-kandungan-wrap');
   if(wrapKandungan) wrapKandungan.style.display = group.id === 'kandungan' ? 'grid' : 'none';
   const allTabs = ['flow','packages','akaun'];
@@ -1596,7 +1650,7 @@ function goSettingsGroup(groupId){
     const el = document.getElementById('settings-'+t);
     if(el) el.style.display = group.tabs.includes(t) ? 'block' : 'none';
   });
-  if(group.tabs.includes('payment'))    { loadChipConfig(); loadPostage(); }
+  if(group.tabs.includes('payment'))    { loadChipConfig(); loadPostage(); loadEasyparcel(); }
   if(group.tabs.includes('medialinks')) loadMediaLinks();
   if(group.tabs.includes('announce'))   loadAnnouncements();
   if(group.tabs.includes('explore'))  { loadExplore(); loadVAFaq(); }
@@ -1794,6 +1848,8 @@ function showOrderDetail(id){
   const chipRes = document.getElementById('od-chip-result');
   if(chipRes){ chipRes.style.display = 'none'; chipRes.innerHTML = ''; }
 
+  epRenderBody(o);
+
   const overlay = document.getElementById('order-modal-overlay');
   overlay.style.display = 'flex';
 }
@@ -1801,6 +1857,78 @@ function showOrderDetail(id){
 function closeOrderModal(){
   document.getElementById('order-modal-overlay').style.display = 'none';
   _currentOrderId = null;
+}
+
+// ── EasyParcel booking dari order detail ──────────────────
+function epRenderBody(o){
+  const el = document.getElementById('od-ep-body');
+  if(!el) return;
+  const ep = (o._raw && o._raw.easyparcel) || null;
+  if(ep && ep.awb){
+    el.innerHTML =
+      '<div style="background:#eef6ef;border:1px solid #cfe6d2;border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.7;">'
+      + '<div style="display:flex;justify-content:space-between;"><span style="color:#6f8466;font-weight:700;">'+esc(ep.courier||'Kurier')+'</span><span style="color:#2e7d32;font-weight:700;">Ditempah ✓</span></div>'
+      + '<div style="display:flex;justify-content:space-between;"><span style="color:#8a7e72;">No. Tracking</span><b style="font-family:monospace;color:#2471a3;">'+esc(ep.awb)+'</b></div>'
+      + (ep.cost?'<div style="display:flex;justify-content:space-between;"><span style="color:#8a7e72;">Kos courier</span><b>RM '+Number(ep.cost).toFixed(2)+'</b></div>':'')
+      + (ep.booked_at?'<div style="display:flex;justify-content:space-between;"><span style="color:#8a7e72;">Masa book</span><span>'+esc(ep.booked_at)+'</span></div>':'')
+      + '</div>'
+      + '<div style="display:flex;gap:8px;margin-top:10px;">'
+      + (ep.awb_link?'<a href="'+esc(ep.awb_link)+'" target="_blank" rel="noopener" style="flex:1;text-align:center;text-decoration:none;padding:9px;background:#2d2520;color:#fff;border-radius:8px;font-size:12.5px;font-weight:700;"><i class="ph ph-printer"></i> Print AWB</a>':'')
+      + (ep.tracking_url?'<a href="'+esc(ep.tracking_url)+'" target="_blank" rel="noopener" style="flex:1;text-align:center;text-decoration:none;padding:9px;background:#fff;border:1.5px solid #d8c8bc;color:#6f6358;border-radius:8px;font-size:12.5px;font-weight:700;"><i class="ph ph-map-pin"></i> Track</a>':'')
+      + '</div>';
+    return;
+  }
+  el.innerHTML =
+    '<div style="font-size:12px;color:#8a7e72;margin-bottom:10px;">Belum ditempah. Semak kadar kurier & book untuk jana tracking + AWB.</div>'
+    + '<button id="od-ep-btn" onclick="epLoadRates()" style="width:100%;padding:11px;background:#c98a86;color:#fff;border:none;border-radius:8px;font-size:13.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="ph ph-package" style="font-size:17px;"></i> Book EasyParcel</button>'
+    + '<div id="od-ep-rates" style="margin-top:10px;"></div>';
+}
+
+function epLoadRates(){
+  if(!_currentOrderId) return;
+  const btn = document.getElementById('od-ep-btn');
+  const box = document.getElementById('od-ep-rates');
+  const old = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="ph ph-circle-notch"></i> Menyemak kadar...';
+  fetch('/api/orders/'+encodeURIComponent(_currentOrderId)+'/ep-rates', { method:'POST', headers: authHeaders() })
+    .then(r=>r.json())
+    .then(d=>{
+      btn.disabled = false; btn.innerHTML = old;
+      if(!d.ok){ box.innerHTML = '<div style="color:#c0392b;font-size:12px;">'+esc(typeof d.error==='string'?d.error:'Gagal semak kadar')+'</div>'; return; }
+      if(!d.rates || !d.rates.length){ box.innerHTML = '<div style="color:#8a7e72;font-size:12px;">Tiada kurier tersedia untuk destinasi ini.</div>'; return; }
+      box.innerHTML =
+        '<div style="font-size:11px;color:#8a7e72;margin-bottom:6px;">Berat '+Number(d.weight||0).toFixed(1)+' kg · pilih kurier:</div>'
+        + d.rates.map(r=>
+          '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #e8e0d8;border-radius:8px;padding:8px 10px;margin-bottom:6px;">'
+          + '<div style="font-size:12.5px;"><b style="color:#2d2520;">'+esc(r.courier_name||r.service_name||'Kurier')+'</b>'
+          + (r.delivery?'<div style="font-size:11px;color:#9a8d80;">'+esc(r.delivery)+'</div>':'')+'</div>'
+          + '<div style="display:flex;align-items:center;gap:8px;"><b style="font-size:13px;color:#a86d69;">RM '+Number(r.price).toFixed(2)+'</b>'
+          + '<button onclick="epBook(\''+esc(String(r.service_id))+'\', this)" style="padding:6px 12px;background:#2d2520;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;">Book</button></div>'
+          + '</div>'
+        ).join('');
+    })
+    .catch(()=>{ btn.disabled = false; btn.innerHTML = old; box.innerHTML = '<div style="color:#c0392b;font-size:12px;">Ralat rangkaian</div>'; });
+}
+
+function epBook(serviceId, btnEl){
+  if(!_currentOrderId) return;
+  if(!confirm('Book penghantaran dengan kurier ini? Kredit EasyParcel akan ditolak (kecuali mod demo).')) return;
+  const box = document.getElementById('od-ep-rates');
+  if(btnEl){ btnEl.disabled = true; btnEl.textContent = '...'; }
+  fetch('/api/orders/'+encodeURIComponent(_currentOrderId)+'/ep-book', {
+    method:'POST', headers:{'Content-Type':'application/json',...authHeaders()},
+    body: JSON.stringify({ service_id: serviceId })
+  })
+    .then(r=>r.json())
+    .then(d=>{
+      if(!d.ok){ if(box) box.innerHTML = '<div style="color:#c0392b;font-size:12px;">'+esc(typeof d.error==='string'?d.error:'Gagal book')+'</div>'; return; }
+      showToast('Penghantaran ditempah ✓');
+      const o = ORDERS.find(x=>x.id===_currentOrderId);
+      if(o){ o._raw = o._raw || {}; o._raw.easyparcel = {
+        order_no:d.order_no, awb:d.awb, awb_link:d.awb_link, tracking_url:d.tracking_url,
+        courier:d.courier, cost:d.cost, service_id:serviceId, booked_at:'baru sahaja' }; }
+      epRenderBody(o || {_raw:{easyparcel:d}});
+    })
+    .catch(()=>{ if(box) box.innerHTML = '<div style="color:#c0392b;font-size:12px;">Ralat rangkaian</div>'; });
 }
 
 function checkChipAmount(){
@@ -2681,6 +2809,46 @@ function savePostage(){
   };
   fetch('/api/postage', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body: JSON.stringify(body) })
     .then(r=>r.json()).then(res=>showToast(res.ok ? 'Tetapan penghantaran disimpan' : 'Gagal simpan'));
+}
+
+// ── EasyParcel Config ─────────────────────────────────────
+function loadEasyparcel(){
+  fetch('/api/easyparcel-config', { headers: authHeaders() })
+    .then(r=>r.json()).then(d=>{
+      if(d.error) return;
+      const st = document.getElementById('ep-api-status');
+      if(st) st.textContent = d.api_key_set ? '✓ API key ditetapkan ('+d.api_key_masked+')' : '⚠ Belum ditetapkan';
+      document.getElementById('ep-api-key').value = '';
+      document.getElementById('ep-demo').checked        = d.demo !== false;
+      document.getElementById('ep-pick-name').value     = d.pick_name || '';
+      document.getElementById('ep-pick-contact').value  = d.pick_contact || '';
+      document.getElementById('ep-pick-addr1').value    = d.pick_addr1 || '';
+      document.getElementById('ep-pick-city').value     = d.pick_city || '';
+      document.getElementById('ep-pick-code').value     = d.pick_code || '';
+      document.getElementById('ep-pick-state').value    = d.pick_state || '';
+      document.getElementById('ep-content').value       = d.content || 'Photobook';
+      document.getElementById('ep-width').value         = d.width ?? 25;
+      document.getElementById('ep-length').value        = d.length ?? 20;
+      document.getElementById('ep-height').value        = d.height ?? 5;
+    }).catch(()=>{});
+}
+function saveEasyparcel(){
+  const body = {
+    api_key:      document.getElementById('ep-api-key').value.trim(),
+    demo:         document.getElementById('ep-demo').checked,
+    pick_name:    document.getElementById('ep-pick-name').value,
+    pick_contact: document.getElementById('ep-pick-contact').value,
+    pick_addr1:   document.getElementById('ep-pick-addr1').value,
+    pick_city:    document.getElementById('ep-pick-city').value,
+    pick_code:    document.getElementById('ep-pick-code').value,
+    pick_state:   document.getElementById('ep-pick-state').value,
+    content:      document.getElementById('ep-content').value,
+    width:        document.getElementById('ep-width').value,
+    length:       document.getElementById('ep-length').value,
+    height:       document.getElementById('ep-height').value,
+  };
+  fetch('/api/easyparcel-config', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body: JSON.stringify(body) })
+    .then(r=>r.json()).then(res=>{ showToast(res.ok ? 'Tetapan EasyParcel disimpan' : 'Gagal simpan'); if(res.ok) loadEasyparcel(); });
 }
 
 // ── HitPay Config ─────────────────────────────────────────

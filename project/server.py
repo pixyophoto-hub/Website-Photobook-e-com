@@ -443,6 +443,160 @@ def chip_get_purchase(purchase_id):
     return data
 
 
+# ── EasyParcel (booking penghantaran oleh admin) ─────────────
+def get_easyparcel_cfg():
+    """Config EasyParcel dari data.json (+ fallback env)."""
+    cfg = load_data().get("easyparcel", {}) or {}
+    return {
+        "api_key":      cfg.get("api_key", "") or os.environ.get("EASYPARCEL_API_KEY", ""),
+        "demo":         bool(cfg.get("demo", True)),
+        "pick_name":    cfg.get("pick_name", ""),
+        "pick_contact": cfg.get("pick_contact", ""),
+        "pick_addr1":   cfg.get("pick_addr1", ""),
+        "pick_city":    cfg.get("pick_city", ""),
+        "pick_code":    cfg.get("pick_code", ""),
+        "pick_state":   cfg.get("pick_state", ""),
+        "content":      cfg.get("content", "Photobook"),
+        "def_weight":   float(cfg.get("def_weight", 0.5) or 0.5),
+        "width":        cfg.get("width", 25),
+        "length":       cfg.get("length", 20),
+        "height":       cfg.get("height", 5),
+    }
+
+def ep_base_url(cfg):
+    return ("http://demo.connect.easyparcel.my/" if cfg["demo"]
+            else "https://connect.easyparcel.my/")
+
+def ep_request(action, bulk):
+    """POST form-encoded ke EasyParcel. `bulk` = list of dict. Pulangkan (data, error)."""
+    cfg = get_easyparcel_cfg()
+    if not cfg["api_key"]:
+        return None, "EasyParcel API key belum dikonfigurasi"
+    fields = {"api": cfg["api_key"]}
+    for i, row in enumerate(bulk):
+        for k, v in row.items():
+            fields["bulk[%d][%s]" % (i, k)] = str(v)
+    data = urllib.parse.urlencode(fields).encode("utf-8")
+    url = ep_base_url(cfg) + "?ac=" + action
+    req = urllib.request.Request(url, data=data, headers={
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": "PixyoPrint/1.0",
+    }, method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            return json.loads(resp.read().decode("utf-8")), None
+    except urllib.error.HTTPError as e:
+        return None, e.read().decode("utf-8")
+    except Exception as e:
+        return None, str(e)
+
+def ep_order_weight(order):
+    """Berat order: guna 'weight' tersimpan, atau kira dari item ikut pakej semasa."""
+    w = order.get("weight")
+    if w:
+        try:
+            return max(0.1, float(w))
+        except (TypeError, ValueError):
+            pass
+    d = load_data()
+    by_name = {p.get("name"): p for p in d.get("packages", [])}
+    for a in d.get("addons", []):
+        by_name[a.get("name")] = a
+    total = 0.0
+    for it in order.get("items", []):
+        pk = by_name.get(it.get("name")) or {}
+        try:
+            total += float(pk.get("weight", 0) or 0) * int(it.get("qty", 1))
+        except (TypeError, ValueError):
+            pass
+    return max(0.1, total or get_easyparcel_cfg()["def_weight"])
+
+def ep_addr_row(cfg, order):
+    """Baris alamat pick+send untuk order (dikongsi rate/submit)."""
+    return {
+        "pick_name":    cfg["pick_name"],
+        "pick_contact": cfg["pick_contact"],
+        "pick_addr1":   cfg["pick_addr1"],
+        "pick_city":    cfg["pick_city"],
+        "pick_code":    cfg["pick_code"],
+        "pick_state":   cfg["pick_state"],
+        "pick_country": "MY",
+        "send_name":    order.get("name", "") or "Pelanggan",
+        "send_contact": order.get("phone", ""),
+        "send_addr1":   order.get("alamat", ""),
+        "send_city":    order.get("bandar", ""),
+        "send_code":    order.get("poskod", ""),
+        "send_state":   order.get("negeri", ""),
+        "send_country": "MY",
+    }
+
+def ep_check_rates(order):
+    """Semak kadar semua courier untuk order. Pulangkan {ok, rates:[...]}."""
+    cfg = get_easyparcel_cfg()
+    row = ep_addr_row(cfg, order)
+    row["weight"] = ep_order_weight(order)
+    data, err = ep_request("EPRateCheckingBulk", [row])
+    if err:
+        return {"ok": False, "error": err}
+    try:
+        res = (data.get("result") or [{}])[0]
+        rates = res.get("rates") or res.get("Rates") or []
+        out = []
+        for r in rates:
+            out.append({
+                "service_id":   r.get("service_id") or r.get("ServiceID"),
+                "courier_name": r.get("courier_name") or r.get("provider") or r.get("ServiceName") or r.get("service_name"),
+                "service_name": r.get("service_name") or r.get("ServiceName"),
+                "price":        float(r.get("price") or r.get("Price") or 0),
+                "delivery":     r.get("delivery") or r.get("Delivery") or "",
+            })
+        return {"ok": True, "rates": out, "weight": row["weight"]}
+    except Exception as e:
+        return {"ok": False, "error": "Respons tak dijangka: " + str(e)}
+
+def ep_book(order, service_id):
+    """Submit + bayar order EasyParcel. Pulangkan {ok, awb, tracking_url, awb_link, order_no, courier, cost}."""
+    cfg = get_easyparcel_cfg()
+    row = ep_addr_row(cfg, order)
+    row.update({
+        "weight":       ep_order_weight(order),
+        "width":        cfg["width"],
+        "length":       cfg["length"],
+        "height":       cfg["height"],
+        "content":      cfg["content"],
+        "value":        order.get("subtotal", order.get("total", 0)) or 1,
+        "service_id":   service_id,
+        "collect_date": now_myt().strftime("%Y-%m-%d"),
+    })
+    sub, err = ep_request("EPSubmitOrderBulk", [row])
+    if err:
+        return {"ok": False, "error": err}
+    try:
+        sres = (sub.get("result") or [{}])[0]
+        order_no = sres.get("order_number") or sres.get("orderno") or sres.get("OrderNo")
+        if not order_no:
+            return {"ok": False, "error": sub.get("error_remark") or "Gagal submit order EasyParcel"}
+    except Exception as e:
+        return {"ok": False, "error": "Respons submit tak dijangka: " + str(e)}
+    pay, perr = ep_request("EPPayOrderBulk", [{"order_no": order_no}])
+    if perr:
+        return {"ok": False, "error": "Order dicipta tapi bayaran gagal: " + perr, "order_no": order_no}
+    try:
+        pres = (pay.get("result") or [{}])[0]
+        parcel = (pres.get("parcel") or [{}])[0]
+        return {
+            "ok": True,
+            "order_no":     order_no,
+            "awb":          parcel.get("awb", ""),
+            "awb_link":     parcel.get("awb_id_link", "") or parcel.get("awb_link", ""),
+            "tracking_url": parcel.get("tracking_url", ""),
+            "courier":      pres.get("courier") or "",
+            "cost":         float(pres.get("price") or 0),
+        }
+    except Exception as e:
+        return {"ok": False, "error": "Order dibayar tapi respons AWB tak dijangka: " + str(e), "order_no": order_no}
+
+
 def load_data():
     if not os.path.exists(DATA_FILE):
         save_data(DEFAULT_DATA)
@@ -783,6 +937,26 @@ class Handler(SimpleHTTPRequestHandler):
                 "brand_id": cfg.get("brand_id", ""),
                 "gateway": d.get("payment_gateway", "chip"),
             })
+        if self.path == "/api/easyparcel-config":
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            cfg = load_data().get("easyparcel", {}) or {}
+            ak = cfg.get("api_key", "")
+            return self._json({
+                "api_key_masked": (ak[:5] + "..." + ak[-4:]) if len(ak) > 10 else ak,
+                "api_key_set": bool(ak),
+                "demo": bool(cfg.get("demo", True)),
+                "pick_name": cfg.get("pick_name", ""),
+                "pick_contact": cfg.get("pick_contact", ""),
+                "pick_addr1": cfg.get("pick_addr1", ""),
+                "pick_city": cfg.get("pick_city", ""),
+                "pick_code": cfg.get("pick_code", ""),
+                "pick_state": cfg.get("pick_state", ""),
+                "content": cfg.get("content", "Photobook"),
+                "width": cfg.get("width", 25),
+                "length": cfg.get("length", 20),
+                "height": cfg.get("height", 5),
+            })
         if self.path == "/api/tracking":
             # Awam — laman perlu tahu pixel mana nak dimuat (ID pixel memang awam di sisi klien)
             t = load_data().get("tracking", {})
@@ -1016,6 +1190,7 @@ class Handler(SimpleHTTPRequestHandler):
                 "subtotal":   round(subtotal, 2),
                 "discount":   round(discount, 2),
                 "postage":    round(postage, 2),
+                "weight":     round(total_weight, 2),
                 "voucher":    applied_voucher,
                 "name":       name,
                 "email":      email,
@@ -1117,6 +1292,43 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json({"ok": True, "url": result["url"]})
             return self._json({"ok": False, "error": result.get("error", "Gagal jana link")}, 502)
 
+        if self.path.startswith("/api/orders/") and self.path.endswith("/ep-rates"):
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            ref = self.path[len("/api/orders/"):-len("/ep-rates")]
+            d = load_data()
+            order = next((o for o in d.get("orders", []) if o.get("reference") == ref), None)
+            if not order:
+                return self._json({"ok": False, "error": "Order tidak dijumpai"}, 404)
+            return self._json(ep_check_rates(order))
+
+        if self.path.startswith("/api/orders/") and self.path.endswith("/ep-book"):
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            ref = self.path[len("/api/orders/"):-len("/ep-book")]
+            b = self._read_body()
+            service_id = str(b.get("service_id", "")).strip()
+            if not service_id:
+                return self._json({"ok": False, "error": "service_id diperlukan"}, 400)
+            d = load_data()
+            order = next((o for o in d.get("orders", []) if o.get("reference") == ref), None)
+            if not order:
+                return self._json({"ok": False, "error": "Order tidak dijumpai"}, 404)
+            res = ep_book(order, service_id)
+            if res.get("ok"):
+                order["easyparcel"] = {
+                    "order_no":     res.get("order_no", ""),
+                    "awb":          res.get("awb", ""),
+                    "awb_link":     res.get("awb_link", ""),
+                    "tracking_url": res.get("tracking_url", ""),
+                    "courier":      res.get("courier", ""),
+                    "cost":         res.get("cost", 0),
+                    "service_id":   service_id,
+                    "booked_at":    now_myt().strftime("%d %b %Y, %H:%M"),
+                }
+                save_data(d)
+            return self._json(res)
+
         if self.path == "/api/chip-callback":
             length = int(self.headers.get("Content-Length", 0) or 0)
             raw = self.rfile.read(length) if length else b""
@@ -1198,6 +1410,32 @@ class Handler(SimpleHTTPRequestHandler):
                     "per_kg": float(e.get("per_kg", 10)),
                 },
             }
+            save_data(d)
+            return self._json({"ok": True})
+        if self.path == "/api/easyparcel-config":
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            b = self._read_body()
+            d = load_data()
+            ep = d.get("easyparcel", {}) or {}
+            # api_key: hanya tukar jika dihantar (elak padam bila borang hantar mask)
+            ak = str(b.get("api_key", "")).strip()
+            if ak and "..." not in ak:
+                ep["api_key"] = ak
+            ep["demo"]         = bool(b.get("demo", ep.get("demo", True)))
+            ep["pick_name"]    = str(b.get("pick_name", ep.get("pick_name", "")))[:120]
+            ep["pick_contact"] = str(b.get("pick_contact", ep.get("pick_contact", "")))[:30]
+            ep["pick_addr1"]   = str(b.get("pick_addr1", ep.get("pick_addr1", "")))[:300]
+            ep["pick_city"]    = str(b.get("pick_city", ep.get("pick_city", "")))[:120]
+            ep["pick_code"]    = str(b.get("pick_code", ep.get("pick_code", "")))[:10]
+            ep["pick_state"]   = str(b.get("pick_state", ep.get("pick_state", "")))[:120]
+            ep["content"]      = str(b.get("content", ep.get("content", "Photobook")))[:120]
+            for k in ("width", "length", "height"):
+                try:
+                    ep[k] = int(float(b.get(k, ep.get(k, 0))))
+                except (TypeError, ValueError):
+                    pass
+            d["easyparcel"] = ep
             save_data(d)
             return self._json({"ok": True})
         if self.path == "/api/media-links":
