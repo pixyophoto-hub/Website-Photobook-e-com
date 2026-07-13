@@ -331,13 +331,15 @@ def tg_handle_update(update):
             return
         frm = msg.get("from", {}) or {}
         chat_id = (msg.get("chat", {}) or {}).get("id")
-        uid = frm.get("id")
+        uid = frm.get("id")  # None untuk channel_post
         text = msg.get("text") or msg.get("caption") or ""
         low = text.strip().lower()
 
         if low in ("/id", "/start", "/myid"):
-            tg_send(chat_id, "ID Telegram anda: " + str(uid) +
-                    "\nTambah ID ini dalam admin PixyoPrint (Tetapan > Telegram) untuk benarkan buat order.")
+            tg_send(chat_id, "ID pengguna anda: " + str(uid) +
+                    "\nID chat/channel ini: " + str(chat_id) +
+                    "\n\nTambah ID yang berkaitan dalam admin PixyoPrint (Tetapan > Telegram). "
+                    "Untuk channel/grup, tambah ID chat/channel.")
             return
         if low.startswith("/help") or low.startswith("/format"):
             tg_send(chat_id, _TG_HELP)
@@ -347,9 +349,14 @@ def tg_handle_update(update):
 
         cfg = get_telegram_cfg()
         allowed = cfg["allowed_ids"]
-        if allowed and uid not in allowed:
-            tg_send(chat_id, "Maaf, anda belum diberi kebenaran. ID anda: " + str(uid) +
-                    "\nMinta admin tambah ID ini di sistem.")
+        if allowed:
+            authorized = (uid in allowed) or (chat_id in allowed)
+        else:
+            authorized = True
+        if not authorized:
+            tg_send(chat_id, "Maaf, belum diberi kebenaran.\nID pengguna: " + str(uid) +
+                    " · ID chat/channel: " + str(chat_id) +
+                    "\nMinta admin tambah ID berkaitan di sistem.")
             return
 
         parsed = tg_parse_order(text)
