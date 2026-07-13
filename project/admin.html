@@ -145,6 +145,10 @@ tbody tr{border-top:1px solid #f0e8df;}
         <div class="h-title" style="margin-bottom:6px;">Selamat datang, <span id="overview-username">Admin</span></div>
         <div style="font-size:13px;color:#8a7e72;margin-bottom:24px;"><span id="overview-date"></span> · Ringkasan hari ini</div>
         <div class="grid-4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;" id="kpi-cards"></div>
+        <div class="card" style="padding:18px 22px;margin-bottom:28px;">
+          <div style="font-size:15px;font-weight:700;margin-bottom:16px;">Order Ikut Sumber</div>
+          <div id="source-breakdown"></div>
+        </div>
         <div class="split" style="display:grid;grid-template-columns:1fr 340px;gap:20px;">
           <div class="card" style="overflow-x:auto;">
             <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #ede4d8;">
@@ -2920,6 +2924,39 @@ function initAdmin(){
   });
 }
 
+function renderSourceBreakdown(){
+  const el = document.getElementById('source-breakdown');
+  if(!el) return;
+  const defs = [
+    { id:'website',  label:'Website',          color:'#2471a3', icon:'ph-globe' },
+    { id:'telegram', label:'Telegram',         color:'#2a92d6', icon:'ph-telegram-logo' },
+    { id:'wedding',  label:'Wedding / Crystal', color:'#a83d6f', icon:'ph-diamond' },
+  ];
+  const agg = {};
+  defs.forEach(d=> agg[d.id] = {count:0, rm:0});
+  ORDERS.forEach(o=>{
+    const s = agg[o.source] ? o.source : 'website';
+    agg[s].count++;
+    if(o.status !== 'Menunggu Bayaran') agg[s].rm += parseFloat((o._raw&&o._raw.total)||0);
+  });
+  const maxCount = Math.max(1, ...defs.map(d=>agg[d.id].count));
+  if(!ORDERS.length){
+    el.innerHTML = '<div style="font-size:13px;color:#9a8d80;">Belum ada order.</div>';
+    return;
+  }
+  el.innerHTML = defs.map(d=>{
+    const a = agg[d.id];
+    const pct = Math.round((a.count / maxCount) * 100);
+    return `<div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+        <span style="display:inline-flex;align-items:center;gap:6px;color:#2d2520;font-weight:600;"><i class="ph ${d.icon}" style="color:${d.color};"></i> ${d.label}</span>
+        <span style="color:#8a7e72;">${a.count} order · RM ${a.rm.toFixed(2)}</span>
+      </div>
+      <div style="height:8px;background:#f0e8df;border-radius:100px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:${d.color};border-radius:100px;"></div></div>
+    </div>`;
+  }).join('');
+}
+
 function renderOverview(){
   // Compute real KPI from ORDERS
   const total = ORDERS.length;
@@ -2944,6 +2981,8 @@ function renderOverview(){
       <div style="font-size:11px;color:${k.trendColor};margin-top:6px;font-weight:600;">${k.trend}</div>
     </div>
   `).join('');
+
+  renderSourceBreakdown();
 
   document.getElementById('recent-orders').innerHTML = ORDERS.slice(0,6).map(o=>`
     <tr>
