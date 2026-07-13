@@ -118,6 +118,101 @@ def notify_new_order(order):
         snapshot = dict(order)
     threading.Thread(target=_send_order_email, args=(snapshot,), daemon=True).start()
 
+# ── Auto peringatan hantar gambar (email ke pelanggan) ───────
+def _photo_reminder_cfg():
+    c = load_data().get("photo_reminder", {}) or {}
+    return {
+        "enabled":        bool(c.get("enabled", False)),
+        "delay_hours":    float(c.get("delay_hours", 24) or 24),
+        "interval_hours": float(c.get("interval_hours", 48) or 48),
+        "max":            int(c.get("max", 2) or 2),
+    }
+
+def _parse_ts(s):
+    try:
+        return datetime.datetime.fromisoformat(str(s))
+    except (ValueError, TypeError):
+        return None
+
+def _send_photo_reminder_email(order):
+    cfg = _smtp_cfg()
+    to = str(order.get("email", "")).strip()
+    if not (cfg["user"] and cfg["password"] and to):
+        return False
+    try:
+        ref = order.get("reference", "")
+        name = order.get("name", "") or "pelanggan"
+        medium = order.get("medium", "")
+        body = (
+            f"Salam {name},\n\n"
+            f"Terima kasih kerana membuat tempahan dengan PixyoPrint (Order #{ref}).\n\n"
+            "Kami masih menunggu GAMBAR anda untuk mula proses susun atur & cetakan.\n"
+            f"Sila hantar gambar melalui: {medium or 'WhatsApp / Google Drive'}\n\n"
+            "Jika anda sudah menghantar gambar, abaikan email ini.\n\n"
+            "Sebarang pertanyaan, WhatsApp kami di 013-318 2285.\n\n"
+            "Terima kasih,\nPixyoPrint"
+        )
+        msg = EmailMessage()
+        msg["Subject"] = f"[PixyoPrint] Peringatan hantar gambar — Order #{ref}"
+        msg["From"] = cfg["user"]
+        msg["To"] = to
+        msg.set_content(body)
+        with smtplib.SMTP(cfg["host"], cfg["port"], timeout=20) as s:
+            s.starttls()
+            s.login(cfg["user"], cfg["password"])
+            s.send_message(msg)
+        print(f"[reminder] peringatan gambar order {ref} -> {to}")
+        return True
+    except Exception as e:
+        print(f"[reminder] gagal hantar: {e}")
+        return False
+
+def photo_reminder_tick():
+    """Satu pusingan: hantar peringatan kepada order yang belum hantar gambar."""
+    cfg = _photo_reminder_cfg()
+    if not cfg["enabled"]:
+        return
+    smtp = _smtp_cfg()
+    if not (smtp["user"] and smtp["password"]):
+        return
+    d = load_data()
+    now = now_myt()
+    changed = False
+    for o in d.get("orders", []):
+        # Hanya order dah bayar & masih menunggu gambar
+        if o.get("status") not in ("completed", "Hantar Gambar"):
+            continue
+        if not str(o.get("email", "")).strip():
+            continue
+        created = _parse_ts(o.get("created_ts"))
+        if not created:
+            continue
+        pr = o.get("photo_reminder") or {"count": 0, "last_ts": ""}
+        count = int(pr.get("count", 0) or 0)
+        if count >= cfg["max"]:
+            continue
+        if count == 0:
+            due = created + datetime.timedelta(hours=cfg["delay_hours"])
+        else:
+            last = _parse_ts(pr.get("last_ts")) or created
+            due = last + datetime.timedelta(hours=cfg["interval_hours"])
+        if now < due:
+            continue
+        if _send_photo_reminder_email(o):
+            o["photo_reminder"] = {"count": count + 1,
+                                   "last_ts": now.isoformat(timespec="seconds")}
+            changed = True
+    if changed:
+        save_data(d)
+
+def photo_reminder_loop():
+    while True:
+        try:
+            photo_reminder_tick()
+        except Exception as e:
+            print(f"[reminder] loop error: {e}")
+        time.sleep(3600)  # semak setiap jam
+
 def hash_password(password: str) -> str:
     salt = secrets.token_hex(16)
     key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), 260000)
@@ -1060,6 +1155,18 @@ class Handler(SimpleHTTPRequestHandler):
                 "length": cfg.get("length", 20),
                 "height": cfg.get("height", 5),
             })
+        if self.path == "/api/photo-reminder-config":
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            c = load_data().get("photo_reminder", {}) or {}
+            smtp = _smtp_cfg()
+            return self._json({
+                "enabled":        bool(c.get("enabled", False)),
+                "delay_hours":    c.get("delay_hours", 24),
+                "interval_hours": c.get("interval_hours", 48),
+                "max":            c.get("max", 2),
+                "smtp_ready":     bool(smtp["user"] and smtp["password"]),
+            })
         if self.path == "/api/easyparcel/auth-url":
             if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
@@ -1594,6 +1701,22 @@ class Handler(SimpleHTTPRequestHandler):
             d["easyparcel"] = ep
             save_data(d)
             return self._json({"ok": True})
+        if self.path == "/api/photo-reminder-config":
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            b = self._read_body()
+            d = load_data()
+            pr = d.get("photo_reminder", {}) or {}
+            pr["enabled"] = bool(b.get("enabled", False))
+            try: pr["delay_hours"] = max(1, float(b.get("delay_hours", 24)))
+            except (TypeError, ValueError): pr["delay_hours"] = 24
+            try: pr["interval_hours"] = max(1, float(b.get("interval_hours", 48)))
+            except (TypeError, ValueError): pr["interval_hours"] = 48
+            try: pr["max"] = max(1, min(5, int(float(b.get("max", 2)))))
+            except (TypeError, ValueError): pr["max"] = 2
+            d["photo_reminder"] = pr
+            save_data(d)
+            return self._json({"ok": True})
         if self.path == "/api/media-links":
             if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
@@ -1794,6 +1917,7 @@ if __name__ == "__main__":
             except Exception as e:
                 print(f"[Retention] ralat: {e}")
     threading.Thread(target=_retention_loop, daemon=True).start()
+    threading.Thread(target=photo_reminder_loop, daemon=True).start()
 
     print(f"PixyoPrint server di http://localhost:{PORT}")
     ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()

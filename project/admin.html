@@ -656,6 +656,43 @@ tbody tr{border-top:1px solid #f0e8df;}
           </div>
         </div>
 
+        <!-- PANEL: Auto Peringatan Hantar Gambar -->
+        <div id="settings-reminder" style="display:none;max-width:760px;margin-top:20px;">
+          <div class="card" style="padding:18px 20px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <i class="ph ph-bell-ringing" style="color:#a86d69;font-size:16px;"></i>
+              <div style="font-size:13px;font-weight:700;color:#2d2520;">Auto Peringatan Hantar Gambar</div>
+            </div>
+            <div style="font-size:12px;color:#8a7e72;margin-bottom:16px;">Sistem hantar <b>email automatik</b> kepada pelanggan yang dah bayar tapi belum hantar gambar. Berhenti automatik bila status ditukar (editor mula kerja) atau bila had dicapai.</div>
+            <div id="ep-smtp-warn" style="display:none;font-size:12px;color:#c0392b;background:#fdecea;border-radius:8px;padding:9px 12px;margin-bottom:14px;"><i class="ph ph-warning"></i> SMTP belum dikonfigur (env SMTP_USER/SMTP_PASS) — email tak akan terhantar.</div>
+
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+              <input type="checkbox" id="pr-enabled" style="width:16px;height:16px;">
+              <label for="pr-enabled" style="font-size:13px;color:#473f38;font-weight:600;">Aktifkan auto peringatan</label>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:18px;">
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Peringatan pertama selepas (jam)</label>
+                <input id="pr-delay" type="number" min="1" step="1" class="inp" style="width:100%;box-sizing:border-box;" placeholder="24">
+                <div style="font-size:11px;color:#8a7e72;margin-top:3px;">cth: 24 = sehari selepas bayar</div>
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Jarak antara peringatan (jam)</label>
+                <input id="pr-interval" type="number" min="1" step="1" class="inp" style="width:100%;box-sizing:border-box;" placeholder="48">
+                <div style="font-size:11px;color:#8a7e72;margin-top:3px;">cth: 48 = setiap 2 hari</div>
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Maksimum peringatan</label>
+                <input id="pr-max" type="number" min="1" max="5" step="1" class="inp" style="width:100%;box-sizing:border-box;" placeholder="2">
+                <div style="font-size:11px;color:#8a7e72;margin-top:3px;">berhenti selepas ini</div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+              <button class="btn-primary" style="font-size:13px;padding:9px 18px;border-radius:8px;" onclick="saveReminder()"><i class="ph ph-floppy-disk"></i> Simpan Tetapan</button>
+            </div>
+          </div>
+        </div>
+
         <!-- PANEL: Flow Kerja -->
         <div id="settings-flow">
           <div class="card" style="padding:18px 20px;max-width:760px;margin-top:20px;">
@@ -1642,6 +1679,8 @@ function goSettingsGroup(groupId){
   if(postagePanel) postagePanel.style.display = group.id === 'pembayaran' ? 'block' : 'none';
   const epPanel = document.getElementById('settings-easyparcel');
   if(epPanel) epPanel.style.display = group.id === 'pembayaran' ? 'block' : 'none';
+  const prPanel = document.getElementById('settings-reminder');
+  if(prPanel) prPanel.style.display = group.id === 'pembayaran' ? 'block' : 'none';
   const wrapKandungan = document.getElementById('settings-kandungan-wrap');
   if(wrapKandungan) wrapKandungan.style.display = group.id === 'kandungan' ? 'grid' : 'none';
   const allTabs = ['flow','packages','akaun'];
@@ -1649,7 +1688,7 @@ function goSettingsGroup(groupId){
     const el = document.getElementById('settings-'+t);
     if(el) el.style.display = group.tabs.includes(t) ? 'block' : 'none';
   });
-  if(group.tabs.includes('payment'))    { loadChipConfig(); loadPostage(); loadEasyparcel(); }
+  if(group.tabs.includes('payment'))    { loadChipConfig(); loadPostage(); loadEasyparcel(); loadReminder(); }
   if(group.tabs.includes('medialinks')) loadMediaLinks();
   if(group.tabs.includes('announce'))   loadAnnouncements();
   if(group.tabs.includes('explore'))  { loadExplore(); loadVAFaq(); }
@@ -2861,6 +2900,30 @@ function epConnect(){
       window.open(d.url, '_blank');
       showToast('Benarkan akses di tab EasyParcel, kemudian refresh halaman ini');
     }).catch(()=>showToast('Ralat rangkaian'));
+}
+
+// ── Auto Peringatan Hantar Gambar ─────────────────────────
+function loadReminder(){
+  fetch('/api/photo-reminder-config', { headers: authHeaders() })
+    .then(r=>r.json()).then(d=>{
+      if(d.error) return;
+      document.getElementById('pr-enabled').checked  = !!d.enabled;
+      document.getElementById('pr-delay').value      = d.delay_hours ?? 24;
+      document.getElementById('pr-interval').value   = d.interval_hours ?? 48;
+      document.getElementById('pr-max').value        = d.max ?? 2;
+      const warn = document.getElementById('ep-smtp-warn');
+      if(warn) warn.style.display = d.smtp_ready ? 'none' : 'block';
+    }).catch(()=>{});
+}
+function saveReminder(){
+  const body = {
+    enabled:        document.getElementById('pr-enabled').checked,
+    delay_hours:    document.getElementById('pr-delay').value,
+    interval_hours: document.getElementById('pr-interval').value,
+    max:            document.getElementById('pr-max').value,
+  };
+  fetch('/api/photo-reminder-config', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body: JSON.stringify(body) })
+    .then(r=>r.json()).then(res=>showToast(res.ok ? 'Tetapan peringatan disimpan' : 'Gagal simpan'));
 }
 
 // ── HitPay Config ─────────────────────────────────────────
