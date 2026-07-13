@@ -767,6 +767,21 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
     <!-- stepper -->
     <div class="stepper" id="stepper" style="display:none;"></div>
 
+    <!-- penghantaran / tracking -->
+    <div id="status-shipping" style="display:none;margin:0 32px 8px;padding:16px 20px;background:#eef6ef;border:1px solid #cfe6d2;border-radius:12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <i class="ph ph-truck" style="font-size:18px;color:#2e7d32;"></i>
+        <span style="font-size:13px;font-weight:700;color:#2e7d32;">Parcel dalam penghantaran</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px 24px;font-size:13px;color:#473f38;">
+        <div><span style="color:#8a7e72;">Kurier:</span> <b id="ship-courier">—</b></div>
+        <div><span style="color:#8a7e72;">No. Tracking:</span> <b id="ship-awb" style="font-family:'Courier New',monospace;color:#2471a3;">—</b></div>
+      </div>
+      <a id="ship-track-link" href="#" target="_blank" rel="noopener" style="display:none;margin-top:12px;align-items:center;gap:6px;background:#2e7d32;color:#fff;text-decoration:none;font-size:13px;font-weight:600;padding:9px 16px;border-radius:8px;">
+        <i class="ph ph-map-pin"></i> Jejak Parcel
+      </a>
+    </div>
+
     <!-- detail + timeline -->
     <div id="status-detail" style="display:none;grid-template-columns:1fr 320px;gap:0;border-top:1px solid #efe6da;" class="mobile-grid">
       <div style="padding:28px 32px;border-right:1px solid #efe6da;">
@@ -2211,6 +2226,8 @@ function lookupOrder() {
   fetch('/api/order-status?ref=' + encodeURIComponent(ref))
     .then(r => r.json())
     .then(d => {
+      const shipEl = document.getElementById('status-shipping');
+      if(shipEl) shipEl.style.display = 'none';
       if(!d || d.status === 'not_found' || !d.status){
         showToast('Order tidak ditemui. Semak semula nombor order anda.');
         empty.style.display = 'block';
@@ -2241,6 +2258,21 @@ function lookupOrder() {
       stepper.style.display = '';
       detail.style.display = 'grid';
       renderStatus();
+
+      // Penghantaran / tracking (kalau dah book EasyParcel)
+      const shipBox = document.getElementById('status-shipping');
+      if(shipBox){
+        if(d.shipping && d.shipping.awb){
+          document.getElementById('ship-courier').textContent = d.shipping.courier || 'Kurier';
+          document.getElementById('ship-awb').textContent = d.shipping.awb;
+          const link = document.getElementById('ship-track-link');
+          if(d.shipping.tracking_url){ link.href = d.shipping.tracking_url; link.style.display = 'inline-flex'; }
+          else { link.style.display = 'none'; }
+          shipBox.style.display = 'block';
+        } else {
+          shipBox.style.display = 'none';
+        }
+      }
     })
     .catch(() => showToast('Gagal menyemak status. Cuba lagi.'));
 }

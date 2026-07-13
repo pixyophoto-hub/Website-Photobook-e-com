@@ -1465,8 +1465,16 @@ class Handler(SimpleHTTPRequestHandler):
             # SECURITY: Dedah status sahaja — bukan nama/email/items pelanggan
             if not order:
                 return self._json({"status": "not_found"})
-            return self._json({"reference": order.get("reference"),
-                               "status": order.get("status")})
+            resp = {"reference": order.get("reference"),
+                    "status": order.get("status")}
+            ep = order.get("easyparcel") or {}
+            if ep.get("awb"):
+                resp["shipping"] = {
+                    "courier":      ep.get("courier", ""),
+                    "awb":          ep.get("awb", ""),
+                    "tracking_url": ep.get("tracking_url", ""),
+                }
+            return self._json(resp)
 
         # SECURITY: Blok akses fail sensitif (data.json, kod sumber, dotfiles)
         if not self._is_safe_static_path(self.path):
@@ -1803,6 +1811,9 @@ class Handler(SimpleHTTPRequestHandler):
                     "service_id":   service_id,
                     "booked_at":    now_myt().strftime("%d %b %Y, %H:%M"),
                 }
+                # Auto-tukar status ke Penghantaran (Delivery) bila dah book kurier
+                if order.get("status") not in ("Siap",):
+                    order["status"] = "Delivery"
                 save_data(d)
             return self._json(res)
 
