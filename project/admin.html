@@ -1703,7 +1703,7 @@ function renderNav(){
           <span class="nav-label" style="font-size:13px;font-weight:500;">${s.label}</span>
         </div>`).join('') : '';
       return `
-        <div class="nav-item ${ordersActive?'active':''}" onclick="_ordersOpen=!_ordersOpen;renderNav()">
+        <div class="nav-item ${ordersActive?'active':''}" onclick="${ordersActive ? '_ordersOpen=!_ordersOpen;renderNav()' : 'goOrdersSource(&#39;&#39;)'}">
           <i style="font-size:16px;" class="${n.icon}"></i>
           <span class="nav-label" style="font-size:13px;font-weight:500;">${n.label}</span>
           <i class="ph ${_ordersOpen ? 'ph-caret-up' : 'ph-caret-down'} nav-label" style="font-size:12px;margin-left:auto;opacity:.6;"></i>
@@ -1789,6 +1789,9 @@ function goOrdersSource(src){
   _activeSource = src;
   _ordersOpen = true;
   currentView = 'orders';
+  // Reset penapis Status & Cari supaya paparan sumber sentiasa segar
+  const sf = document.getElementById('status-filter'); if(sf) sf.value = '';
+  const os = document.getElementById('order-search');  if(os) os.value = '';
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-orders').classList.add('active');
   document.getElementById('view-label').textContent = LABELS['orders'];
