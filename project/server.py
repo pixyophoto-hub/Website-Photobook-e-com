@@ -959,16 +959,22 @@ def ep_book(order, service_id):
     try:
         block = (data.get("data") or [{}])[0]
         ship = (block.get("shipments") or [{}])[0]
-        if ship.get("status") and ship.get("status") != "success":
-            return {"ok": False, "error": ship.get("message") or ship.get("remarks") or block.get("message") or "Gagal submit shipment"}
+        if ship.get("status") == "error":
+            errs = ship.get("errors")
+            if isinstance(errs, list) and errs:
+                msg = "; ".join(str(e).strip() for e in errs)
+            else:
+                msg = ship.get("message") or block.get("message") or data.get("message") or "Gagal submit shipment"
+            return {"ok": False, "error": msg}
+        pb = block.get("pricing_breakdown") or block  # kos boleh di block atau pricing_breakdown
         return {
             "ok": True,
-            "order_no":     (block.get("order_details") or {}).get("order_number") or ship.get("shipment_number") or "",
+            "order_no":     (block.get("order_details") or {}).get("order_number") or block.get("order_number") or ship.get("shipment_number") or "",
             "awb":          ship.get("awb_number") or "",
             "awb_link":     ship.get("awb_url") or "",
             "tracking_url": ship.get("tracking_url") or "",
             "courier":      ship.get("courier") or "",
-            "cost":         float((block.get("pricing_breakdown") or {}).get("total_paid_amount") or 0),
+            "cost":         float(pb.get("total_paid_amount") or pb.get("total_amount") or 0),
         }
     except Exception as e:
         return {"ok": False, "error": "Respons submit tak dijangka: " + str(e)}
