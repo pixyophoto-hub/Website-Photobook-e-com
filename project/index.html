@@ -782,20 +782,14 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
       </a>
     </div>
 
-    <!-- detail + timeline -->
-    <div id="status-detail" style="display:none;grid-template-columns:1fr 320px;gap:0;border-top:1px solid #efe6da;" class="mobile-grid">
-      <div style="padding:28px 32px;border-right:1px solid #efe6da;">
+    <!-- detail -->
+    <div id="status-detail" style="display:none;border-top:1px solid #efe6da;">
+      <div style="padding:28px 32px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
           <div id="detail-title" style="font-size:16px;font-weight:700;color:#473f38;"></div>
         </div>
-        <div id="detail-note" style="font-size:14px;color:#8a7e72;line-height:1.6;margin-bottom:20px;max-width:520px;"></div>
-      </div>
-
-      <!-- timeline -->
-      <div style="padding:28px 28px;background:#fbf7f1;">
-        <div style="font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#6f6358;margin-bottom:18px;">Log Aktiviti</div>
-        <div id="timeline"></div>
-        <div style="margin-top:6px;padding:14px;background:#fffdfa;border:1px solid #efe6da;border-radius:8px;font-size:12px;color:#8a7e72;line-height:1.6;">
+        <div id="detail-note" style="font-size:14px;color:#8a7e72;line-height:1.6;margin-bottom:20px;max-width:560px;"></div>
+        <div style="padding:14px;background:#fbf7f1;border:1px solid #efe6da;border-radius:8px;font-size:12px;color:#8a7e72;line-height:1.6;max-width:560px;">
           Ada soalan? <span style="color:#a86d69;font-weight:600;cursor:pointer;" onclick="goPage('hubungi')">Hubungi designer anda</span> terus dari sini.
         </div>
       </div>
@@ -2194,7 +2188,7 @@ function renderStatus() {
 
   // timeline
   const tlEl = document.getElementById('timeline');
-  tlEl.innerHTML = ORDER_STAGES.map((s, i) => {
+  if(tlEl) tlEl.innerHTML = ORDER_STAGES.map((s, i) => {
     const status = i < cur ? 'done' : (i === cur ? 'active' : 'pending');
     const dotBg = status==='done'?'#9aae90':(status==='active'?'#c98a86':'#e3d8cb');
     const tsColor = status==='pending'?'#b5a596':(status==='active'?'#a86d69':'#6f8466');
@@ -2256,7 +2250,7 @@ function lookupOrder() {
       empty.style.display = 'none';
       meta.style.display = 'flex';
       stepper.style.display = '';
-      detail.style.display = 'grid';
+      detail.style.display = 'block';
       renderStatus();
 
       // Penghantaran / tracking (kalau dah book EasyParcel)
