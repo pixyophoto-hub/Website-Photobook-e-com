@@ -884,6 +884,14 @@ tbody tr{border-top:1px solid #f0e8df;}
     <div id="mo-items" style="margin-bottom:8px;"></div>
     <button onclick="moAddItemRow()" style="border:1px dashed #d8c8bc;background:#faf8f5;color:#6f6358;font-size:12px;font-weight:600;padding:7px 12px;border-radius:7px;cursor:pointer;margin-bottom:16px;"><i class="ph ph-plus"></i> Tambah item</button>
 
+    <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Alamat Penghantaran <span style="color:#9a8d80;font-weight:400;">(untuk EasyParcel)</span></label>
+    <input id="mo-alamat" class="inp" style="width:100%;box-sizing:border-box;margin-bottom:8px;" placeholder="Alamat penuh">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+      <input id="mo-poskod" class="inp" style="width:100%;box-sizing:border-box;" placeholder="Poskod">
+      <input id="mo-bandar" class="inp" style="width:100%;box-sizing:border-box;" placeholder="Bandar">
+      <input id="mo-negeri" class="inp" style="width:100%;box-sizing:border-box;" placeholder="Negeri (cth: Selangor)">
+    </div>
+
     <div style="margin-bottom:18px;">
       <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Nota (pilihan)</label>
       <input id="mo-note" class="inp" style="width:100%;box-sizing:border-box;" placeholder="cth: bayar via DuitNow, deposit RM50...">
@@ -1917,6 +1925,10 @@ function openManualOrder(){
   document.getElementById('mo-name').value = '';
   document.getElementById('mo-phone').value = '';
   document.getElementById('mo-email').value = '';
+  document.getElementById('mo-alamat').value = '';
+  document.getElementById('mo-poskod').value = '';
+  document.getElementById('mo-bandar').value = '';
+  document.getElementById('mo-negeri').value = '';
   document.getElementById('mo-note').value = '';
   document.getElementById('mo-items').innerHTML = '';
   moAddItemRow();
@@ -1953,6 +1965,10 @@ function submitManualOrder(){
     name,
     phone: document.getElementById('mo-phone').value.trim(),
     email: document.getElementById('mo-email').value.trim(),
+    alamat: document.getElementById('mo-alamat').value.trim(),
+    poskod: document.getElementById('mo-poskod').value.trim(),
+    bandar: document.getElementById('mo-bandar').value.trim(),
+    negeri: document.getElementById('mo-negeri').value.trim(),
     note:  document.getElementById('mo-note').value.trim(),
     status: 'completed',
     items,
