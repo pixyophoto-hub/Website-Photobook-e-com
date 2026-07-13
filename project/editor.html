@@ -32,7 +32,7 @@ select,input{font-family:'Hanken Grotesk',sans-serif;}
 .ed-stat{background:#fffdfa;border:1px solid #ede4d8;border-radius:12px;padding:20px 22px;}
 .ed-stat .lbl{font-size:11px;letter-spacing:.06em;color:#9a8d80;font-weight:700;text-transform:uppercase;}
 .ed-stat .num{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:600;color:#2d2520;margin-top:10px;}
-@media(max-width:720px){.ed-sidebar{width:64px!important;}.ed-sidebar .ed-label{display:none;}.ed-stat-grid{grid-template-columns:1fr!important;}}
+@media(max-width:720px){.ed-sidebar{width:64px!important;}.ed-sidebar .ed-label{display:none;}.ed-stat-grid{grid-template-columns:1fr!important;}.ov-action-grid{grid-template-columns:1fr!important;}}
 </style>
 </head>
 <body>
@@ -272,23 +272,32 @@ function renderOverview(orders){
     el.innerHTML = '<div class="card" style="color:#9a8d80;text-align:center;padding:26px;"><i class="ph ph-check-circle" style="font-size:28px;color:#6f8466;display:block;margin-bottom:8px;"></i>Tiada order menunggu tindakan. Bagus!</div>';
     return;
   }
-  el.innerHTML = action.map(o=>{
+  const actionCard = (o)=>{
     const needPhoto = mapStatus(o.status) === 'Hantar Gambar';
     const waNum = (o.phone||'').replace(/[^0-9]/g,'');
     const followUp = (needPhoto && waNum)
-      ? `<a href="https://wa.me/${esc(waNum)}?text=${encodeURIComponent('Salam, order #'+o.reference+' — boleh hantar gambar untuk kami mula edit? Terima kasih 🌷')}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="flex:none;display:inline-flex;align-items:center;gap:6px;background:#e8f5ea;color:#1e8449;text-decoration:none;font-size:12px;font-weight:700;padding:7px 12px;border-radius:7px;"><i class="ph ph-whatsapp-logo"></i> Follow up</a>`
+      ? `<a href="https://wa.me/${esc(waNum)}?text=${encodeURIComponent('Salam, order #'+o.reference+' — boleh hantar gambar untuk kami mula edit? Terima kasih 🌷')}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="flex:none;display:inline-flex;align-items:center;gap:6px;background:#e8f5ea;color:#1e8449;text-decoration:none;font-size:12px;font-weight:700;padding:6px 11px;border-radius:7px;"><i class="ph ph-whatsapp-logo"></i> Follow up</a>`
       : '';
-    return `<div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;cursor:pointer;${needPhoto?'border-left:3px solid #c0392b;':''}" onclick="openEditorOrder('${esc(o.reference)}')">
-      <div style="min-width:0;">
-        <div style="font-size:11px;color:#a86d69;font-weight:700;">#${esc(o.reference)}</div>
-        <div style="font-size:14px;font-weight:600;margin-top:2px;">${esc(o.name||'—')}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;flex:none;">
-        ${followUp}
-        ${statusPill(mapStatus(o.status))}
-      </div>
+    return `<div class="card" style="padding:12px 14px;margin-bottom:10px;cursor:pointer;${needPhoto?'border-left:3px solid #c0392b;':''}" onclick="openEditorOrder('${esc(o.reference)}')">
+      <div style="font-size:11px;color:#a86d69;font-weight:700;">#${esc(o.reference)}</div>
+      <div style="font-size:14px;font-weight:600;margin-top:2px;margin-bottom:9px;">${esc(o.name||'—')}</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">${statusPill(mapStatus(o.status))}${followUp}</div>
     </div>`;
-  }).join('');
+  };
+  const cols = [
+    { id:'website',  label:'Website',          color:'#2471a3', icon:'ph-globe' },
+    { id:'telegram', label:'Telegram',         color:'#2a92d6', icon:'ph-telegram-logo' },
+    { id:'wedding',  label:'Wedding / Crystal', color:'#a83d6f', icon:'ph-diamond' },
+  ];
+  el.innerHTML = `<div class="ov-action-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start;">`
+    + cols.map(c=>{
+        const items = action.filter(o=>(o.source||'website')===c.id);
+        return `<div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:${c.color};text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;"><i class="ph ${c.icon}"></i> ${c.label} <span style="color:#9a8d80;font-weight:600;">(${items.length})</span></div>
+          ${items.length ? items.map(actionCard).join('') : '<div style="font-size:12px;color:#b0a49a;padding:10px 2px;">Tiada</div>'}
+        </div>`;
+      }).join('')
+    + `</div>`;
 }
 
 function loadMyOrders(){
