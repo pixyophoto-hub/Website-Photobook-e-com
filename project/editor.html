@@ -105,11 +105,22 @@ select,input{font-family:'Hanken Grotesk',sans-serif;}
   </div>
 </div>
 
+<!-- Modal detail order (editor) -->
+<div id="ed-order-modal" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(45,37,32,.55);align-items:flex-start;justify-content:center;overflow-y:auto;padding:36px 16px;" onclick="if(event.target===this)closeEditorOrder()">
+  <div style="width:640px;max-width:96vw;">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+      <button onclick="closeEditorOrder()" style="background:#fffdfa;border:none;border-radius:8px;width:38px;height:38px;font-size:18px;cursor:pointer;color:#6f6358;box-shadow:0 2px 8px rgba(0,0,0,.15);">&#10005;</button>
+    </div>
+    <div id="ed-order-modal-body"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 const WORKFLOW = ['Hantar Gambar','Order','Editing','Reviewing','Amend','Printing','Delivery','Siap'];
 let PACKAGES = [];
+let MY_ORDERS = [];
 const STATUS_COLOR = {
   'Menunggu Bayaran':{bg:'#fdecea',color:'#c0392b'},
   'Hantar Gambar':{bg:'#fef3f2',color:'#c0392b'},
@@ -233,6 +244,7 @@ function loadMyOrders(){
     .then(d=>{
       const list = document.getElementById('order-list');
       const orders = (d.ok && d.orders) ? d.orders : [];
+      MY_ORDERS = orders;
       document.getElementById('order-count').textContent = orders.length + ' order';
       renderOverview(orders);
       if(!orders.length){
@@ -241,10 +253,46 @@ function loadMyOrders(){
           Tiada order ditugaskan kepada anda buat masa ini.</div>`;
         return;
       }
-      list.innerHTML = orders.map(renderOrderCard).join('');
+      list.innerHTML = renderOrderTable(orders);
     })
     .catch(()=>showToast('Gagal muat order'));
 }
+
+function pkgSummary(o){
+  return (o.items||[]).map(i=>esc(i.name)+(Number(i.qty)>1?' ×'+Number(i.qty):'')).join(', ') || '—';
+}
+function renderOrderTable(orders){
+  return `<div style="background:#fffdfa;border:1px solid #ede4d8;border-radius:12px;overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:620px;">
+      <thead><tr style="text-align:left;color:#9a8d80;font-size:11px;letter-spacing:.05em;">
+        <th style="padding:14px 16px;font-weight:700;">#ORDER</th>
+        <th style="padding:14px 8px;font-weight:700;">PELANGGAN</th>
+        <th style="padding:14px 8px;font-weight:700;">PAKEJ</th>
+        <th style="padding:14px 8px;font-weight:700;">STATUS</th>
+        <th style="padding:14px 8px;font-weight:700;">TARIKH</th>
+        <th></th>
+      </tr></thead>
+      <tbody>
+      ${orders.map(o=>`
+        <tr style="border-top:1px solid #f4efe7;">
+          <td style="padding:14px 16px;color:#a86d69;font-weight:700;white-space:nowrap;">${esc(o.reference)}</td>
+          <td style="padding:14px 8px;"><div style="font-weight:600;">${esc(o.name||'—')}</div><div style="font-size:11px;color:#9a8d80;">${esc(o.email||'')}</div></td>
+          <td style="padding:14px 8px;color:#6f6358;max-width:230px;line-height:1.4;">${pkgSummary(o)}</td>
+          <td style="padding:14px 8px;">${statusPill(mapStatus(o.status))}</td>
+          <td style="padding:14px 8px;color:#9a8d80;white-space:nowrap;">${esc(o.created_at||'')}</td>
+          <td style="padding:14px 16px;text-align:right;"><button onclick="openEditorOrder('${esc(o.reference)}')" style="border:1px solid #e3d8cb;background:#fffdfa;color:#6f6358;font-family:inherit;font-weight:600;font-size:12px;padding:7px 15px;border-radius:7px;cursor:pointer;white-space:nowrap;">Lihat</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+function openEditorOrder(ref){
+  const o = MY_ORDERS.find(x=>x.reference===ref);
+  if(!o) return;
+  document.getElementById('ed-order-modal-body').innerHTML = renderOrderCard(o);
+  document.getElementById('ed-order-modal').style.display = 'flex';
+}
+function closeEditorOrder(){ document.getElementById('ed-order-modal').style.display = 'none'; }
 
 function renderOrderCard(o){
   const status = mapStatus(o.status);
@@ -380,7 +428,7 @@ function updateStatus(ref, status){
   })
     .then(r=>r.json())
     .then(res=>{
-      if(res.ok){ showToast(`Status #${ref} dikemaskini → ${status}`); loadMyOrders(); }
+      if(res.ok){ showToast(`Status #${ref} dikemaskini → ${status}`); closeEditorOrder(); loadMyOrders(); }
       else showToast(res.error==='forbidden' ? 'Order ini bukan milik anda.' : 'Gagal kemaskini status');
     })
     .catch(()=>showToast('Gagal sambung ke server'));
