@@ -909,6 +909,18 @@ class Handler(SimpleHTTPRequestHandler):
         u = self._user()
         return u if (u and u.get("role") == "admin") else None
 
+    def _can_access_order(self, order):
+        """True jika admin, atau editor yang order ini ditugaskan kepadanya."""
+        u = self._user()
+        if not u:
+            return False
+        if u.get("role") == "admin":
+            return True
+        if u.get("role") == "editor":
+            first = u["name"].split(" ")[0]
+            return order.get("editor") in (first, u["name"])
+        return False
+
     def _serve_upload(self, name):
         """Hidangkan fail dari UPLOAD_DIR dengan selamat (cegah path traversal)."""
         import mimetypes
@@ -1430,17 +1442,19 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json({"ok": False, "error": result.get("error", "Gagal jana link")}, 502)
 
         if self.path.startswith("/api/orders/") and self.path.endswith("/ep-rates"):
-            if not self._is_admin():
+            if not self._user():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
             ref = self.path[len("/api/orders/"):-len("/ep-rates")]
             d = load_data()
             order = next((o for o in d.get("orders", []) if o.get("reference") == ref), None)
             if not order:
                 return self._json({"ok": False, "error": "Order tidak dijumpai"}, 404)
+            if not self._can_access_order(order):
+                return self._json({"ok": False, "error": "forbidden"}, 403)
             return self._json(ep_check_rates(order))
 
         if self.path.startswith("/api/orders/") and self.path.endswith("/ep-book"):
-            if not self._is_admin():
+            if not self._user():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
             ref = self.path[len("/api/orders/"):-len("/ep-book")]
             b = self._read_body()
@@ -1451,6 +1465,8 @@ class Handler(SimpleHTTPRequestHandler):
             order = next((o for o in d.get("orders", []) if o.get("reference") == ref), None)
             if not order:
                 return self._json({"ok": False, "error": "Order tidak dijumpai"}, 404)
+            if not self._can_access_order(order):
+                return self._json({"ok": False, "error": "forbidden"}, 403)
             res = ep_book(order, service_id)
             if res.get("ok"):
                 order["easyparcel"] = {

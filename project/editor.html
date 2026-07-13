@@ -223,11 +223,71 @@ function renderOrderCard(o){
       ${items || '<div style="font-size:12px;color:#9a8d80;padding:8px 0;">— tiada item —</div>'}
     </div>
 
+    ${isPaid ? `<div style="background:#faf8f5;border-radius:8px;padding:10px 12px;margin-bottom:10px;" id="ep-box-${esc(o.reference)}">
+      <div style="font-size:10px;color:#9a8d80;font-weight:600;margin-bottom:6px;"><i class="ph ph-truck"></i> PENGHANTARAN (EASYPARCEL)</div>
+      ${epBoxInner(o)}
+    </div>` : ''}
+
     ${isPaid ? `<div style="display:flex;align-items:center;gap:10px;">
       <span style="font-size:12px;color:#6f6358;font-weight:600;">Kemaskini status:</span>
       <select class="inp" style="flex:1;" onchange="updateStatus('${esc(o.reference)}', this.value)">${opts}</select>
     </div>` : `<div style="font-size:12px;color:#c0392b;background:#fdecea;border-radius:7px;padding:8px 12px;">Menunggu pembayaran pelanggan — belum boleh dikemaskini.</div>`}
   </div>`;
+}
+
+// ── EasyParcel (editor boleh book & track order sendiri) ──
+function epBookedHtml(ep){
+  return '<div style="background:#eef6ef;border:1px solid #cfe6d2;border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.7;">'
+    + '<div style="display:flex;justify-content:space-between;"><span style="color:#6f8466;font-weight:700;">'+esc(ep.courier||'Kurier')+'</span><span style="color:#2e7d32;font-weight:700;">Ditempah ✓</span></div>'
+    + '<div style="display:flex;justify-content:space-between;"><span style="color:#9a8d80;">No. Tracking</span><b style="font-family:monospace;color:#2471a3;">'+esc(ep.awb||'-')+'</b></div>'
+    + '</div>'
+    + '<div style="display:flex;gap:8px;margin-top:8px;">'
+    + (ep.awb_link?'<a href="'+esc(ep.awb_link)+'" target="_blank" rel="noopener" style="flex:1;text-align:center;text-decoration:none;padding:9px;background:#2d2520;color:#fff;border-radius:8px;font-size:12.5px;font-weight:700;"><i class="ph ph-printer"></i> Print AWB</a>':'')
+    + (ep.tracking_url?'<a href="'+esc(ep.tracking_url)+'" target="_blank" rel="noopener" style="flex:1;text-align:center;text-decoration:none;padding:9px;background:#fff;border:1.5px solid #d8c8bc;color:#6f6358;border-radius:8px;font-size:12.5px;font-weight:700;"><i class="ph ph-map-pin"></i> Track</a>':'')
+    + '</div>';
+}
+function epBoxInner(o){
+  const ep = o.easyparcel;
+  if(ep && ep.awb) return epBookedHtml(ep);
+  return '<div style="font-size:12px;color:#9a8d80;margin-bottom:8px;">Belum ditempah. Semak kadar kurier & book untuk jana tracking + AWB.</div>'
+    + '<button onclick="epRates(\''+esc(o.reference)+'\', this)" style="width:100%;padding:10px;background:#c98a86;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="ph ph-package"></i> Book EasyParcel</button>'
+    + '<div class="ep-rates" style="margin-top:8px;"></div>';
+}
+function epRates(ref, btn){
+  const box = document.querySelector('#ep-box-'+ref+' .ep-rates');
+  const old = btn.innerHTML; btn.disabled = true; btn.innerHTML = 'Menyemak kadar...';
+  fetch('/api/orders/'+encodeURIComponent(ref)+'/ep-rates', { method:'POST', headers: authHeaders() })
+    .then(r=>r.json())
+    .then(d=>{
+      btn.disabled = false; btn.innerHTML = old;
+      if(!d.ok){ box.innerHTML = '<div style="color:#c0392b;font-size:12px;">'+esc(typeof d.error==='string'?d.error:'Gagal semak kadar')+'</div>'; return; }
+      if(!d.rates || !d.rates.length){ box.innerHTML = '<div style="color:#9a8d80;font-size:12px;">Tiada kurier tersedia.</div>'; return; }
+      box.innerHTML = '<div style="font-size:11px;color:#9a8d80;margin-bottom:6px;">Berat '+Number(d.weight||0).toFixed(1)+' kg · pilih kurier:</div>'
+        + d.rates.map(r=>
+          '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #e8e0d8;border-radius:8px;padding:8px 10px;margin-bottom:6px;">'
+          + '<div style="font-size:12.5px;"><b>'+esc(r.courier_name||r.service_name||'Kurier')+'</b>'+(r.delivery?'<div style="font-size:11px;color:#9a8d80;">'+esc(r.delivery)+'</div>':'')+'</div>'
+          + '<div style="display:flex;align-items:center;gap:8px;"><b style="font-size:13px;color:#a86d69;">RM '+Number(r.price).toFixed(2)+'</b>'
+          + '<button onclick="epBookEditor(\''+esc(ref)+'\', \''+esc(String(r.service_id))+'\', this)" style="padding:6px 12px;background:#2d2520;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;">Book</button></div>'
+          + '</div>'
+        ).join('');
+    })
+    .catch(()=>{ btn.disabled = false; btn.innerHTML = old; box.innerHTML = '<div style="color:#c0392b;font-size:12px;">Ralat rangkaian</div>'; });
+}
+function epBookEditor(ref, serviceId, btnEl){
+  if(!confirm('Book penghantaran dengan kurier ini? Kredit EasyParcel akan ditolak.')) return;
+  if(btnEl){ btnEl.disabled = true; btnEl.textContent = '...'; }
+  fetch('/api/orders/'+encodeURIComponent(ref)+'/ep-book', {
+    method:'POST', headers:{'Content-Type':'application/json',...authHeaders()},
+    body: JSON.stringify({ service_id: serviceId })
+  })
+    .then(r=>r.json())
+    .then(d=>{
+      const box = document.getElementById('ep-box-'+ref);
+      if(!d.ok){ if(box) box.querySelector('.ep-rates').innerHTML = '<div style="color:#c0392b;font-size:12px;">'+esc(typeof d.error==='string'?d.error:'Gagal book')+'</div>'; return; }
+      showToast('Penghantaran ditempah ✓');
+      if(box) box.innerHTML = '<div style="font-size:10px;color:#9a8d80;font-weight:600;margin-bottom:6px;"><i class="ph ph-truck"></i> PENGHANTARAN (EASYPARCEL)</div>' + epBookedHtml(d);
+    })
+    .catch(()=>showToast('Ralat rangkaian'));
 }
 
 function updateStatus(ref, status){
