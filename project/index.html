@@ -1543,6 +1543,8 @@ function goPage(id) {
   // segerakkan keadaan aktif menu mobile
   ['servis','wedding','upload','status','hubungi'].forEach(p=>{ const mm=document.getElementById('mm-'+p); if(mm) mm.classList.toggle('active', p===id); });
   window.scrollTo(0,0);
+  // Kemas kini URL supaya boleh dikongsi (deep link)
+  try { if(history.replaceState) history.replaceState(null, '', id==='servis' ? (location.pathname + location.search) : ('#'+id)); } catch(e){}
 
   if(id === 'checkout') renderCheckout();
   if(id === 'wedding') renderWedding();
@@ -2500,6 +2502,13 @@ if(window.location.search.indexOf('payment=return') === -1) {
     renderPkgList(); renderCheckout(); renderStatus();
     if(_isCatalogActive()) renderCatalog(_activeCatalogCat);
   });
+  // Deep link: buka halaman ikut #hash (cth pixyoprint.com/#wedding)
+  function applyHashRoute(){
+    const h = (location.hash || '').replace('#','');
+    if(h && pages.indexOf(h) !== -1) goPage(h);
+  }
+  window.addEventListener('hashchange', applyHashRoute);
+  applyHashRoute();
 }
 </script>
 </body>
