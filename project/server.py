@@ -216,6 +216,179 @@ def photo_reminder_loop():
             print(f"[reminder] loop error: {e}")
         time.sleep(3600)  # semak setiap jam
 
+# ── Telegram Bot (import order dari Telegram) ────────────────
+def get_telegram_cfg():
+    c = load_data().get("telegram", {}) or {}
+    return {
+        "bot_token":   c.get("bot_token", "") or os.environ.get("TELEGRAM_BOT_TOKEN", ""),
+        "allowed_ids": c.get("allowed_ids", []) or [],
+        "secret":      c.get("secret", ""),
+        "webhook_set": bool(c.get("webhook_set", False)),
+    }
+
+def tg_set_cfg(**kv):
+    d = load_data()
+    t = d.get("telegram", {}) or {}
+    t.update(kv)
+    d["telegram"] = t
+    save_data(d)
+
+def tg_api(method, payload=None):
+    cfg = get_telegram_cfg()
+    if not cfg["bot_token"]:
+        return None, "Bot token belum ditetapkan"
+    url = "https://api.telegram.org/bot" + cfg["bot_token"] + "/" + method
+    data = json.dumps(payload).encode("utf-8") if payload is not None else None
+    req = urllib.request.Request(url, data=data,
+        headers={"Content-Type": "application/json"}, method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            return json.loads(resp.read().decode("utf-8")), None
+    except urllib.error.HTTPError as e:
+        return None, e.read().decode("utf-8")
+    except Exception as e:
+        return None, str(e)
+
+def tg_send(chat_id, text):
+    try:
+        tg_api("sendMessage", {"chat_id": chat_id, "text": text})
+    except Exception as e:
+        print("[telegram] gagal hantar mesej:", e)
+
+def tg_download_file(file_id):
+    """Muat turun resit/dokumen dari Telegram ke UPLOAD_DIR. Pulang url relatif atau ''."""
+    cfg = get_telegram_cfg()
+    if not cfg["bot_token"] or not file_id:
+        return ""
+    info, err = tg_api("getFile", {"file_id": file_id})
+    if err or not info or not info.get("ok"):
+        return ""
+    path = (info.get("result") or {}).get("file_path", "")
+    if not path:
+        return ""
+    ext = os.path.splitext(path)[1].lower()
+    if ext not in {".jpg", ".jpeg", ".png", ".webp", ".pdf", ".gif"}:
+        ext = ".jpg"
+    try:
+        url = "https://api.telegram.org/file/bot" + cfg["bot_token"] + "/" + path
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        fname = secrets.token_hex(12) + ext
+        dest = os.path.join(UPLOAD_DIR, fname)
+        with urllib.request.urlopen(url, timeout=30) as r, open(dest, "wb") as f:
+            f.write(r.read())
+        return "uploads/" + fname
+    except Exception as e:
+        print("[telegram] gagal muat turun fail:", e)
+        return ""
+
+def tg_parse_order(text):
+    """Parse mesej /order berlabel. Pulang dict atau None."""
+    if not text or not text.strip().lower().startswith("/order"):
+        return None
+    order = {"name": "", "phone": "", "email": "", "alamat": "", "note": "", "items": []}
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or line.lower().startswith("/order") or ":" not in line:
+            continue
+        key, val = line.split(":", 1)
+        key, val = key.strip().lower(), val.strip()
+        if key in ("nama", "name"):
+            order["name"] = val[:120]
+        elif key in ("telefon", "phone", "tel", "hp", "no"):
+            order["phone"] = val[:30]
+        elif key in ("email", "emel"):
+            order["email"] = val[:254]
+        elif key in ("alamat", "address"):
+            order["alamat"] = val[:300]
+        elif key in ("nota", "note", "catatan"):
+            order["note"] = val[:500]
+        elif key in ("item", "produk", "pakej"):
+            parts = [p.strip() for p in val.split("|")]
+            nm = parts[0][:160]
+            if not nm:
+                continue
+            qty, price = 1, 0.0
+            if len(parts) >= 2:
+                try: qty = max(1, min(999, int(float(parts[1]))))
+                except (TypeError, ValueError): qty = 1
+            if len(parts) >= 3:
+                try: price = max(0.0, float(parts[2]))
+                except (TypeError, ValueError): price = 0.0
+            order["items"].append({"name": nm, "qty": qty, "price": price})
+    if not order["name"] or not order["items"]:
+        return None
+    return order
+
+_TG_HELP = ("Format order:\n/order\nNama: Siti Aminah\nTelefon: 0123456789\n"
+            "Item: Photobook 8x8 Hardcover | 1 | 125\nItem: Add-on Layout | 1 | 4\n"
+            "Alamat: No 12, Jalan Mawar, 43000 Kajang, Selangor\nNota: dah bayar penuh\n\n"
+            "(Lampirkan gambar resit sekali — akan disimpan.)")
+
+def tg_handle_update(update):
+    try:
+        msg = update.get("message") or update.get("channel_post") or {}
+        if not msg:
+            return
+        frm = msg.get("from", {}) or {}
+        chat_id = (msg.get("chat", {}) or {}).get("id")
+        uid = frm.get("id")
+        text = msg.get("text") or msg.get("caption") or ""
+        low = text.strip().lower()
+
+        if low in ("/id", "/start", "/myid"):
+            tg_send(chat_id, "ID Telegram anda: " + str(uid) +
+                    "\nTambah ID ini dalam admin PixyoPrint (Tetapan > Telegram) untuk benarkan buat order.")
+            return
+        if low.startswith("/help") or low.startswith("/format"):
+            tg_send(chat_id, _TG_HELP)
+            return
+        if not low.startswith("/order"):
+            return
+
+        cfg = get_telegram_cfg()
+        allowed = cfg["allowed_ids"]
+        if allowed and uid not in allowed:
+            tg_send(chat_id, "Maaf, anda belum diberi kebenaran. ID anda: " + str(uid) +
+                    "\nMinta admin tambah ID ini di sistem.")
+            return
+
+        parsed = tg_parse_order(text)
+        if not parsed:
+            tg_send(chat_id, "Format tak lengkap (perlu Nama + sekurang-kurangnya 1 Item).\n\n" + _TG_HELP)
+            return
+
+        receipt_url = ""
+        photos = msg.get("photo") or []
+        if photos:
+            receipt_url = tg_download_file((photos[-1] or {}).get("file_id", ""))
+        if not receipt_url and msg.get("document"):
+            receipt_url = tg_download_file(msg["document"].get("file_id", ""))
+
+        d = load_data()
+        subtotal = sum(it["price"] * it["qty"] for it in parsed["items"])
+        ref = gen_order_ref({o.get("reference") for o in d.get("orders", [])})
+        order = {
+            "reference": ref, "source": "telegram", "manual": True, "status": "completed",
+            "total": round(subtotal, 2), "subtotal": round(subtotal, 2),
+            "discount": 0, "postage": 0, "voucher": "",
+            "name": parsed["name"], "email": parsed["email"], "phone": parsed["phone"],
+            "alamat": parsed["alamat"], "poskod": "", "bandar": "", "negeri": "",
+            "medium": "Telegram", "note": parsed["note"], "receipt_url": receipt_url,
+            "editor": "—",
+            "created_at": now_myt().strftime("%d %b %Y, %H:%M"),
+            "created_ts": now_myt().isoformat(timespec="seconds"),
+            "items": parsed["items"],
+            "tg_from": (frm.get("first_name", "") + (" @" + frm.get("username", "") if frm.get("username") else "")).strip(),
+        }
+        d.setdefault("orders", []).append(order)
+        save_data(d)
+        tg_send(chat_id, "✅ Order masuk sistem!\nNo: #" + ref + "\nNama: " + parsed["name"] +
+                "\nJumlah: RM " + ("%.2f" % subtotal) +
+                (("\nResit: disimpan ✓") if receipt_url else "\n(Tiada resit dilampirkan)"))
+    except Exception as e:
+        print("[telegram] handle error:", e)
+
+
 def hash_password(password: str) -> str:
     salt = secrets.token_hex(16)
     key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt.encode('utf-8'), 260000)
@@ -1158,6 +1331,17 @@ class Handler(SimpleHTTPRequestHandler):
                 "length": cfg.get("length", 20),
                 "height": cfg.get("height", 5),
             })
+        if self.path == "/api/telegram-config":
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            c = load_data().get("telegram", {}) or {}
+            tok = c.get("bot_token", "")
+            return self._json({
+                "bot_token_masked": (tok[:8] + "..." + tok[-4:]) if len(tok) > 14 else tok,
+                "bot_token_set": bool(tok),
+                "allowed_ids": c.get("allowed_ids", []) or [],
+                "webhook_set": bool(c.get("webhook_set", False)),
+            })
         if self.path == "/api/photo-reminder-config":
             if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
@@ -1592,6 +1776,44 @@ class Handler(SimpleHTTPRequestHandler):
                 save_data(d)
             return self._json(res)
 
+        if self.path.startswith("/api/telegram-webhook"):
+            # Telegram hantar update ke sini. Sahkan secret header, proses di thread.
+            cfg = get_telegram_cfg()
+            secret = self.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
+            length = int(self.headers.get("Content-Length", 0) or 0)
+            raw = self.rfile.read(length) if length else b"{}"
+            if cfg["secret"] and secret != cfg["secret"]:
+                self.send_response(403); self.end_headers(); return
+            try:
+                update = json.loads(raw.decode("utf-8"))
+            except Exception:
+                update = {}
+            threading.Thread(target=tg_handle_update, args=(update,), daemon=True).start()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain")
+            self.end_headers()
+            self.wfile.write(b"OK")
+            return
+
+        if self.path == "/api/telegram/set-webhook":
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            cfg = get_telegram_cfg()
+            if not cfg["bot_token"]:
+                return self._json({"ok": False, "error": "Bot token belum ditetapkan"}, 400)
+            secret = cfg["secret"] or secrets.token_hex(16)
+            host = self.headers.get("Host", f"localhost:{PORT}")
+            scheme = "http" if ("localhost" in host or "127.0.0.1" in host) else "https"
+            hook_url = f"{scheme}://{host}/api/telegram-webhook"
+            res, err = tg_api("setWebhook", {
+                "url": hook_url, "secret_token": secret,
+                "allowed_updates": ["message", "channel_post"],
+            })
+            if err or not res or not res.get("ok"):
+                return self._json({"ok": False, "error": err or (res or {}).get("description", "Gagal set webhook")}, 502)
+            tg_set_cfg(secret=secret, webhook_set=True)
+            return self._json({"ok": True, "url": hook_url})
+
         if self.path == "/api/orders/manual":
             # Tambah order manual (Telegram / Wedding-Crystal) — rekod sahaja, dah bayar luar
             if not self._is_admin():
@@ -1755,6 +1977,30 @@ class Handler(SimpleHTTPRequestHandler):
                 except (TypeError, ValueError):
                     pass
             d["easyparcel"] = ep
+            save_data(d)
+            return self._json({"ok": True})
+        if self.path == "/api/telegram-config":
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            b = self._read_body()
+            d = load_data()
+            t = d.get("telegram", {}) or {}
+            tok = str(b.get("bot_token", "")).strip()
+            if tok and "..." not in tok:
+                t["bot_token"] = tok[:100]
+            ids = b.get("allowed_ids", None)
+            if ids is not None:
+                out = []
+                if isinstance(ids, str):
+                    ids = ids.replace("\n", ",").split(",")
+                if isinstance(ids, list):
+                    for x in ids:
+                        try:
+                            out.append(int(str(x).strip()))
+                        except (TypeError, ValueError):
+                            pass
+                t["allowed_ids"] = out
+            d["telegram"] = t
             save_data(d)
             return self._json({"ok": True})
         if self.path == "/api/photo-reminder-config":

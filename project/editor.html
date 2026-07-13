@@ -368,6 +368,11 @@ function renderOrderCard(o){
       ${items || '<div style="font-size:12px;color:#9a8d80;padding:8px 0;">— tiada item —</div>'}
     </div>
 
+    ${(o.note || o.receipt_url) ? `<div style="background:#faf8f5;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#6f6358;line-height:1.6;">
+      ${o.note ? `<div><b>Nota:</b> ${esc(o.note)}</div>` : ''}
+      ${o.receipt_url ? `<div style="margin-top:5px;"><a href="${esc(o.receipt_url)}" target="_blank" rel="noopener" style="color:#2471a3;font-weight:700;text-decoration:none;"><i class="ph ph-receipt"></i> Lihat Resit</a></div>` : ''}
+    </div>` : ''}
+
     ${isPaid ? `<div style="background:#faf8f5;border-radius:8px;padding:10px 12px;margin-bottom:10px;" id="ep-box-${esc(o.reference)}">
       <div style="font-size:10px;color:#9a8d80;font-weight:600;margin-bottom:6px;"><i class="ph ph-truck"></i> PENGHANTARAN (EASYPARCEL)</div>
       ${epBoxInner(o)}

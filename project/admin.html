@@ -694,6 +694,43 @@ tbody tr{border-top:1px solid #f0e8df;}
           </div>
         </div>
 
+        <!-- PANEL: Telegram Bot (import order) -->
+        <div id="settings-telegram" style="display:none;max-width:760px;margin-top:20px;">
+          <div class="card" style="padding:18px 20px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <i class="ph ph-telegram-logo" style="color:#2a92d6;font-size:16px;"></i>
+              <div style="font-size:13px;font-weight:700;color:#2d2520;">Telegram — Import Order</div>
+            </div>
+            <div style="font-size:12px;color:#8a7e72;margin-bottom:16px;">Post order dalam Telegram guna arahan <b>/order</b> (lampirkan resit sekali) → terus masuk sistem sebagai sumber Telegram. Editor boleh proses macam order biasa.</div>
+
+            <div style="margin-bottom:14px;">
+              <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Bot Token (dari @BotFather)</label>
+              <input id="tg-token" class="inp" style="width:100%;box-sizing:border-box;" placeholder="cth: 8123456789:AAH...  (kekal jika kosong)">
+              <div id="tg-token-status" style="font-size:11px;color:#8a7e72;margin-top:3px;"></div>
+            </div>
+            <div style="margin-bottom:14px;">
+              <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">ID Telegram Dibenarkan <span style="color:#9a8d80;font-weight:400;">(pisah dgn koma — hanya ID ini boleh buat order)</span></label>
+              <input id="tg-allowed" class="inp" style="width:100%;box-sizing:border-box;" placeholder="cth: 123456789, 987654321">
+              <div style="font-size:11px;color:#8a7e72;margin-top:3px;">Taip <b>/id</b> kepada bot untuk dapat ID Telegram anda. Biar kosong = benarkan sesiapa (tak disyorkan).</div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:12px;background:#faf8f5;border:1px solid #e8e0d8;border-radius:8px;padding:10px 12px;margin-bottom:16px;">
+              <div id="tg-webhook-status" style="flex:1;font-size:12px;color:#8a7e72;">Webhook: belum disambung</div>
+              <button onclick="tgSetWebhook()" style="flex:none;padding:8px 16px;background:#2a92d6;color:#fff;border:none;border-radius:7px;font-size:12.5px;font-weight:700;cursor:pointer;"><i class="ph ph-plug"></i> Sambung Webhook</button>
+            </div>
+
+            <div style="background:#f5f0eb;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:11.5px;color:#6f6358;line-height:1.7;">
+              <b>Format order dalam Telegram:</b><br>
+              <code style="font-size:11px;">/order<br>Nama: Siti Aminah<br>Telefon: 0123456789<br>Item: Photobook 8x8 Hardcover | 1 | 125<br>Item: Add-on Layout | 1 | 4<br>Alamat: No 12, Kajang, Selangor<br>Nota: dah bayar penuh</code><br>
+              <span style="color:#8a7e72;">Item = <b>nama | kuantiti | harga</b>. Lampirkan gambar resit sekali — akan disimpan.</span>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;">
+              <button class="btn-primary" style="font-size:13px;padding:9px 18px;border-radius:8px;" onclick="saveTelegram()"><i class="ph ph-floppy-disk"></i> Simpan Tetapan</button>
+            </div>
+          </div>
+        </div>
+
         <!-- PANEL: Flow Kerja -->
         <div id="settings-flow">
           <div class="card" style="padding:18px 20px;max-width:760px;margin-top:20px;">
@@ -753,6 +790,7 @@ tbody tr{border-top:1px solid #f0e8df;}
           <span style="font-size:13px;color:#6f6358;">Postage</span>
           <span id="od-postage" style="font-size:13px;font-weight:600;color:#2d2520;"></span>
         </div>
+        <div id="od-note-row" style="margin-top:10px;display:none;font-size:12px;color:#6f6358;line-height:1.6;border-top:1px dashed #e8e0d8;padding-top:10px;"></div>
         <div style="border-top:1px solid #e8e0d8;margin-top:12px;padding-top:12px;display:flex;justify-content:space-between;align-items:center;">
           <span style="font-size:13px;font-weight:600;color:#6f6358;">JUMLAH</span>
           <span id="od-total" style="font-size:16px;font-weight:700;color:#a86d69;"></span>
@@ -1754,6 +1792,8 @@ function goSettingsGroup(groupId){
   if(epPanel) epPanel.style.display = group.id === 'pembayaran' ? 'block' : 'none';
   const prPanel = document.getElementById('settings-reminder');
   if(prPanel) prPanel.style.display = group.id === 'pembayaran' ? 'block' : 'none';
+  const tgPanel = document.getElementById('settings-telegram');
+  if(tgPanel) tgPanel.style.display = group.id === 'pembayaran' ? 'block' : 'none';
   const wrapKandungan = document.getElementById('settings-kandungan-wrap');
   if(wrapKandungan) wrapKandungan.style.display = group.id === 'kandungan' ? 'grid' : 'none';
   const allTabs = ['flow','packages','akaun'];
@@ -1761,7 +1801,7 @@ function goSettingsGroup(groupId){
     const el = document.getElementById('settings-'+t);
     if(el) el.style.display = group.tabs.includes(t) ? 'block' : 'none';
   });
-  if(group.tabs.includes('payment'))    { loadChipConfig(); loadPostage(); loadEasyparcel(); loadReminder(); }
+  if(group.tabs.includes('payment'))    { loadChipConfig(); loadPostage(); loadEasyparcel(); loadReminder(); loadTelegram(); }
   if(group.tabs.includes('medialinks')) loadMediaLinks();
   if(group.tabs.includes('announce'))   loadAnnouncements();
   if(group.tabs.includes('explore'))  { loadExplore(); loadVAFaq(); }
@@ -2030,6 +2070,17 @@ function showOrderDetail(id){
   } else {
     postEl.textContent = 'Tidak dicaj (order lama)';
     postEl.style.color = '#c0b6a9';
+  }
+
+  // Nota + resit (order manual/Telegram)
+  const noteRow = document.getElementById('od-note-row');
+  if(noteRow){
+    let html = '';
+    if(r.tg_from) html += '<div><b>Dari Telegram:</b> '+esc(r.tg_from)+'</div>';
+    if(r.note)    html += '<div><b>Nota:</b> '+esc(r.note)+'</div>';
+    if(r.receipt_url) html += '<div style="margin-top:6px;"><a href="'+esc(r.receipt_url)+'" target="_blank" rel="noopener" style="color:#2471a3;font-weight:700;text-decoration:none;"><i class="ph ph-receipt"></i> Lihat Resit</a></div>';
+    noteRow.innerHTML = html;
+    noteRow.style.display = html ? 'block' : 'none';
   }
 
   // Editor select
@@ -3083,6 +3134,37 @@ function saveReminder(){
   };
   fetch('/api/photo-reminder-config', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body: JSON.stringify(body) })
     .then(r=>r.json()).then(res=>showToast(res.ok ? 'Tetapan peringatan disimpan' : 'Gagal simpan'));
+}
+
+// ── Telegram Import Order ─────────────────────────────────
+function loadTelegram(){
+  fetch('/api/telegram-config', { headers: authHeaders() })
+    .then(r=>r.json()).then(d=>{
+      if(d.error) return;
+      const st = document.getElementById('tg-token-status');
+      if(st) st.textContent = d.bot_token_set ? '✓ Token ditetapkan ('+d.bot_token_masked+')' : '⚠ Belum ditetapkan';
+      document.getElementById('tg-token').value = '';
+      document.getElementById('tg-allowed').value = (d.allowed_ids||[]).join(', ');
+      const ws = document.getElementById('tg-webhook-status');
+      if(ws) ws.innerHTML = d.webhook_set
+        ? '<span style="color:#2e7d32;font-weight:700;"><i class="ph ph-check-circle"></i> Webhook aktif ✓</span>'
+        : 'Webhook: belum disambung — Simpan token dahulu, kemudian Sambung';
+    }).catch(()=>{});
+}
+function saveTelegram(){
+  const body = {
+    bot_token: document.getElementById('tg-token').value.trim(),
+    allowed_ids: document.getElementById('tg-allowed').value,
+  };
+  fetch('/api/telegram-config', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body: JSON.stringify(body) })
+    .then(r=>r.json()).then(res=>{ showToast(res.ok ? 'Tetapan Telegram disimpan' : 'Gagal simpan'); if(res.ok) loadTelegram(); });
+}
+function tgSetWebhook(){
+  fetch('/api/telegram/set-webhook', { method:'POST', headers: authHeaders() })
+    .then(r=>r.json()).then(res=>{
+      if(res.ok){ showToast('Webhook Telegram disambung ✓'); loadTelegram(); }
+      else showToast(res.error || 'Gagal sambung webhook — pastikan token betul & disimpan');
+    }).catch(()=>showToast('Ralat rangkaian'));
 }
 
 // ── HitPay Config ─────────────────────────────────────────
