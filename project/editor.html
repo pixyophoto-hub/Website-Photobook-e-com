@@ -82,13 +82,15 @@ select,input{font-family:'Hanken Grotesk',sans-serif;}
         <div id="view-overview">
           <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;">Selamat datang, <span id="ov-name"></span></div>
           <div style="font-size:13px;color:#8a7e72;margin-bottom:26px;"><span id="ov-date"></span> · Ringkasan kerja anda</div>
-          <div class="ed-stat-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+          <div class="ed-stat-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:16px;">
             <div class="ed-stat"><div class="lbl"><i class="ph ph-clipboard-text" style="color:#a86d69;"></i> Order Saya</div><div class="num" id="ov-total">0</div></div>
+            <div class="ed-stat"><div class="lbl"><i class="ph ph-hourglass-medium" style="color:#c0392b;"></i> Belum Hantar Gambar</div><div class="num" id="ov-hantar">0</div></div>
             <div class="ed-stat"><div class="lbl"><i class="ph ph-spinner-gap" style="color:#4a7fb5;"></i> Dalam Proses</div><div class="num" id="ov-proses">0</div></div>
             <div class="ed-stat"><div class="lbl"><i class="ph ph-check-circle" style="color:#6f8466;"></i> Siap</div><div class="num" id="ov-siap">0</div></div>
           </div>
           <div style="margin-top:26px;">
-            <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;margin-bottom:12px;">Perlu Tindakan</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;margin-bottom:4px;">Perlu Tindakan</div>
+            <div style="font-size:12px;color:#8a7e72;margin-bottom:12px;">Order yang belum hantar gambar dipaparkan dahulu — follow up pelanggan.</div>
             <div id="ov-action"></div>
           </div>
         </div>
@@ -212,30 +214,42 @@ function initPortal(){
 
 function renderOverview(orders){
   const total = orders.length;
-  let siap = 0, proses = 0;
+  let siap = 0, proses = 0, hantar = 0;
   orders.forEach(o=>{
     const s = mapStatus(o.status);
     if(s === 'Siap') siap++;
+    else if(s === 'Hantar Gambar') hantar++;
     else if(o.status !== 'pending') proses++;
   });
   document.getElementById('ov-total').textContent  = total;
+  document.getElementById('ov-hantar').textContent = hantar;
   document.getElementById('ov-proses').textContent = proses;
   document.getElementById('ov-siap').textContent   = siap;
-  // Perlu tindakan: order dah bayar tapi belum Siap
+  // Perlu tindakan: order dah bayar tapi belum Siap — belum hantar gambar didahulukan
   const action = orders.filter(o=> o.status !== 'pending' && mapStatus(o.status) !== 'Siap');
+  action.sort((a,b)=> (mapStatus(a.status)==='Hantar Gambar'?0:1) - (mapStatus(b.status)==='Hantar Gambar'?0:1));
   const el = document.getElementById('ov-action');
   if(!action.length){
     el.innerHTML = '<div class="card" style="color:#9a8d80;text-align:center;padding:26px;"><i class="ph ph-check-circle" style="font-size:28px;color:#6f8466;display:block;margin-bottom:8px;"></i>Tiada order menunggu tindakan. Bagus!</div>';
     return;
   }
-  el.innerHTML = action.map(o=>`
-    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;cursor:pointer;" onclick="showEditorView('orders')">
-      <div>
+  el.innerHTML = action.map(o=>{
+    const needPhoto = mapStatus(o.status) === 'Hantar Gambar';
+    const waNum = (o.phone||'').replace(/[^0-9]/g,'');
+    const followUp = (needPhoto && waNum)
+      ? `<a href="https://wa.me/${esc(waNum)}?text=${encodeURIComponent('Salam, order #'+o.reference+' — boleh hantar gambar untuk kami mula edit? Terima kasih 🌷')}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="flex:none;display:inline-flex;align-items:center;gap:6px;background:#e8f5ea;color:#1e8449;text-decoration:none;font-size:12px;font-weight:700;padding:7px 12px;border-radius:7px;"><i class="ph ph-whatsapp-logo"></i> Follow up</a>`
+      : '';
+    return `<div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;cursor:pointer;${needPhoto?'border-left:3px solid #c0392b;':''}" onclick="openEditorOrder('${esc(o.reference)}')">
+      <div style="min-width:0;">
         <div style="font-size:11px;color:#a86d69;font-weight:700;">#${esc(o.reference)}</div>
         <div style="font-size:14px;font-weight:600;margin-top:2px;">${esc(o.name||'—')}</div>
       </div>
-      ${statusPill(mapStatus(o.status))}
-    </div>`).join('');
+      <div style="display:flex;align-items:center;gap:10px;flex:none;">
+        ${followUp}
+        ${statusPill(mapStatus(o.status))}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function loadMyOrders(){
