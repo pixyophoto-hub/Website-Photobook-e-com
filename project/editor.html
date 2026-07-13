@@ -64,7 +64,13 @@ select,input{font-family:'Hanken Grotesk',sans-serif;}
       </div>
       <nav style="flex:1;padding:0 12px;">
         <a id="nav-overview" class="ed-nav active" onclick="showEditorView('overview')"><i class="ph ph-squares-four" style="font-size:18px;"></i><span class="ed-label">Overview</span></a>
-        <a id="nav-orders" class="ed-nav" onclick="showEditorView('orders')"><i class="ph ph-list-checks" style="font-size:18px;"></i><span class="ed-label">Senarai Order</span></a>
+        <a id="nav-orders" class="ed-nav" onclick="toggleEdOrders()"><i class="ph ph-list-checks" style="font-size:18px;"></i><span class="ed-label">Senarai Order</span><i id="ed-orders-caret" class="ph ph-caret-down ed-label" style="margin-left:auto;font-size:12px;opacity:.6;"></i></a>
+        <div id="ed-orders-sub" style="display:none;">
+          <a class="ed-nav ed-sub" onclick="goEditorSource('')" style="padding-left:34px;"><i class="ph ph-list" style="font-size:15px;"></i><span class="ed-label">Semua Sumber</span></a>
+          <a class="ed-nav ed-sub" onclick="goEditorSource('website')" style="padding-left:34px;"><i class="ph ph-globe" style="font-size:15px;"></i><span class="ed-label">Website</span></a>
+          <a class="ed-nav ed-sub" onclick="goEditorSource('telegram')" style="padding-left:34px;"><i class="ph ph-telegram-logo" style="font-size:15px;"></i><span class="ed-label">Telegram</span></a>
+          <a class="ed-nav ed-sub" onclick="goEditorSource('wedding')" style="padding-left:34px;"><i class="ph ph-diamond" style="font-size:15px;"></i><span class="ed-label">Wedding / Crystal</span></a>
+        </div>
       </nav>
       <div style="padding:16px 18px 0;margin:0 6px;border-top:1px solid #40372f;display:flex;align-items:center;gap:10px;">
         <div id="ed-avatar" style="width:34px;height:34px;flex:none;border-radius:50%;background:#c98a86;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">E</div>
@@ -123,6 +129,8 @@ select,input{font-family:'Hanken Grotesk',sans-serif;}
 const WORKFLOW = ['Hantar Gambar','Order','Editing','Reviewing','Amend','Printing','Delivery','Siap'];
 let PACKAGES = [];
 let MY_ORDERS = [];
+let _edSource = '';
+let _edOrdersOpen = false;
 const STATUS_COLOR = {
   'Menunggu Bayaran':{bg:'#fdecea',color:'#c0392b'},
   'Hantar Gambar':{bg:'#fef3f2',color:'#c0392b'},
@@ -190,6 +198,37 @@ function showEditorView(view){
   document.getElementById('view-orders').style.display   = view==='orders'   ? 'block' : 'none';
   document.getElementById('nav-overview').classList.toggle('active', view==='overview');
   document.getElementById('nav-orders').classList.toggle('active', view==='orders');
+}
+function toggleEdOrders(){
+  _edOrdersOpen = !_edOrdersOpen;
+  document.getElementById('ed-orders-sub').style.display = _edOrdersOpen ? 'block' : 'none';
+  const car = document.getElementById('ed-orders-caret');
+  if(car) car.className = 'ph ' + (_edOrdersOpen ? 'ph-caret-up' : 'ph-caret-down') + ' ed-label';
+  if(_edOrdersOpen) goEditorSource(_edSource);
+}
+function goEditorSource(src){
+  _edSource = src;
+  _edOrdersOpen = true;
+  document.getElementById('ed-orders-sub').style.display = 'block';
+  showEditorView('orders');
+  document.querySelectorAll('#ed-orders-sub .ed-sub').forEach(el=>el.classList.remove('active'));
+  const idx = ['','website','telegram','wedding'].indexOf(src);
+  const subs = document.querySelectorAll('#ed-orders-sub .ed-sub');
+  if(subs[idx]) subs[idx].classList.add('active');
+  renderEditorList();
+}
+function renderEditorList(){
+  const list = document.getElementById('order-list');
+  if(!list) return;
+  const orders = _edSource ? MY_ORDERS.filter(o=>(o.source||'website')===_edSource) : MY_ORDERS;
+  document.getElementById('order-count').textContent = orders.length + ' order';
+  if(!orders.length){
+    list.innerHTML = `<div class="card" style="text-align:center;padding:40px;color:#9a8d80;">
+      <i class="ph ph-tray" style="font-size:34px;color:#cdbfb2;display:block;margin-bottom:10px;"></i>
+      Tiada order untuk sumber ini.</div>`;
+    return;
+  }
+  list.innerHTML = renderOrderTable(orders);
 }
 
 function initPortal(){
@@ -259,15 +298,15 @@ function loadMyOrders(){
       const list = document.getElementById('order-list');
       const orders = (d.ok && d.orders) ? d.orders : [];
       MY_ORDERS = orders;
-      document.getElementById('order-count').textContent = orders.length + ' order';
       renderOverview(orders);
       if(!orders.length){
+        document.getElementById('order-count').textContent = '0 order';
         list.innerHTML = `<div class="card" style="text-align:center;padding:40px;color:#9a8d80;">
           <i class="ph ph-tray" style="font-size:34px;color:#cdbfb2;display:block;margin-bottom:10px;"></i>
           Tiada order ditugaskan kepada anda buat masa ini.</div>`;
         return;
       }
-      list.innerHTML = renderOrderTable(orders);
+      renderEditorList();
     })
     .catch(()=>showToast('Gagal muat order'));
 }
@@ -275,11 +314,21 @@ function loadMyOrders(){
 function pkgSummary(o){
   return (o.items||[]).map(i=>esc(i.name)+(Number(i.qty)>1?' ×'+Number(i.qty):'')).join(', ') || '—';
 }
+function sourceBadge(src){
+  const map = {
+    website:  {t:'Website',  bg:'#eaf1f7', c:'#2471a3', i:'ph-globe'},
+    telegram: {t:'Telegram', bg:'#e8f4fb', c:'#2a92d6', i:'ph-telegram-logo'},
+    wedding:  {t:'Wedding',  bg:'#f7eef3', c:'#a83d6f', i:'ph-diamond'},
+  };
+  const m = map[src] || map.website;
+  return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:100px;background:${m.bg};color:${m.c};white-space:nowrap;"><i class="ph ${m.i}"></i> ${m.t}</span>`;
+}
 function renderOrderTable(orders){
   return `<div style="background:#fffdfa;border:1px solid #ede4d8;border-radius:12px;overflow-x:auto;">
-    <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:620px;">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:680px;">
       <thead><tr style="text-align:left;color:#9a8d80;font-size:11px;letter-spacing:.05em;">
         <th style="padding:14px 16px;font-weight:700;">#ORDER</th>
+        <th style="padding:14px 8px;font-weight:700;">SUMBER</th>
         <th style="padding:14px 8px;font-weight:700;">PELANGGAN</th>
         <th style="padding:14px 8px;font-weight:700;">PAKEJ</th>
         <th style="padding:14px 8px;font-weight:700;">STATUS</th>
@@ -290,6 +339,7 @@ function renderOrderTable(orders){
       ${orders.map(o=>`
         <tr style="border-top:1px solid #f4efe7;">
           <td style="padding:14px 16px;color:#a86d69;font-weight:700;white-space:nowrap;">${esc(o.reference)}</td>
+          <td style="padding:14px 8px;">${sourceBadge(o.source||'website')}</td>
           <td style="padding:14px 8px;"><div style="font-weight:600;">${esc(o.name||'—')}</div><div style="font-size:11px;color:#9a8d80;">${esc(o.email||'')}</div></td>
           <td style="padding:14px 8px;color:#6f6358;max-width:230px;line-height:1.4;">${pkgSummary(o)}</td>
           <td style="padding:14px 8px;">${statusPill(mapStatus(o.status))}</td>
