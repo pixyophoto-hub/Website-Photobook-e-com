@@ -864,10 +864,20 @@ def ep_order_weight(order):
             pass
     return max(0.1, total or get_easyparcel_cfg()["def_weight"])
 
+def ep_phone(p):
+    """Normalize no. telefon MY: buang +60 / 0 di depan (EasyParcel mahu '123456789')."""
+    digits = "".join(ch for ch in str(p or "") if ch.isdigit())
+    if digits.startswith("60"):
+        digits = digits[2:]
+    if digits.startswith("0"):
+        digits = digits[1:]
+    return digits
+
 def ep_sender(cfg):
     return {
-        "name":          cfg["pick_name"],
-        "phone_number":  cfg["pick_contact"],
+        "name":          cfg["pick_name"] or "PixyoPrint",
+        "phone_number_country_code": "MY",
+        "phone_number":  ep_phone(cfg["pick_contact"]),
         "email":         cfg["pick_email"],
         "address_1":     cfg["pick_addr1"],
         "address_2":     cfg["pick_addr2"],
@@ -880,7 +890,8 @@ def ep_sender(cfg):
 def ep_receiver(order):
     return {
         "name":          order.get("name", "") or "Pelanggan",
-        "phone_number":  order.get("phone", ""),
+        "phone_number_country_code": "MY",
+        "phone_number":  ep_phone(order.get("phone", "")),
         "email":         order.get("email", ""),
         "address_1":     order.get("alamat", ""),
         "address_2":     "",
@@ -928,13 +939,13 @@ def ep_book(order, service_id):
     cfg = get_easyparcel_cfg()
     weight = ep_order_weight(order)
     body = {"shipment": [{
-        "sender":   ep_sender(cfg),
-        "receiver": ep_receiver(order),
         "service_id":      service_id,
         "collection_date": now_myt().strftime("%Y-%m-%d"),
         "reference":       order.get("reference", ""),
         "weight": weight, "width": cfg["width"], "length": cfg["length"], "height": cfg["height"],
-        "items": [{
+        "sender":   ep_sender(cfg),
+        "receiver": ep_receiver(order),
+        "item": [{
             "content":       cfg["content"],
             "quantity":      1,
             "value":         float(order.get("subtotal", order.get("total", 1)) or 1),
@@ -942,21 +953,22 @@ def ep_book(order, service_id):
             "weight": weight, "width": cfg["width"], "length": cfg["length"], "height": cfg["height"],
         }],
     }]}
-    data, err = ep_api("POST", "/shipment/submit", body)
+    data, err = ep_api("POST", "/shipment/submit_orders", body)
     if err:
         return {"ok": False, "error": err}
     try:
         block = (data.get("data") or [{}])[0]
-        if block.get("status") and block.get("status") != "success":
-            return {"ok": False, "error": block.get("message") or "Gagal submit shipment"}
+        ship = (block.get("shipments") or [{}])[0]
+        if ship.get("status") and ship.get("status") != "success":
+            return {"ok": False, "error": ship.get("message") or ship.get("remarks") or block.get("message") or "Gagal submit shipment"}
         return {
             "ok": True,
-            "order_no":     block.get("order_number") or block.get("shipment_id") or "",
-            "awb":          block.get("awb") or block.get("tracking_number") or "",
-            "awb_link":     block.get("awb_url") or block.get("label_url") or "",
-            "tracking_url": block.get("tracking_url") or "",
-            "courier":      block.get("courier_name") or "",
-            "cost":         float((block.get("pricing") or {}).get("total_amount") or block.get("price") or 0),
+            "order_no":     (block.get("order_details") or {}).get("order_number") or ship.get("shipment_number") or "",
+            "awb":          ship.get("awb_number") or "",
+            "awb_link":     ship.get("awb_url") or "",
+            "tracking_url": ship.get("tracking_url") or "",
+            "courier":      ship.get("courier") or "",
+            "cost":         float((block.get("pricing_breakdown") or {}).get("total_paid_amount") or 0),
         }
     except Exception as e:
         return {"ok": False, "error": "Respons submit tak dijangka: " + str(e)}
