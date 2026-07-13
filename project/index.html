@@ -237,7 +237,8 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
 <nav class="nav">
   <a class="nav-logo" onclick="goPage('servis')" style="display:flex;align-items:center;"><img src="logo-dark.png?v=2" alt="PixyoPrint" style="height:26px;display:block;"></a>
   <div class="nav-links">
-    <span class="nav-link active" id="nl-servis" onclick="goServisTerokai()">Katalog</span>
+    <span class="nav-link active" id="nl-servis" onclick="goServisTerokai()">Travel</span>
+    <span class="nav-link" id="nl-wedding" onclick="goPage('wedding')">Wedding</span>
     <span class="nav-link" id="nl-upload" onclick="goPage('upload')">Hantar Gambar</span>
     <span class="nav-link" id="nl-status" onclick="goPage('status')">Status Tempahan</span>
     <span class="nav-link" id="nl-hubungi" onclick="goPage('hubungi')">Hubungi</span>
@@ -246,7 +247,8 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
   </div>
   <!-- Menu mobile (dropdown) -->
   <div id="mobile-menu">
-    <div class="mm-link active" id="mm-servis" onclick="goServisTerokai()">Katalog</div>
+    <div class="mm-link active" id="mm-servis" onclick="goServisTerokai()">Travel</div>
+    <div class="mm-link" id="mm-wedding" onclick="mmGo('wedding')">Wedding</div>
     <div class="mm-link" id="mm-upload" onclick="mmGo('upload')">Hantar Gambar</div>
     <div class="mm-link" id="mm-status" onclick="mmGo('status')">Status Tempahan</div>
     <div class="mm-link" id="mm-hubungi" onclick="mmGo('hubungi')">Hubungi</div>
@@ -438,6 +440,28 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
 
   <!-- pkg-section hidden, accessible via Terokai catalog page -->
   <div id="pkg-section" style="display:none;"><div id="pkg-list"></div></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: WEDDING (Crystal Album) -->
+<!-- ============================================================ -->
+<div class="page" id="page-wedding" style="padding:40px 32px 80px;">
+  <!-- hero -->
+  <div style="text-align:center;margin-bottom:40px;padding:56px 20px 12px;">
+    <div style="font-family:'Courier New',monospace;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#a86d69;margin-bottom:12px;">Koleksi Eksklusif</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(34px,5vw,54px);font-weight:600;line-height:1.05;color:#2d2520;">Crystal Album <span style="font-style:italic;color:#c98a86;">Wedding</span></div>
+    <div style="font-size:14px;color:#8a7e72;margin-top:14px;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.6;">Album kristal mewah untuk abadikan hari istimewa anda. Setiap album disusun tangan dengan teliti.</div>
+  </div>
+
+  <!-- gallery crystal album -->
+  <div id="wedding-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px;max-width:1080px;margin:0 auto;"></div>
+
+  <!-- CTA -->
+  <div style="text-align:center;margin-top:44px;padding:32px 20px;background:#faf3f2;border-radius:16px;max-width:720px;margin-left:auto;margin-right:auto;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#2d2520;margin-bottom:8px;">Nak tempah atau tanya dulu?</div>
+    <div style="font-size:13px;color:#8a7e72;margin-bottom:20px;line-height:1.6;">Crystal Album adalah tempahan khas. Hubungi kami untuk pakej, harga terkini &amp; konsultasi percuma.</div>
+    <a href="https://wa.me/60133182285?text=Salam%2C%20saya%20berminat%20dengan%20Crystal%20Album%20Wedding.%20Boleh%20terangkan%20pakej%20%26%20harga%3F" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#fff;text-decoration:none;font-size:15px;font-weight:600;padding:14px 28px;border-radius:100px;"><i class="ph ph-whatsapp-logo" style="font-size:20px;"></i> Tempah / Tanya via WhatsApp</a>
+  </div>
 </div>
 
 <!-- ============================================================ -->
@@ -1505,7 +1529,7 @@ function showToast(msg) {
 // ============================================================
 // NAVIGATION
 // ============================================================
-const pages = ['servis','upload','catalog','checkout','status','hubungi','privasi','datarequest','terma'];
+const pages = ['servis','wedding','upload','catalog','checkout','status','hubungi','privasi','datarequest','terma'];
 
 function goPage(id) {
   pages.forEach(p => {
@@ -1517,10 +1541,11 @@ function goPage(id) {
   const nl = document.getElementById('nl-'+id);
   if(nl) nl.classList.add('active');
   // segerakkan keadaan aktif menu mobile
-  ['servis','upload','status','hubungi'].forEach(p=>{ const mm=document.getElementById('mm-'+p); if(mm) mm.classList.toggle('active', p===id); });
+  ['servis','wedding','upload','status','hubungi'].forEach(p=>{ const mm=document.getElementById('mm-'+p); if(mm) mm.classList.toggle('active', p===id); });
   window.scrollTo(0,0);
 
   if(id === 'checkout') renderCheckout();
+  if(id === 'wedding') renderWedding();
   if(id === 'status') renderStatus();
   if(id === 'privasi') renderPrivasi();
   if(id === 'datarequest') resetDataRequest();
@@ -1540,6 +1565,34 @@ function closeMobileMenu(){
   if(ic) ic.className = 'ph ph-list';
 }
 function mmGo(id){ closeMobileMenu(); goPage(id); }
+// ── Crystal Album Wedding (edit senarai di sini) ──────────
+const WEDDING_PRODUCTS = [
+  { name:'Crystal Album 12"x8"',  price:'RM 350', img:'', specs:['20 muka surat','Kulit kristal + kotak','Susun tangan'] },
+  { name:'Crystal Album 16"x12"', price:'RM 550', img:'', specs:['30 muka surat','Kulit kristal premium','Kotak hadiah'] },
+  { name:'Crystal Album 20"x12"', price:'RM 750', img:'', specs:['40 muka surat','Saiz istimewa','Kotak + beg kanvas'] },
+];
+function renderWedding(){
+  const grid = document.getElementById('wedding-grid');
+  if(!grid) return;
+  grid.innerHTML = WEDDING_PRODUCTS.map(p=>{
+    const img = p.img
+      ? `<img src="${escA(p.img)}" alt="${escA(p.name)}" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block;">`
+      : `<div style="width:100%;aspect-ratio:1/1;background:repeating-linear-gradient(45deg,#efe4e2,#efe4e2 12px,#e8dad7 12px,#e8dad7 24px);display:flex;align-items:center;justify-content:center;color:#c9a9a4;"><i class="ph ph-diamond" style="font-size:40px;"></i></div>`;
+    const wa = 'https://wa.me/60133182285?text=' + encodeURIComponent('Salam, saya berminat dengan ' + p.name + '. Boleh terangkan pakej & harga?');
+    return `<div style="background:#fffdfa;border:1px solid #ede4d8;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;">
+      ${img}
+      <div style="padding:16px 18px;display:flex;flex-direction:column;flex:1;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;color:#2d2520;">${escA(p.name)}</div>
+        <div style="font-size:18px;font-weight:700;color:#c98a86;margin:4px 0 12px;">${escA(p.price)}</div>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:16px;flex:1;">
+          ${p.specs.map(s=>`<div style="font-size:12.5px;color:#6f6358;display:flex;align-items:center;gap:6px;"><i class="ph ph-check" style="color:#6f8466;"></i> ${escA(s)}</div>`).join('')}
+        </div>
+        <a href="${wa}" target="_blank" rel="noopener" style="text-align:center;background:#c98a86;color:#fff;text-decoration:none;font-size:13.5px;font-weight:600;padding:11px;border-radius:8px;">Tempah via WhatsApp</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function goServisTerokai(){
   closeMobileMenu();
   goPage('servis');
