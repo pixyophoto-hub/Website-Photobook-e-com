@@ -181,7 +181,7 @@ tbody tr{border-top:1px solid #f0e8df;}
               <option value="">Semua Status</option>
               <option>Hantar Gambar</option><option>Order</option><option>Editing</option><option>Reviewing</option><option>Amend</option><option>Printing</option><option>Delivery</option><option>Siap</option>
             </select>
-            <input type="text" id="order-search" placeholder="Cari nama / #order…" class="inp" style="width:180px;" oninput="renderOrders()">
+            <input type="search" id="order-search" name="order-search-q" autocomplete="off" placeholder="Cari nama / #order…" class="inp" style="width:180px;" oninput="renderOrders()">
             <button class="btn-primary" style="font-size:13px;padding:9px 16px;border-radius:8px;white-space:nowrap;background:#6f8466;" onclick="openManualOrder()"><i class="ph ph-plus"></i> Tambah Order</button>
             <button class="btn-primary" style="font-size:13px;padding:9px 16px;border-radius:8px;white-space:nowrap;" onclick="exportOrdersCsv()"><i class="ph ph-download-simple"></i> Muat Turun CSV</button>
           </div>
