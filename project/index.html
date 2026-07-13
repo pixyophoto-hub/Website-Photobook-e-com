@@ -264,7 +264,10 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
       <div style="font-size:12px;font-weight:600;color:#6f6358;margin-bottom:6px;">Email</div>
       <input type="email" id="li-email" class="inp" style="margin-bottom:14px;" placeholder="email@pixyoprint.com" required>
       <div style="font-size:12px;font-weight:600;color:#6f6358;margin-bottom:6px;">Kata Laluan</div>
-      <input type="password" id="li-pass" class="inp" style="margin-bottom:6px;" placeholder="••••••••" required>
+      <div style="position:relative;margin-bottom:6px;">
+        <input type="password" id="li-pass" class="inp" style="width:100%;padding-right:40px;box-sizing:border-box;margin:0;" placeholder="••••••••" required>
+        <span onclick="var i=document.getElementById('li-pass'),e=document.getElementById('li-eye');if(i.type=='password'){i.type='text';e.className='ph ph-eye-slash';}else{i.type='password';e.className='ph ph-eye';}" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#9a8d80;font-size:18px;"><i id="li-eye" class="ph ph-eye"></i></span>
+      </div>
       <div id="login-error" style="display:none;font-size:12px;color:#c0392b;background:#fef3f2;border-radius:7px;padding:9px 12px;margin:8px 0 4px;"></div>
       <button type="submit" class="btn-primary" style="width:100%;font-size:14px;padding:13px;margin-top:14px;">Log Masuk</button>
     </form>

@@ -46,7 +46,10 @@ select,input{font-family:'Hanken Grotesk',sans-serif;}
       <div style="font-size:12px;font-weight:600;color:#6f6358;margin-bottom:6px;">Email</div>
       <input type="email" id="login-email" class="inp" style="width:100%;margin-bottom:14px;" placeholder="email@pixyoprint.com" required>
       <div style="font-size:12px;font-weight:600;color:#6f6358;margin-bottom:6px;">Kata Laluan</div>
-      <input type="password" id="login-pass" class="inp" style="width:100%;" placeholder="••••••••" required>
+      <div style="position:relative;">
+        <input type="password" id="login-pass" class="inp" style="width:100%;padding-right:40px;box-sizing:border-box;" placeholder="••••••••" required>
+        <span onclick="togglePass()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#9a8d80;font-size:18px;"><i id="pass-eye" class="ph ph-eye"></i></span>
+      </div>
       <div id="login-error" style="display:none;font-size:12px;color:#c0392b;background:#fef3f2;border-radius:7px;padding:9px 12px;margin:10px 0 0;"></div>
       <button type="submit" class="btn" style="width:100%;font-size:14px;padding:13px;margin-top:16px;">Log Masuk</button>
     </form>
@@ -160,6 +163,12 @@ function mapStatus(s){
   return s;
 }
 
+function togglePass(){
+  const inp = document.getElementById('login-pass');
+  const eye = document.getElementById('pass-eye');
+  if(inp.type === 'password'){ inp.type = 'text'; eye.className = 'ph ph-eye-slash'; }
+  else { inp.type = 'password'; eye.className = 'ph ph-eye'; }
+}
 function doLogin(ev){
   ev.preventDefault();
   const email = document.getElementById('login-email').value.trim();
