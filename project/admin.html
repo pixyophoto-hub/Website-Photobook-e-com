@@ -171,12 +171,6 @@ tbody tr{border-top:1px solid #f0e8df;}
             <div style="font-size:13px;color:#8a7e72;margin-top:2px;"><span id="total-orders"></span> order</div>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <select class="inp" id="source-filter" onchange="renderOrders()">
-              <option value="">Semua Sumber</option>
-              <option value="website">🌐 Website</option>
-              <option value="telegram">✈️ Telegram</option>
-              <option value="wedding">💎 Wedding / Crystal</option>
-            </select>
             <select class="inp" id="status-filter" onchange="renderOrders()">
               <option value="">Semua Status</option>
               <option>Hantar Gambar</option><option>Order</option><option>Editing</option><option>Reviewing</option><option>Amend</option><option>Printing</option><option>Delivery</option><option>Siap</option>
@@ -1043,6 +1037,14 @@ const SETTINGS_GROUPS = [
 ];
 let _settingsOpen = true;
 let _activeSettingsGroup = null;
+let _ordersOpen = false;
+let _activeSource = '';
+const ORDER_SOURCES = [
+  { id:'',         label:'Semua Sumber',    icon:'ph ph-list' },
+  { id:'website',  label:'Website',         icon:'ph ph-globe' },
+  { id:'telegram', label:'Telegram',        icon:'ph ph-paper-plane-tilt' },
+  { id:'wedding',  label:'Wedding / Crystal', icon:'ph ph-diamond' },
+];
 const LABELS = { overview:'Overview', orders:'Senarai Order', datareq:'Permintaan Data', revenue:'Pendapatan', editors:'Urus Editor', reviews:'Ulasan', settings:'Tetapan' };
 
 const STATUS = {
@@ -1692,12 +1694,28 @@ function statusPill(status){
 // NAV
 // ============================================================
 function renderNav(){
-  const mainItems = NAV.map(n => `
+  const mainItems = NAV.map(n => {
+    if(n.id === 'orders'){
+      const ordersActive = currentView === 'orders';
+      const sub = _ordersOpen ? ORDER_SOURCES.map(s => `
+        <div class="nav-item nav-sub-item ${ordersActive && _activeSource===s.id ? 'active' : ''}" onclick="goOrdersSource('${s.id}')">
+          <i style="font-size:15px;" class="${s.icon}"></i>
+          <span class="nav-label" style="font-size:13px;font-weight:500;">${s.label}</span>
+        </div>`).join('') : '';
+      return `
+        <div class="nav-item ${ordersActive?'active':''}" onclick="_ordersOpen=!_ordersOpen;renderNav()">
+          <i style="font-size:16px;" class="${n.icon}"></i>
+          <span class="nav-label" style="font-size:13px;font-weight:500;">${n.label}</span>
+          <i class="ph ${_ordersOpen ? 'ph-caret-up' : 'ph-caret-down'} nav-label" style="font-size:12px;margin-left:auto;opacity:.6;"></i>
+        </div>${sub}`;
+    }
+    return `
     <div class="nav-item ${n.id===currentView?'active':''}" onclick="goView('${n.id}')">
       <i style="font-size:16px;" class="${n.icon}"></i>
       <span class="nav-label" style="font-size:13px;font-weight:500;">${n.label}</span>
       ${n.badge?`<span class="nav-badge nav-label">${n.badgeVal}</span>`:''}
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   const settingsActive = currentView === 'settings';
   const subItems = _settingsOpen ? SETTINGS_GROUPS.map(g => `
@@ -1767,13 +1785,24 @@ function goView(id){
   document.querySelector('.content').scrollTo(0,0);
 }
 
+function goOrdersSource(src){
+  _activeSource = src;
+  _ordersOpen = true;
+  currentView = 'orders';
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-orders').classList.add('active');
+  document.getElementById('view-label').textContent = LABELS['orders'];
+  renderNav();
+  renderOrders();
+  document.querySelector('.content').scrollTo(0,0);
+}
+
 // ============================================================
 // ORDERS (with filter + search)
 // ============================================================
 function renderOrders(){
-  document.getElementById('total-orders').textContent = ORDERS.length;
   const filter = document.getElementById('status-filter').value;
-  const srcFilter = document.getElementById('source-filter').value;
+  const srcFilter = _activeSource;
   const q = document.getElementById('order-search').value.trim().toLowerCase();
   const editorOpts = EDITORS.map(e => e.name.split(' ')[0]);
 
@@ -1783,6 +1812,12 @@ function renderOrders(){
     if(q && !(o.name.toLowerCase().includes(q) || o.id.toLowerCase().includes(q))) return false;
     return true;
   });
+
+  const totEl = document.getElementById('total-orders');
+  if(totEl){
+    const srcLbl = (ORDER_SOURCES.find(s=>s.id===_activeSource)||{}).label || 'Semua Sumber';
+    totEl.textContent = rows.length + (_activeSource ? ' · ' + srcLbl : '');
+  }
 
   const tbody = document.getElementById('all-orders');
   if(!rows.length){
