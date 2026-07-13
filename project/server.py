@@ -381,7 +381,7 @@ def tg_handle_update(update):
             "name": parsed["name"], "email": parsed["email"], "phone": parsed["phone"],
             "alamat": parsed["alamat"], "poskod": "", "bandar": "", "negeri": "",
             "medium": "Telegram", "note": parsed["note"], "receipt_url": receipt_url,
-            "editor": "—",
+            "editor": d.get("default_editor", "") or "—",
             "created_at": now_myt().strftime("%d %b %Y, %H:%M"),
             "created_ts": now_myt().isoformat(timespec="seconds"),
             "items": parsed["items"],
@@ -1338,6 +1338,10 @@ class Handler(SimpleHTTPRequestHandler):
                 "length": cfg.get("length", 20),
                 "height": cfg.get("height", 5),
             })
+        if self.path == "/api/default-editor":
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            return self._json({"editor": load_data().get("default_editor", "")})
         if self.path == "/api/telegram-config":
             if not self._is_admin():
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
@@ -1650,6 +1654,7 @@ class Handler(SimpleHTTPRequestHandler):
                 "bandar":     bandar,
                 "negeri":     negeri,
                 "medium":     medium,
+                "editor":     d.get("default_editor", "") or "—",
                 "created_at": now_myt().strftime("%d %b %Y, %H:%M"),
                 "created_ts": now_myt().isoformat(timespec="seconds"),
                 "items":      server_items,
@@ -1865,7 +1870,7 @@ class Handler(SimpleHTTPRequestHandler):
                 "negeri": str(b.get("negeri", "")).strip()[:120],
                 "medium": str(b.get("medium", "")).strip()[:40],
                 "note": str(b.get("note", "")).strip()[:500],
-                "editor": "—",
+                "editor": d.get("default_editor", "") or "—",
                 "created_at": now_myt().strftime("%d %b %Y, %H:%M"),
                 "created_ts": now_myt().isoformat(timespec="seconds"),
                 "items": items,
@@ -1984,6 +1989,14 @@ class Handler(SimpleHTTPRequestHandler):
                 except (TypeError, ValueError):
                     pass
             d["easyparcel"] = ep
+            save_data(d)
+            return self._json({"ok": True})
+        if self.path == "/api/default-editor":
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            b = self._read_body()
+            d = load_data()
+            d["default_editor"] = str(b.get("editor", "")).strip()[:60]
             save_data(d)
             return self._json({"ok": True})
         if self.path == "/api/telegram-config":

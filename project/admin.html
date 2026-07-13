@@ -245,6 +245,15 @@ tbody tr{border-top:1px solid #f0e8df;}
           <div><div class="h-title">Urus Editor</div><div style="font-size:13px;color:#8a7e72;margin-top:2px;" id="editor-count-label">0 editor aktif</div></div>
           <button class="btn-primary" style="display:flex;align-items:center;gap:8px;font-size:13px;padding:10px 18px;border-radius:8px;" onclick="showEditorModal()"><i class="ph ph-plus"></i> Tambah Editor</button>
         </div>
+        <div class="card" style="padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:220px;">
+            <div style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:#2d2520;"><i class="ph ph-user-switch" style="color:#a86d69;"></i> Auto-Assign Editor Lalai</div>
+            <div style="font-size:12px;color:#8a7e72;margin-top:2px;">Semua order baru (Website / Telegram / Wedding) terus ditugaskan kepada editor ini.</div>
+          </div>
+          <select id="default-editor-select" class="inp" style="min-width:180px;" onchange="saveDefaultEditor()">
+            <option value="">— Tiada (assign manual) —</option>
+          </select>
+        </div>
         <div class="grid-2" style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;" id="editor-cards"></div>
       </div>
 
@@ -1224,6 +1233,7 @@ function loadEditors(){
       renderEditors();
       renderOverview();
       renderOrders();
+      loadDefaultEditor();
     }).catch(() => { renderEditors(); });
 }
 
@@ -2423,9 +2433,29 @@ function renderRevenue(){
 // ============================================================
 // EDITORS
 // ============================================================
+let _defaultEditor = '';
+function populateDefaultEditor(){
+  const sel = document.getElementById('default-editor-select');
+  if(!sel) return;
+  const firsts = EDITORS.map(e=>e.name.split(' ')[0]);
+  sel.innerHTML = '<option value="">— Tiada (assign manual) —</option>' +
+    firsts.map(f=>`<option value="${esc(f)}"${f===_defaultEditor?' selected':''}>${esc(f)}</option>`).join('');
+}
+function loadDefaultEditor(){
+  fetch('/api/default-editor', { headers: authHeaders() })
+    .then(r=>r.json()).then(d=>{ _defaultEditor = d.editor || ''; populateDefaultEditor(); })
+    .catch(()=>{});
+}
+function saveDefaultEditor(){
+  _defaultEditor = document.getElementById('default-editor-select').value;
+  fetch('/api/default-editor', { method:'PUT', headers:{'Content-Type':'application/json',...authHeaders()}, body: JSON.stringify({editor:_defaultEditor}) })
+    .then(r=>r.json()).then(res=>showToast(res.ok ? (_defaultEditor ? 'Order baru akan auto-assign ke '+_defaultEditor : 'Auto-assign dimatikan') : 'Gagal simpan'));
+}
+
 function renderEditors(){
   const countEl = document.getElementById('editor-count-label');
   if(countEl) countEl.textContent = EDITORS.length + ' editor aktif';
+  populateDefaultEditor();
 
   if(!EDITORS.length){
     document.getElementById('editor-cards').innerHTML = `
