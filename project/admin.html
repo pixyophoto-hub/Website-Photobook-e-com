@@ -1057,7 +1057,7 @@ const STATUS = {
   'Delivery':{bg:'#dde6d8',color:'#4a5e3a'},
   'Siap':{bg:'#dde6d8',color:'#4a5e3a'},
   'Menunggu Bayaran':{bg:'#fdeecf',color:'#b7860a'},
-  'Selesai':{bg:'#dde6d8',color:'#4a5e3a'}
+  'Selesai Bayaran':{bg:'#dde6d8',color:'#4a5e3a'}
 };
 
 let ORDERS = [];
@@ -1073,7 +1073,7 @@ function loadOrders(){
           email:  o.email || '—',
           pkg:    (o.items||[]).map(i=>i.name).join(', ') || '—',
           total:  'RM ' + parseFloat(o.total||0).toFixed(2),
-          status: o.status === 'completed' ? 'Selesai' : o.status === 'pending' ? 'Menunggu Bayaran' : o.status,
+          status: o.status === 'completed' ? 'Selesai Bayaran' : o.status === 'pending' ? 'Menunggu Bayaran' : o.status,
           editor: o.editor || '—',
           date:   o.created_at || '—',
           source: o.source || 'website',
@@ -2839,7 +2839,7 @@ function initAdmin(){
 function renderOverview(){
   // Compute real KPI from ORDERS
   const total = ORDERS.length;
-  const inProgress = ORDERS.filter(o=>!['Siap','Selesai','Menunggu Bayaran'].includes(o.status)).length;
+  const inProgress = ORDERS.filter(o=>!['Siap','Selesai Bayaran','Menunggu Bayaran'].includes(o.status)).length;
   const now = new Date();
   const weekStart = new Date(now); weekStart.setDate(now.getDate()-now.getDay());
   const doneThisWeek = ORDERS.filter(o=>o.status==='Siap').length;
