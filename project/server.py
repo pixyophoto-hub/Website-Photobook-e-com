@@ -179,6 +179,9 @@ def photo_reminder_tick():
     now = now_myt()
     changed = False
     for o in d.get("orders", []):
+        # Skip order manual (Telegram/Wedding) — tak perlu peringatan gambar auto
+        if o.get("manual"):
+            continue
         # Hanya order dah bayar & masih menunggu gambar
         if o.get("status") not in ("completed", "Hantar Gambar"):
             continue
@@ -1588,6 +1591,59 @@ class Handler(SimpleHTTPRequestHandler):
                 }
                 save_data(d)
             return self._json(res)
+
+        if self.path == "/api/orders/manual":
+            # Tambah order manual (Telegram / Wedding-Crystal) — rekod sahaja, dah bayar luar
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            b = self._read_body()
+            source = str(b.get("source", "manual")).strip()[:20] or "manual"
+            name = str(b.get("name", "")).strip()[:120]
+            if not name:
+                return self._json({"ok": False, "error": "Nama pelanggan diperlukan"}, 400)
+            raw_items = b.get("items", [])
+            items, subtotal = [], 0.0
+            if isinstance(raw_items, list):
+                for it in raw_items:
+                    nm = str(it.get("name", "")).strip()[:160]
+                    if not nm:
+                        continue
+                    try:
+                        qty = max(1, min(999, int(it.get("qty", 1))))
+                    except (TypeError, ValueError):
+                        qty = 1
+                    try:
+                        price = max(0.0, float(it.get("price", 0) or 0))
+                    except (TypeError, ValueError):
+                        price = 0.0
+                    subtotal += price * qty
+                    items.append({"name": nm, "qty": qty, "price": price})
+            if not items:
+                return self._json({"ok": False, "error": "Sekurang-kurangnya 1 item diperlukan"}, 400)
+            d = load_data()
+            ref = gen_order_ref({o.get("reference") for o in d.get("orders", [])})
+            order = {
+                "reference": ref, "source": source, "manual": True,
+                "status": str(b.get("status", "completed")).strip()[:30] or "completed",
+                "total": round(subtotal, 2), "subtotal": round(subtotal, 2),
+                "discount": 0, "postage": 0, "voucher": "",
+                "name": name,
+                "email": str(b.get("email", "")).strip()[:254],
+                "phone": str(b.get("phone", "")).strip()[:30],
+                "alamat": str(b.get("alamat", "")).strip()[:300],
+                "poskod": str(b.get("poskod", "")).strip()[:10],
+                "bandar": str(b.get("bandar", "")).strip()[:120],
+                "negeri": str(b.get("negeri", "")).strip()[:120],
+                "medium": str(b.get("medium", "")).strip()[:40],
+                "note": str(b.get("note", "")).strip()[:500],
+                "editor": "—",
+                "created_at": now_myt().strftime("%d %b %Y, %H:%M"),
+                "created_ts": now_myt().isoformat(timespec="seconds"),
+                "items": items,
+            }
+            d.setdefault("orders", []).append(order)
+            save_data(d)
+            return self._json({"ok": True, "reference": ref})
 
         if self.path == "/api/chip-callback":
             length = int(self.headers.get("Content-Length", 0) or 0)

@@ -170,19 +170,26 @@ tbody tr{border-top:1px solid #f0e8df;}
             <div class="h-title">Senarai Order</div>
             <div style="font-size:13px;color:#8a7e72;margin-top:2px;"><span id="total-orders"></span> order</div>
           </div>
-          <div style="display:flex;gap:10px;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <select class="inp" id="source-filter" onchange="renderOrders()">
+              <option value="">Semua Sumber</option>
+              <option value="website">🌐 Website</option>
+              <option value="telegram">✈️ Telegram</option>
+              <option value="wedding">💎 Wedding / Crystal</option>
+            </select>
             <select class="inp" id="status-filter" onchange="renderOrders()">
               <option value="">Semua Status</option>
               <option>Hantar Gambar</option><option>Order</option><option>Editing</option><option>Reviewing</option><option>Amend</option><option>Printing</option><option>Delivery</option><option>Siap</option>
             </select>
-            <input type="text" id="order-search" placeholder="Cari nama / #order…" class="inp" style="width:200px;" oninput="renderOrders()">
+            <input type="text" id="order-search" placeholder="Cari nama / #order…" class="inp" style="width:180px;" oninput="renderOrders()">
+            <button class="btn-primary" style="font-size:13px;padding:9px 16px;border-radius:8px;white-space:nowrap;background:#6f8466;" onclick="openManualOrder()"><i class="ph ph-plus"></i> Tambah Order</button>
             <button class="btn-primary" style="font-size:13px;padding:9px 16px;border-radius:8px;white-space:nowrap;" onclick="exportOrdersCsv()"><i class="ph ph-download-simple"></i> Muat Turun CSV</button>
           </div>
         </div>
         <div class="card" style="overflow-x:auto;">
           <table>
             <thead><tr>
-              <th>#Order</th><th>Pelanggan</th><th>Pakej</th><th>Jumlah</th><th>Status</th><th>Assign Editor</th><th>Tarikh</th><th></th>
+              <th>#Order</th><th>Sumber</th><th>Pelanggan</th><th>Pakej</th><th>Jumlah</th><th>Status</th><th>Assign Editor</th><th>Tarikh</th><th></th>
             </tr></thead>
             <tbody id="all-orders"></tbody>
           </table>
@@ -797,6 +804,53 @@ tbody tr{border-top:1px solid #f0e8df;}
   </div>
 </div>
 
+<!-- Modal Tambah Order Manual -->
+<div id="manual-order-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(45,37,32,.55);align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 16px;">
+  <div style="width:560px;max-width:96vw;background:#fffdfa;border-radius:14px;padding:26px 26px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div style="font-size:16px;font-weight:700;color:#2d2520;"><i class="ph ph-plus-circle" style="color:#6f8466;margin-right:6px;"></i>Tambah Order Manual</div>
+      <button onclick="closeManualOrder()" style="background:none;border:none;cursor:pointer;color:#9a8d80;font-size:20px;">&#10005;</button>
+    </div>
+    <div style="font-size:12px;color:#8a7e72;margin-bottom:18px;">Untuk order luar website (Telegram / Wedding). Dianggap <b>sudah dibayar</b> — rekod sahaja.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div>
+        <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Sumber</label>
+        <select id="mo-source" class="inp" style="width:100%;box-sizing:border-box;">
+          <option value="telegram">✈️ Telegram</option>
+          <option value="wedding">💎 Wedding / Crystal</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Nama Pelanggan *</label>
+        <input id="mo-name" class="inp" style="width:100%;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">No. Telefon</label>
+        <input id="mo-phone" class="inp" style="width:100%;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Email</label>
+        <input id="mo-email" class="inp" style="width:100%;box-sizing:border-box;">
+      </div>
+    </div>
+
+    <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Item</label>
+    <div id="mo-items" style="margin-bottom:8px;"></div>
+    <button onclick="moAddItemRow()" style="border:1px dashed #d8c8bc;background:#faf8f5;color:#6f6358;font-size:12px;font-weight:600;padding:7px 12px;border-radius:7px;cursor:pointer;margin-bottom:16px;"><i class="ph ph-plus"></i> Tambah item</button>
+
+    <div style="margin-bottom:18px;">
+      <label style="font-size:11px;font-weight:600;color:#6f6358;display:block;margin-bottom:5px;">Nota (pilihan)</label>
+      <input id="mo-note" class="inp" style="width:100%;box-sizing:border-box;" placeholder="cth: bayar via DuitNow, deposit RM50...">
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button onclick="closeManualOrder()" style="border:1px solid #d8c8bc;background:#fff;color:#6f6358;font-family:inherit;font-weight:600;font-size:13px;padding:9px 18px;border-radius:8px;cursor:pointer;">Batal</button>
+      <button class="btn-primary" style="font-size:13px;padding:9px 20px;border-radius:8px;" onclick="submitManualOrder()"><i class="ph ph-check"></i> Simpan Order</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Tambah Baucar -->
 <div id="voucher-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(45,37,32,.55);align-items:center;justify-content:center;">
   <div style="width:400px;max-width:94vw;background:#fffdfa;border-radius:14px;padding:28px 26px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
@@ -1020,6 +1074,7 @@ function loadOrders(){
           status: o.status === 'completed' ? 'Selesai' : o.status === 'pending' ? 'Menunggu Bayaran' : o.status,
           editor: o.editor || '—',
           date:   o.created_at || '—',
+          source: o.source || 'website',
           _raw:   o
         }));
       }
@@ -1718,18 +1773,20 @@ function goView(id){
 function renderOrders(){
   document.getElementById('total-orders').textContent = ORDERS.length;
   const filter = document.getElementById('status-filter').value;
+  const srcFilter = document.getElementById('source-filter').value;
   const q = document.getElementById('order-search').value.trim().toLowerCase();
   const editorOpts = EDITORS.map(e => e.name.split(' ')[0]);
 
   const rows = ORDERS.filter(o=>{
     if(filter && o.status !== filter) return false;
+    if(srcFilter && (o.source||'website') !== srcFilter) return false;
     if(q && !(o.name.toLowerCase().includes(q) || o.id.toLowerCase().includes(q))) return false;
     return true;
   });
 
   const tbody = document.getElementById('all-orders');
   if(!rows.length){
-    tbody.innerHTML = '<tr><td colspan="8" style="padding:24px 16px;text-align:center;font-size:13px;color:#9a8d80;">Tiada order ditemui.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="padding:24px 16px;text-align:center;font-size:13px;color:#9a8d80;">Tiada order ditemui.</td></tr>';
     return;
   }
   tbody.innerHTML = rows.map(o=>{
@@ -1737,6 +1794,7 @@ function renderOrders(){
     return `
     <tr>
       <td style="padding:13px 16px;font-size:12px;font-weight:600;color:#a86d69;">${esc(o.id)}</td>
+      <td style="padding:13px 16px;">${sourceBadge(o.source)}</td>
       <td style="padding:13px 16px;"><div style="font-size:13px;font-weight:600;color:#2d2520;">${esc(o.name)}</div><div style="font-size:11px;color:#9a8d80;">${esc(o.email)}</div></td>
       <td style="padding:13px 16px;font-size:12px;color:#6f6358;">${esc(o.pkg)}</td>
       <td style="padding:13px 16px;font-size:13px;font-weight:600;color:#2d2520;">${esc(o.total)}</td>
@@ -1751,6 +1809,69 @@ function renderOrders(){
     </tr>`;
   }).join('');
 }
+function sourceBadge(src){
+  const map = {
+    website:  {t:'Website',  bg:'#eaf1f7', c:'#2471a3', i:'ph-globe'},
+    telegram: {t:'Telegram', bg:'#e8f4fb', c:'#2a92d6', i:'ph-paper-plane-tilt'},
+    wedding:  {t:'Wedding',  bg:'#f7eef3', c:'#a83d6f', i:'ph-diamond'},
+  };
+  const m = map[src] || map.website;
+  return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:100px;background:${m.bg};color:${m.c};white-space:nowrap;"><i class="ph ${m.i}"></i> ${m.t}</span>`;
+}
+
+// ── Tambah Order Manual (Telegram / Wedding) ──────────────
+function openManualOrder(){
+  document.getElementById('mo-source').value = 'telegram';
+  document.getElementById('mo-name').value = '';
+  document.getElementById('mo-phone').value = '';
+  document.getElementById('mo-email').value = '';
+  document.getElementById('mo-note').value = '';
+  document.getElementById('mo-items').innerHTML = '';
+  moAddItemRow();
+  document.getElementById('manual-order-modal').style.display = 'flex';
+}
+function closeManualOrder(){ document.getElementById('manual-order-modal').style.display = 'none'; }
+function moAddItemRow(){
+  const wrap = document.getElementById('mo-items');
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center;';
+  row.innerHTML = `
+    <input class="inp mo-item-name" placeholder="Nama item (cth: Crystal Album 12x8)" style="flex:1;font-size:13px;">
+    <input class="inp mo-item-qty" type="number" min="1" value="1" title="Kuantiti" style="width:60px;font-size:13px;text-align:center;">
+    <input class="inp mo-item-price" type="number" min="0" step="0.01" placeholder="Harga" style="width:100px;font-size:13px;">
+    <button onclick="this.parentElement.remove()" title="Buang" style="border:none;background:#fdecea;color:#c0392b;width:32px;height:32px;border-radius:7px;cursor:pointer;flex:none;">&#10005;</button>`;
+  wrap.appendChild(row);
+}
+function submitManualOrder(){
+  const items = [];
+  document.querySelectorAll('#mo-items > div').forEach(r=>{
+    const name = r.querySelector('.mo-item-name').value.trim();
+    if(!name) return;
+    items.push({
+      name,
+      qty:   parseInt(r.querySelector('.mo-item-qty').value) || 1,
+      price: parseFloat(r.querySelector('.mo-item-price').value) || 0,
+    });
+  });
+  const name = document.getElementById('mo-name').value.trim();
+  if(!name){ showToast('Sila isi nama pelanggan'); return; }
+  if(!items.length){ showToast('Sila isi sekurang-kurangnya 1 item'); return; }
+  const body = {
+    source: document.getElementById('mo-source').value,
+    name,
+    phone: document.getElementById('mo-phone').value.trim(),
+    email: document.getElementById('mo-email').value.trim(),
+    note:  document.getElementById('mo-note').value.trim(),
+    status: 'completed',
+    items,
+  };
+  fetch('/api/orders/manual', { method:'POST', headers:{'Content-Type':'application/json',...authHeaders()}, body: JSON.stringify(body) })
+    .then(r=>r.json()).then(res=>{
+      if(res.ok){ showToast('Order manual ditambah ✓ #'+res.reference); closeManualOrder(); loadOrders(); }
+      else showToast(res.error || 'Gagal tambah order');
+    }).catch(()=>showToast('Gagal sambung ke server'));
+}
+
 function copyPayLink(ref){
   showToast('Menjana link bayaran...');
   fetch('/api/orders/' + encodeURIComponent(ref) + '/repay', { method:'POST', headers: authHeaders() })
