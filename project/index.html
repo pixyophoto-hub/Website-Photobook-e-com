@@ -454,7 +454,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
   </div>
 
   <!-- gallery wedding (kad photobook penuh) -->
-  <div class="hc-gallery" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px;max-width:680px;margin:0 auto;">
+  <div class="hc-gallery" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px;max-width:1040px;margin:0 auto;">
     <div class="hc-item" data-soft-name="Photobook 8x8 (Softcover)" data-soft-price="85" data-hard-name="Photobook 8x8 (Hardcover)" data-hard-price="115">
       <img src="hardcover-4.png" alt="Wedding Photobook 8x8" class="hc-img">
       <div class="hc-cap">
@@ -504,6 +504,24 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
           <div class="hc-addon"><span>+ Add-On Edit cerah & tone gambar: RM125</span><button class="hc-tick" data-addon="Add-On Edit Cerah Tone 11x8.5" data-price="125" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
         </div>
         <div class="hc-total"><span>Jumlah</span><b>RM 95.00</b></div>
+        <button class="hc-btn" onclick="addCardToCart(this)"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
+      </div>
+    </div>
+    <div class="hc-item" data-soft-name="Crystal Album Standard" data-soft-price="350" data-hard-name="Crystal Album Premium" data-hard-price="550">
+      <div class="hc-img" style="aspect-ratio:1/1;background:repeating-linear-gradient(45deg,#efe4e2,#efe4e2 14px,#e8dad7 14px,#e8dad7 28px);display:flex;align-items:center;justify-content:center;"><i class="ph ph-diamond" style="font-size:48px;color:#c9a9a4;"></i></div>
+      <div class="hc-cap">
+        <div class="hc-price"><span class="hc-old">RM650</span><span class="hc-now">RM350</span></div>
+        <div class="hc-spec hc-size"><span>Jenis</span><b>Crystal</b></div>
+        <div class="hc-spec"><span>Kulit</span><b>Kristal Premium</b></div>
+        <div class="hc-spec"><span>Muka surat</span><b>20 muka surat</b></div>
+        <div class="hc-spec"><span>Kotak hadiah</span><b style="color:#4a7a4a;">Percuma</b></div>
+        <div class="hc-spec"><span>Susun tangan</span><b style="color:#4a7a4a;">Ya</b></div>
+        <div class="hc-cover-label">Pilihan Album</div>
+        <div class="hc-cover">
+          <button class="hc-cover-opt on" data-cover="soft" onclick="selectCover(this)">Standard<span>RM350</span></button>
+          <button class="hc-cover-opt" data-cover="hard" onclick="selectCover(this)">Premium<span>RM550</span></button>
+        </div>
+        <div class="hc-total"><span>Jumlah</span><b>RM 350.00</b></div>
         <button class="hc-btn" onclick="addCardToCart(this)"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
       </div>
     </div>

@@ -540,6 +540,8 @@ DEFAULT_DATA = {
         {"name": "Photobook 8x8 (Hardcover)",     "price": "115", "weight": 0.5, "category": "PHOTOBOOK"},
         {"name": "Photobook 11x8.5 (Softcover)",  "price": "95",  "weight": 0.5, "category": "PHOTOBOOK"},
         {"name": "Photobook 11x8.5 (Hardcover)",  "price": "135", "weight": 0.5, "category": "PHOTOBOOK"},
+        {"name": "Crystal Album Standard",         "price": "350", "weight": 1.5, "category": "CRYSTAL"},
+        {"name": "Crystal Album Premium",          "price": "550", "weight": 1.8, "category": "CRYSTAL"},
     ],
     "media_links": {
         "whatsapp": "",
