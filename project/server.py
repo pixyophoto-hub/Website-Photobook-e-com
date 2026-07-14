@@ -540,8 +540,8 @@ DEFAULT_DATA = {
         {"name": "Photobook 8x8 (Hardcover)",     "price": "115", "weight": 0.5, "category": "PHOTOBOOK"},
         {"name": "Photobook 11x8.5 (Softcover)",  "price": "95",  "weight": 0.5, "category": "PHOTOBOOK"},
         {"name": "Photobook 11x8.5 (Hardcover)",  "price": "135", "weight": 0.5, "category": "PHOTOBOOK"},
-        {"name": "Crystal Album (Crystal)",        "price": "350", "weight": 1.5, "category": "CRYSTAL"},
-        {"name": "Crystal Album (Hardcover)",      "price": "550", "weight": 1.8, "category": "CRYSTAL"},
+        {"name": "Crystal Album (Crystal)",        "price": "250", "weight": 1.5, "category": "CRYSTAL"},
+        {"name": "Crystal Album (Hardcover)",      "price": "240", "weight": 1.8, "category": "CRYSTAL"},
     ],
     "media_links": {
         "whatsapp": "",
@@ -1070,6 +1070,14 @@ def _migrate_data(data):
         for _a in DEFAULT_DATA["addons"]:
             if _a.get("name") not in _have:
                 data["addons"].append(json.loads(json.dumps(_a)))
+                changed = True
+        # Crystal Album diurus dalam kod — selaraskan harga/berat dari DEFAULT
+        _def_crystal = {a["name"]: a for a in DEFAULT_DATA["addons"] if a.get("category") == "CRYSTAL"}
+        for a in data["addons"]:
+            dc = _def_crystal.get(a.get("name"))
+            if dc and (str(a.get("price")) != str(dc.get("price")) or a.get("weight") != dc.get("weight")):
+                a["price"] = dc["price"]
+                a["weight"] = dc.get("weight", a.get("weight"))
                 changed = True
     if "hitpay" not in data:
         data["hitpay"] = DEFAULT_DATA["hitpay"].copy()
