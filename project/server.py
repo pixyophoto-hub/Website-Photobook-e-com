@@ -1682,7 +1682,7 @@ class Handler(SimpleHTTPRequestHandler):
                 "bandar":     bandar,
                 "negeri":     negeri,
                 "medium":     medium,
-                "editor":     d.get("default_editor", "") or "—",
+                "editor":     "—",
                 "created_at": now_myt().strftime("%d %b %Y, %H:%M"),
                 "created_ts": now_myt().isoformat(timespec="seconds"),
                 "items":      server_items,
@@ -1928,6 +1928,11 @@ class Handler(SimpleHTTPRequestHandler):
                         _was_completed = (order.get("status") == "completed")
                         order["status"]     = "completed"
                         order["payment_id"] = str(purchase_id)
+                        # Auto-assign editor lalai HANYA selepas bayar (bukan masa pending)
+                        if order.get("editor") in (None, "", "—"):
+                            de = d.get("default_editor", "")
+                            if de:
+                                order["editor"] = de
                         # Notifikasi email — sekali sahaja (bila pertama kali jadi paid)
                         if not _was_completed and not order.get("notified"):
                             order["notified"] = True
