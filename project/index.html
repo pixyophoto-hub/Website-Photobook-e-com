@@ -453,8 +453,61 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
     <div style="font-size:14px;color:#8a7e72;margin-top:14px;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.6;">Album kristal mewah untuk abadikan hari istimewa anda. Setiap album disusun tangan dengan teliti.</div>
   </div>
 
-  <!-- gallery crystal album -->
-  <div id="wedding-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px;max-width:1080px;margin:0 auto;"></div>
+  <!-- gallery wedding (kad photobook penuh) -->
+  <div class="hc-gallery" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px;max-width:680px;margin:0 auto;">
+    <div class="hc-item" data-soft-name="Photobook 8x8 (Softcover)" data-soft-price="85" data-hard-name="Photobook 8x8 (Hardcover)" data-hard-price="115">
+      <img src="hardcover-4.png" alt="Wedding Photobook 8x8" class="hc-img">
+      <div class="hc-cap">
+        <div class="hc-price"><span class="hc-old">RM169</span><span class="hc-now">RM85</span></div>
+        <div class="hc-spec hc-size"><span>Size</span><b>8x8</b></div>
+        <div class="hc-spec"><span>Kertas</span><b>Lustre Paper</b></div>
+        <div class="hc-spec"><span>Muatan</span><b>200 gambar</b></div>
+        <div class="hc-spec"><span>Muka surat</span><b>40 muka surat</b></div>
+        <div class="hc-spec"><span>Semakan draf</span><b style="color:#4a7a4a;">Percuma 1×</b></div>
+        <div class="hc-spec"><span>Design muka depan</span><b style="color:#4a7a4a;">Percuma</b></div>
+        <div class="hc-cover-label">Cover Buku</div>
+        <div class="hc-cover">
+          <button class="hc-cover-opt on" data-cover="soft" onclick="selectCover(this)">Softcover<span>RM85</span></button>
+          <button class="hc-cover-opt" data-cover="hard" onclick="selectCover(this)">Hardcover<span>RM115</span></button>
+        </div>
+        <button type="button" class="hc-addons-toggle" onclick="toggleAddons(this)"><span><i class="ph ph-plus-circle"></i> Add-On Service</span><i class="ph ph-caret-down"></i></button>
+        <div class="hc-addons" style="display:none">
+          <div class="hc-addon"><span>+ Add-On 2 muka surat kiri kanan: RM4</span><button class="hc-tick" data-addon="Add-On Layout 8x8 (10 foto)" data-price="4" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
+          <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM40</span><button class="hc-tick" data-addon="Add-On Editor Pilih Gambar 8x8" data-price="40" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
+          <div class="hc-addon"><span>+ Add-On Tambah ayat dalam buku: RM2/muka surat</span><input type="number" class="hc-qty" data-addon="Add-On Tambah Ayat 8x8" data-price="2" min="0" step="1" value="0" placeholder="0" aria-label="Bilangan muka surat" onclick="event.stopPropagation()" oninput="recalcCard(this.closest('.hc-item'))"></div>
+          <div class="hc-addon"><span>+ Add-On Edit cerah & tone gambar: RM100</span><button class="hc-tick" data-addon="Add-On Edit Cerah Tone 8x8" data-price="100" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
+        </div>
+        <div class="hc-total"><span>Jumlah</span><b>RM 85.00</b></div>
+        <button class="hc-btn" onclick="addCardToCart(this)"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
+      </div>
+    </div>
+    <div class="hc-item" data-soft-name="Photobook 11x8.5 (Softcover)" data-soft-price="95" data-hard-name="Photobook 11x8.5 (Hardcover)" data-hard-price="135">
+      <img src="hardcover-1.png" alt="Wedding Photobook 11x8.5" class="hc-img">
+      <div class="hc-cap">
+        <div class="hc-price"><span class="hc-old">RM199</span><span class="hc-now">RM95</span></div>
+        <div class="hc-spec hc-size"><span>Size</span><b>11x8.5</b></div>
+        <div class="hc-spec"><span>Kertas</span><b>Lustre Paper</b></div>
+        <div class="hc-spec"><span>Muatan</span><b>250 gambar</b></div>
+        <div class="hc-spec"><span>Muka surat</span><b>40 muka surat</b></div>
+        <div class="hc-spec"><span>Semakan draf</span><b style="color:#4a7a4a;">Percuma 1×</b></div>
+        <div class="hc-spec"><span>Design muka depan</span><b style="color:#4a7a4a;">Percuma</b></div>
+        <div class="hc-cover-label">Cover Buku</div>
+        <div class="hc-cover">
+          <button class="hc-cover-opt on" data-cover="soft" onclick="selectCover(this)">Softcover<span>RM95</span></button>
+          <button class="hc-cover-opt" data-cover="hard" onclick="selectCover(this)">Hardcover<span>RM135</span></button>
+        </div>
+        <button type="button" class="hc-addons-toggle" onclick="toggleAddons(this)"><span><i class="ph ph-plus-circle"></i> Add-On Service</span><i class="ph ph-caret-down"></i></button>
+        <div class="hc-addons" style="display:none">
+          <div class="hc-addon"><span>+ Add-On 2 muka surat kiri kanan: RM4</span><button class="hc-tick" data-addon="Add-On Layout 11x8.5 (10 foto)" data-price="4" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
+          <div class="hc-addon"><span>+ Add-On Editor pilihkan gambar: RM40</span><button class="hc-tick" data-addon="Add-On Editor Pilih Gambar 11x8.5" data-price="40" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
+          <div class="hc-addon"><span>+ Add-On Tambah ayat dalam buku: RM2/muka surat</span><input type="number" class="hc-qty" data-addon="Add-On Tambah Ayat 11x8.5" data-price="2" min="0" step="1" value="0" placeholder="0" aria-label="Bilangan muka surat" onclick="event.stopPropagation()" oninput="recalcCard(this.closest('.hc-item'))"></div>
+          <div class="hc-addon"><span>+ Add-On Edit cerah & tone gambar: RM125</span><button class="hc-tick" data-addon="Add-On Edit Cerah Tone 11x8.5" data-price="125" title="Pilih add-on" onclick="toggleAddon(this)"></button></div>
+        </div>
+        <div class="hc-total"><span>Jumlah</span><b>RM 95.00</b></div>
+        <button class="hc-btn" onclick="addCardToCart(this)"><i class="ph ph-shopping-cart-simple"></i> Tambah ke Troli</button>
+      </div>
+    </div>
+  </div>
 
   <!-- CTA -->
   <div style="text-align:center;margin-top:44px;padding:32px 20px;background:#faf3f2;border-radius:16px;max-width:720px;margin-left:auto;margin-right:auto;">
