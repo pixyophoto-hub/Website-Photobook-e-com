@@ -1131,10 +1131,11 @@ const NAV = [
   { id:'reviews',  label:'Ulasan',        icon:'ph ph-star',          badge:false },
 ];
 const SETTINGS_GROUPS = [
-  { id:'akaun',      label:'Umum',         icon:'ph ph-user-circle', tabs:['akaun','flow'] },
-  { id:'pembayaran', label:'Pembayaran',  icon:'ph ph-credit-card', tabs:['payment','medialinks'] },
-  { id:'kandungan',  label:'Kandungan',   icon:'ph ph-layout',      tabs:['announce','explore'] },
-  { id:'produk',     label:'Produk',      icon:'ph ph-package',     tabs:['packages'] },
+  { id:'akaun',        label:'Umum',          icon:'ph ph-user-circle', tabs:['akaun','flow'] },
+  { id:'pembayaran',   label:'Pembayaran',   icon:'ph ph-credit-card', tabs:['payment','medialinks'] },
+  { id:'penghantaran', label:'Penghantaran', icon:'ph ph-truck',       tabs:['shipping'] },
+  { id:'kandungan',    label:'Kandungan',    icon:'ph ph-layout',      tabs:['announce','explore'] },
+  { id:'produk',       label:'Produk',       icon:'ph ph-package',     tabs:['packages'] },
 ];
 let _settingsOpen = true;
 let _activeSettingsGroup = null;
@@ -1851,9 +1852,9 @@ function goSettingsGroup(groupId){
   const wrapPembayaran = document.getElementById('settings-pembayaran-wrap');
   if(wrapPembayaran) wrapPembayaran.style.display = group.id === 'pembayaran' ? 'grid' : 'none';
   const postagePanel = document.getElementById('settings-postage');
-  if(postagePanel) postagePanel.style.display = group.id === 'pembayaran' ? 'block' : 'none';
+  if(postagePanel) postagePanel.style.display = (group.id === 'pembayaran' || group.id === 'penghantaran') ? 'block' : 'none';
   const epPanel = document.getElementById('settings-easyparcel');
-  if(epPanel) epPanel.style.display = group.id === 'pembayaran' ? 'block' : 'none';
+  if(epPanel) epPanel.style.display = (group.id === 'pembayaran' || group.id === 'penghantaran') ? 'block' : 'none';
   const prPanel = document.getElementById('settings-reminder');
   if(prPanel) prPanel.style.display = group.id === 'pembayaran' ? 'block' : 'none';
   const tgPanel = document.getElementById('settings-telegram');
@@ -1866,6 +1867,7 @@ function goSettingsGroup(groupId){
     if(el) el.style.display = group.tabs.includes(t) ? 'block' : 'none';
   });
   if(group.tabs.includes('payment'))    { loadChipConfig(); loadPostage(); loadEasyparcel(); loadReminder(); loadTelegram(); }
+  if(group.tabs.includes('shipping'))   { loadPostage(); loadEasyparcel(); }
   if(group.tabs.includes('medialinks')) loadMediaLinks();
   if(group.tabs.includes('announce'))   loadAnnouncements();
   if(group.tabs.includes('explore'))  { loadExplore(); loadVAFaq(); }
