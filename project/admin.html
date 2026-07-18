@@ -825,6 +825,9 @@ tbody tr{border-top:1px solid #f0e8df;}
               <i class="ph ph-arrows-clockwise" style="color:#a86d69;"></i> Semak Amount Sebenar di CHIP
             </button>
             <div id="od-chip-result" style="display:none;margin-top:10px;font-size:12px;line-height:1.7;"></div>
+            <button onclick="sendReceiptWhatsApp()" style="width:100%;padding:9px;background:#fff;border:1.5px solid #d8c8bc;border-radius:8px;font-size:12.5px;font-weight:700;color:#6f6358;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:8px;">
+              <i class="ph ph-whatsapp-logo" style="color:#25D366;"></i> Hantar Resit
+            </button>
           </div>
         </div>
         <div id="od-items-edit" style="display:none;flex-direction:column;gap:8px;">
@@ -2017,6 +2020,33 @@ function submitManualOrder(){
       if(res.ok){ showToast('Order manual ditambah ✓ #'+res.reference); closeManualOrder(); loadOrders(); }
       else showToast(res.error || 'Gagal tambah order');
     }).catch(()=>showToast('Gagal sambung ke server'));
+}
+
+function sendReceiptWhatsApp(){
+  const id = _currentOrderId;
+  const o = ORDERS.find(x=>x.id===id);
+  if(!o) return;
+  const r = o._raw || {};
+  const phone = r.phone ? String(r.phone) : '';
+  if(!phone){ showToast('Tiada nombor telefon untuk order ini'); return; }
+  let waNum = phone.replace(/[^0-9]/g,'');
+  if(waNum.startsWith('0')) waNum = '60' + waNum.slice(1);
+  else if(!waNum.startsWith('60')) waNum = '60' + waNum;
+
+  const items = r.items || [];
+  let sub = 0;
+  const lines = items.map(function(i){
+    const qty = Number(i.qty) || 1;
+    const lineTotal = parseFloat(i.price*qty || i.price || 0);
+    sub += lineTotal;
+    return `- ${i.name}${qty>1?' x'+qty:''}: RM ${lineTotal.toFixed(2)}`;
+  }).join('\n');
+  const postage = parseFloat(r.postage) || 0;
+  const totalStr = (o.total && String(o.total).indexOf('RM')>=0) ? o.total : 'RM ' + (sub+postage).toFixed(2);
+
+  const msg = `🧾 *RESIT PEMBELIAN — PixyoPrint*\n\nNo. Order: #${o.id}\nNama: ${o.name}\nTarikh: ${o.date}\n\n${lines || '- (tiada item)'}\n\nSubtotal: RM ${sub.toFixed(2)}\nPostage: ${postage>0?'RM '+postage.toFixed(2):'Percuma'}\n*JUMLAH: ${totalStr}*\n\nTerima kasih kerana membuat tempahan dengan PixyoPrint! 🙏`;
+
+  window.open('https://wa.me/' + waNum + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
 function waFollowUpPayment(id){
