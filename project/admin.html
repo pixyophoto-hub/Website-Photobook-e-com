@@ -3195,8 +3195,10 @@ function renderOverview(){
     { label:'Siap',            value: String(doneThisWeek),   trend:'—', trendColor:'#9aae90', icon:'ph-fill ph-check-circle',   iconBg:'#dde6d8', iconColor:'#4a5e3a' },
     { label:'Hasil Terkumpul', value:'RM '+totalRevenue.toFixed(2), trend:'—', trendColor:'#6f8466', icon:'ph-fill ph-money', iconBg:'#fef9ec', iconColor:'#b7860a' }
   ];
-  document.getElementById('kpi-cards').innerHTML = kpiLive.map(k=>`
-    <div class="card" style="padding:20px;">
+  document.getElementById('kpi-cards').innerHTML = kpiLive.map(k=>{
+    const clickable = k.label === 'Jumlah Order';
+    return `
+    <div class="card" style="padding:20px;${clickable?'cursor:pointer;':''}"${clickable?` onclick="goView('orders')"`:''}>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
         <div style="font-size:11px;font-weight:600;color:#8a7e72;text-transform:uppercase;letter-spacing:0.06em;">${k.label}</div>
         <div style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:${k.iconBg};color:${k.iconColor};"><i class="${k.icon}"></i></div>
@@ -3204,7 +3206,8 @@ function renderOverview(){
       <div class="serif-num" style="font-size:34px;color:#2d2520;line-height:1;">${k.value}</div>
       <div style="font-size:11px;color:${k.trendColor};margin-top:6px;font-weight:600;">${k.trend}</div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 
   renderSourceBreakdown();
 
