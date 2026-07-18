@@ -688,7 +688,7 @@ def chip_request(method, path, body=None):
     except Exception as e:
         return None, str(e)
 
-def chip_create_purchase(total, reference, success_redirect, failure_redirect, success_callback, name, email, whitelist=None):
+def chip_create_purchase(total, reference, success_redirect, failure_redirect, success_callback, name, email, whitelist=None, products=None):
     """Cipta purchase di CHIP. Amaun dalam SEN (integer). Pulangkan {ok, url, id}."""
     cfg = get_chip_cfg()
     if not cfg["secret_key"] or not cfg["brand_id"]:
@@ -698,7 +698,7 @@ def chip_create_purchase(total, reference, success_redirect, failure_redirect, s
         "client": {"email": email or "noemail@pixyoprint.com", "full_name": name or "Pelanggan"},
         "purchase": {
             "currency": "MYR",
-            "products": [{"name": "Pesanan PixyoPrint #" + reference,
+            "products": products if products else [{"name": "Pesanan PixyoPrint #" + reference,
                           "price": int(round(float(total) * 100)), "quantity": "1"}],
         },
         "reference": reference,
@@ -1774,8 +1774,32 @@ class Handler(SimpleHTTPRequestHandler):
             success_redirect = f"{scheme}://{host}/index.html?payment=return&ref={ref}&status=completed"
             failure_redirect = f"{scheme}://{host}/index.html?payment=return&ref={ref}&status=failed"
             callback_url = "" if is_local else f"{scheme}://{host}/api/chip-callback"
+            # Itemize invois CHIP ikut item sebenar order supaya pelanggan nampak apa yang dibeli
+            products = []
+            sum_cents = 0
+            for it in (order.get("items") or []):
+                nm = str(it.get("name", "") or "Item")[:120]
+                try:
+                    qty = max(1, int(float(it.get("qty", 1) or 1)))
+                except (TypeError, ValueError):
+                    qty = 1
+                try:
+                    price_cents = int(round(float(it.get("price", 0) or 0) * 100))
+                except (TypeError, ValueError):
+                    price_cents = 0
+                products.append({"name": nm, "price": price_cents, "quantity": str(qty)})
+                sum_cents += price_cents * qty
+            postage_cents = int(round(float(order.get("postage", 0) or 0) * 100))
+            if postage_cents > 0:
+                products.append({"name": "Postage", "price": postage_cents, "quantity": "1"})
+                sum_cents += postage_cents
+            total_cents = int(round(total * 100))
+            diff_cents = total_cents - sum_cents
+            if diff_cents != 0:
+                products.append({"name": "Diskaun" if diff_cents < 0 else "Pelarasan", "price": diff_cents, "quantity": "1"})
             result = chip_create_purchase(total, ref, success_redirect, failure_redirect, callback_url,
-                                          order.get("name", ""), order.get("email", ""))
+                                          order.get("name", ""), order.get("email", ""),
+                                          products=(products or None))
             if result["ok"]:
                 order["chip_id"] = result.get("id")
                 order["chip_url"] = result.get("url")

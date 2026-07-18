@@ -2031,6 +2031,29 @@ function submitManualOrder(){
     }).catch(()=>showToast('Gagal sambung ke server'));
 }
 
+function waFollowUpPayment(id){
+  const o = ORDERS.find(x=>x.id===id);
+  if(!o) return;
+  const phone = (o._raw && o._raw.phone) ? String(o._raw.phone) : '';
+  let waNum = phone.replace(/[^0-9]/g,'');
+  if(waNum.startsWith('0')) waNum = '60' + waNum.slice(1);
+  else if(!waNum.startsWith('60')) waNum = '60' + waNum;
+  const winRef = window.open('', '_blank');
+  showToast('Menjana link bayaran...');
+  fetch('/api/orders/' + encodeURIComponent(id) + '/repay', { method:'POST', headers: authHeaders() })
+    .then(r=>r.json()).then(res=>{
+      if(res.ok && res.url){
+        const waMsg = `Hai ${o.name}! Ini PixyoPrint 🙂 Nak follow up pembayaran untuk order #${o.id} (${o.pkg}) sebanyak ${o.total}.\n\nBoleh selesaikan pembayaran melalui link ini:\n${res.url}\n\nTerima kasih! 🙏`;
+        const waUrl = 'https://wa.me/' + waNum + '?text=' + encodeURIComponent(waMsg);
+        if(winRef) winRef.location.href = waUrl;
+        else window.open(waUrl, '_blank');
+      } else {
+        if(winRef) winRef.close();
+        showToast(res.error || 'Gagal jana link bayaran');
+      }
+    }).catch(()=>{ if(winRef) winRef.close(); showToast('Gagal sambung ke server'); });
+}
+
 function copyPayLink(ref){
   showToast('Menjana link bayaran...');
   fetch('/api/orders/' + encodeURIComponent(ref) + '/repay', { method:'POST', headers: authHeaders() })
@@ -2079,20 +2102,20 @@ function showOrderDetail(id){
   document.getElementById('od-id').textContent = o.id;
   document.getElementById('od-name').textContent = o.name;
   document.getElementById('od-email').textContent = o.email;
-  // Nombor WhatsApp — tambah kod negara (60) + pra-isi mesej follow-up pembayaran
+  // Nombor WhatsApp — tambah kod negara (60) + pra-isi mesej follow-up pembayaran (+ link invois CHIP jika belum bayar)
   const phone = (o._raw && o._raw.phone) ? String(o._raw.phone) : '';
   const phoneEl = document.getElementById('od-phone');
   if(phone){
-    let waNum = phone.replace(/[^0-9]/g,'');
-    if(waNum.startsWith('0')) waNum = '60' + waNum.slice(1);
-    else if(!waNum.startsWith('60')) waNum = '60' + waNum;
     const rawStatusForWa = (o._raw && o._raw.status) || o.status;
-    let waLink = 'https://wa.me/' + waNum;
-    if(rawStatusForWa === 'pending' || o.status === 'Menunggu Bayaran'){
-      const waMsg = `Hai ${o.name}! Ini PixyoPrint 🙂 Nak follow up pembayaran untuk order #${o.id} (${o.pkg}) sebanyak ${o.total}. Boleh bantu selesaikan bila-bila lapang ya, supaya kami boleh mula proses tempahan. Terima kasih! 🙏`;
-      waLink += '?text=' + encodeURIComponent(waMsg);
+    const isPending = rawStatusForWa === 'pending' || o.status === 'Menunggu Bayaran';
+    if(isPending){
+      phoneEl.innerHTML = `<i class="ph ph-whatsapp-logo" style="color:#25D366;"></i> <a href="#" onclick="waFollowUpPayment('${esc(o.id)}'); return false;" style="color:#2471a3;text-decoration:none;">${esc(phone)}</a>`;
+    } else {
+      let waNum = phone.replace(/[^0-9]/g,'');
+      if(waNum.startsWith('0')) waNum = '60' + waNum.slice(1);
+      else if(!waNum.startsWith('60')) waNum = '60' + waNum;
+      phoneEl.innerHTML = `<i class="ph ph-whatsapp-logo" style="color:#25D366;"></i> <a href="https://wa.me/${waNum}" target="_blank" rel="noopener" style="color:#2471a3;text-decoration:none;">${esc(phone)}</a>`;
     }
-    phoneEl.innerHTML = `<i class="ph ph-whatsapp-logo" style="color:#25D366;"></i> <a href="${waLink}" target="_blank" rel="noopener" style="color:#2471a3;text-decoration:none;">${esc(phone)}</a>`;
   } else {
     phoneEl.textContent = '';
   }
