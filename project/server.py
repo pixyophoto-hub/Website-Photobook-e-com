@@ -2221,6 +2221,36 @@ class Handler(SimpleHTTPRequestHandler):
                         if "poskod" in b: order["poskod"] = str(b["poskod"]).strip()[:10]
                         if "bandar" in b: order["bandar"] = str(b["bandar"]).strip()[:100]
                         if "negeri" in b: order["negeri"] = str(b["negeri"]).strip()[:100]
+                        if "items" in b and isinstance(b["items"], list):
+                            cleaned_items = []
+                            for it in b["items"]:
+                                if not isinstance(it, dict):
+                                    continue
+                                nm = str(it.get("name", "")).strip()[:120]
+                                if not nm:
+                                    continue
+                                try:
+                                    qty = max(1, int(float(it.get("qty", 1) or 1)))
+                                except (TypeError, ValueError):
+                                    qty = 1
+                                try:
+                                    price = round(float(it.get("price", 0) or 0), 2)
+                                except (TypeError, ValueError):
+                                    price = 0.0
+                                cleaned_items.append({"name": nm, "qty": qty, "price": price})
+                            if cleaned_items:
+                                order["items"] = cleaned_items
+                        if "medium" in b: order["medium"] = str(b["medium"]).strip()[:40]
+                        if "note" in b: order["note"] = str(b["note"]).strip()[:500]
+                        if "postage" in b:
+                            try: order["postage"] = round(float(b["postage"]), 2)
+                            except (TypeError, ValueError): pass
+                        if "subtotal" in b:
+                            try: order["subtotal"] = round(float(b["subtotal"]), 2)
+                            except (TypeError, ValueError): pass
+                        if "total" in b:
+                            try: order["total"] = round(float(b["total"]), 2)
+                            except (TypeError, ValueError): pass
                     break
             save_data(d)
             return self._json({"ok": True})

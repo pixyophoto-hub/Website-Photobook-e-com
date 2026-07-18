@@ -813,26 +813,48 @@ tbody tr{border-top:1px solid #f0e8df;}
         </div>
       </div>
       <div style="background:#faf8f5;border-radius:10px;padding:14px;">
-        <div style="font-size:11px;color:#9a8d80;font-weight:600;margin-bottom:10px;">ITEM TEMPAHAN</div>
-        <div id="od-items" style="display:flex;flex-direction:column;gap:8px;"></div>
-        <div id="od-medium-row" style="border-top:1px solid #e8e0d8;margin-top:12px;padding-top:12px;display:none;justify-content:space-between;align-items:center;">
-          <span style="font-size:13px;color:#6f6358;">Cara hantar gambar</span>
-          <span id="od-medium" style="font-size:13px;font-weight:600;color:#2d2520;"></span>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:11px;color:#9a8d80;font-weight:600;">ITEM TEMPAHAN</div>
+          <button id="od-items-edit-btn" onclick="toggleEditItems()" style="background:none;border:none;cursor:pointer;color:#a86d69;font-size:11px;font-weight:700;padding:2px 4px;display:flex;align-items:center;gap:4px;"><i class="ph ph-pencil-simple"></i> Edit</button>
         </div>
-        <div id="od-postage-row" style="margin-top:8px;display:none;justify-content:space-between;align-items:center;">
-          <span style="font-size:13px;color:#6f6358;">Postage</span>
-          <span id="od-postage" style="font-size:13px;font-weight:600;color:#2d2520;"></span>
+        <div id="od-items-view">
+          <div id="od-items" style="display:flex;flex-direction:column;gap:8px;"></div>
+          <div id="od-medium-row" style="border-top:1px solid #e8e0d8;margin-top:12px;padding-top:12px;display:none;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:#6f6358;">Cara hantar gambar</span>
+            <span id="od-medium" style="font-size:13px;font-weight:600;color:#2d2520;"></span>
+          </div>
+          <div id="od-postage-row" style="margin-top:8px;display:none;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:#6f6358;">Postage</span>
+            <span id="od-postage" style="font-size:13px;font-weight:600;color:#2d2520;"></span>
+          </div>
+          <div id="od-note-row" style="margin-top:10px;display:none;font-size:12px;color:#6f6358;line-height:1.6;border-top:1px dashed #e8e0d8;padding-top:10px;"></div>
+          <div style="border-top:1px solid #e8e0d8;margin-top:12px;padding-top:12px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;font-weight:600;color:#6f6358;">JUMLAH</span>
+            <span id="od-total" style="font-size:16px;font-weight:700;color:#a86d69;"></span>
+          </div>
+          <div style="border-top:1px solid #e8e0d8;margin-top:12px;padding-top:12px;">
+            <button id="od-chip-btn" onclick="checkChipAmount()" style="width:100%;padding:9px;background:#fff;border:1.5px solid #d8c8bc;border-radius:8px;font-size:12.5px;font-weight:700;color:#6f6358;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;">
+              <i class="ph ph-arrows-clockwise" style="color:#a86d69;"></i> Semak Amount Sebenar di CHIP
+            </button>
+            <div id="od-chip-result" style="display:none;margin-top:10px;font-size:12px;line-height:1.7;"></div>
+          </div>
         </div>
-        <div id="od-note-row" style="margin-top:10px;display:none;font-size:12px;color:#6f6358;line-height:1.6;border-top:1px dashed #e8e0d8;padding-top:10px;"></div>
-        <div style="border-top:1px solid #e8e0d8;margin-top:12px;padding-top:12px;display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-size:13px;font-weight:600;color:#6f6358;">JUMLAH</span>
-          <span id="od-total" style="font-size:16px;font-weight:700;color:#a86d69;"></span>
-        </div>
-        <div style="border-top:1px solid #e8e0d8;margin-top:12px;padding-top:12px;">
-          <button id="od-chip-btn" onclick="checkChipAmount()" style="width:100%;padding:9px;background:#fff;border:1.5px solid #d8c8bc;border-radius:8px;font-size:12.5px;font-weight:700;color:#6f6358;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;">
-            <i class="ph ph-arrows-clockwise" style="color:#a86d69;"></i> Semak Amount Sebenar di CHIP
-          </button>
-          <div id="od-chip-result" style="display:none;margin-top:10px;font-size:12px;line-height:1.7;"></div>
+        <div id="od-items-edit" style="display:none;flex-direction:column;gap:8px;">
+          <div id="od-ei-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+          <button type="button" onclick="addItemEditRow()" style="align-self:flex-start;background:none;border:none;color:#a86d69;font-size:12px;font-weight:700;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:4px;"><i class="ph ph-plus-circle"></i> Tambah Item</button>
+          <div style="display:flex;gap:7px;margin-top:2px;">
+            <input id="od-edit-medium" class="inp" placeholder="Cara hantar gambar" style="width:100%;box-sizing:border-box;font-size:12px;padding:7px 9px;">
+            <input id="od-edit-postage" class="inp" type="number" step="0.01" min="0" placeholder="Postage (RM)" style="width:130px;box-sizing:border-box;font-size:12px;padding:7px 9px;" oninput="recalcEditTotal()">
+          </div>
+          <textarea id="od-edit-note" class="inp" placeholder="Nota" rows="2" style="width:100%;box-sizing:border-box;font-size:12px;padding:7px 9px;resize:vertical;"></textarea>
+          <div style="border-top:1px solid #e8e0d8;margin-top:4px;padding-top:10px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;font-weight:600;color:#6f6358;">JUMLAH (dikira automatik)</span>
+            <span id="od-edit-total-preview" style="font-size:16px;font-weight:700;color:#a86d69;"></span>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:2px;">
+            <button onclick="saveItemsEdit()" class="btn-primary" style="flex:1;font-size:12px;padding:8px;border-radius:8px;">Simpan</button>
+            <button onclick="toggleEditItems()" style="flex:1;font-size:12px;padding:8px;border-radius:8px;background:#fff;border:1.5px solid #d8c8bc;color:#6f6358;cursor:pointer;">Batal</button>
+          </div>
         </div>
       </div>
       <div style="background:#faf8f5;border-radius:10px;padding:14px;">
@@ -2157,6 +2179,111 @@ function closeOrderModal(){
   _currentOrderId = null;
   document.getElementById('od-edit-mode').style.display = 'none';
   document.getElementById('od-view-mode').style.display = 'block';
+  document.getElementById('od-items-edit').style.display = 'none';
+  document.getElementById('od-items-view').style.display = 'block';
+}
+
+function itemEditRowHtml(i){
+  return `
+  <div class="od-ei-row" style="display:flex;gap:6px;align-items:center;">
+    <input class="inp od-ei-name" value="${esc(i.name||'')}" placeholder="Nama item" style="flex:2;font-size:12px;padding:6px 8px;" oninput="recalcEditTotal()">
+    <input class="inp od-ei-qty" type="number" min="1" value="${Number(i.qty)||1}" placeholder="Qty" style="width:52px;font-size:12px;padding:6px 6px;" oninput="recalcEditTotal()">
+    <input class="inp od-ei-price" type="number" step="0.01" min="0" value="${parseFloat(i.price)||0}" placeholder="Harga" style="width:82px;font-size:12px;padding:6px 6px;" oninput="recalcEditTotal()">
+    <button type="button" onclick="removeItemEditRow(this)" style="background:none;border:none;color:#c0554f;cursor:pointer;font-size:17px;padding:2px 6px;line-height:1;">&times;</button>
+  </div>`;
+}
+
+function addItemEditRow(){
+  document.getElementById('od-ei-list').insertAdjacentHTML('beforeend', itemEditRowHtml({name:'',qty:1,price:0}));
+}
+
+function removeItemEditRow(btn){
+  const list = document.getElementById('od-ei-list');
+  if(list.children.length <= 1){ showToast('Perlu sekurang-kurangnya 1 item'); return; }
+  btn.closest('.od-ei-row').remove();
+  recalcEditTotal();
+}
+
+function recalcEditTotal(){
+  const rows = document.querySelectorAll('#od-ei-list .od-ei-row');
+  let subtotal = 0;
+  rows.forEach(row=>{
+    const qty = parseFloat(row.querySelector('.od-ei-qty').value) || 0;
+    const price = parseFloat(row.querySelector('.od-ei-price').value) || 0;
+    subtotal += qty * price;
+  });
+  const postage = parseFloat(document.getElementById('od-edit-postage').value) || 0;
+  const o = ORDERS.find(x=>x.id===_currentOrderId);
+  const discount = parseFloat((o && o._raw && o._raw.discount) || 0) || 0;
+  const total = Math.max(0, subtotal + postage - discount);
+  document.getElementById('od-edit-total-preview').textContent = 'RM ' + total.toFixed(2);
+  return { subtotal, total };
+}
+
+function toggleEditItems(){
+  const view = document.getElementById('od-items-view');
+  const edit = document.getElementById('od-items-edit');
+  const editing = edit.style.display === 'flex';
+  if(editing){
+    edit.style.display = 'none';
+    view.style.display = 'block';
+    return;
+  }
+  const o = ORDERS.find(x=>x.id===_currentOrderId);
+  if(!o) return;
+  const r = o._raw || {};
+  const items = (r.items && r.items.length) ? r.items : [{name:'',qty:1,price:0}];
+  document.getElementById('od-ei-list').innerHTML = items.map(itemEditRowHtml).join('');
+  document.getElementById('od-edit-medium').value = r.medium || '';
+  document.getElementById('od-edit-postage').value = (r.postage !== undefined && r.postage !== null) ? r.postage : 0;
+  document.getElementById('od-edit-note').value = r.note || '';
+  recalcEditTotal();
+  view.style.display = 'none';
+  edit.style.display = 'flex';
+}
+
+function saveItemsEdit(){
+  const id = _currentOrderId;
+  if(!id) return;
+  const rows = document.querySelectorAll('#od-ei-list .od-ei-row');
+  const items = [];
+  rows.forEach(row=>{
+    const name = row.querySelector('.od-ei-name').value.trim();
+    const qty = Math.max(1, parseInt(row.querySelector('.od-ei-qty').value) || 1);
+    const price = parseFloat(row.querySelector('.od-ei-price').value) || 0;
+    if(name) items.push({ name, qty, price });
+  });
+  if(!items.length){ showToast('Perlu sekurang-kurangnya 1 item dengan nama'); return; }
+  const { subtotal, total } = recalcEditTotal();
+  const payload = {
+    items,
+    medium:   document.getElementById('od-edit-medium').value.trim(),
+    postage:  parseFloat(document.getElementById('od-edit-postage').value) || 0,
+    note:     document.getElementById('od-edit-note').value.trim(),
+    subtotal: Math.round(subtotal*100)/100,
+    total:    Math.round(total*100)/100,
+  };
+  fetch('/api/orders/' + encodeURIComponent(id), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(payload)
+  }).then(r=>r.json()).then(res=>{
+    if(res.ok){
+      const o = ORDERS.find(x=>x.id===id);
+      if(o){
+        Object.assign(o._raw, payload);
+        o.pkg = items.map(i=>i.name).join(', ') || '—';
+        o.total = 'RM ' + payload.total.toFixed(2);
+      }
+      showToast('Item tempahan dikemaskini');
+      document.getElementById('od-items-edit').style.display = 'none';
+      document.getElementById('od-items-view').style.display = 'block';
+      showOrderDetail(id);
+      renderOrders();
+    } else {
+      showToast(res.error || 'Gagal simpan');
+    }
+  }).catch(()=>showToast('Gagal sambung ke server'));
 }
 
 function toggleEditCustomer(){
