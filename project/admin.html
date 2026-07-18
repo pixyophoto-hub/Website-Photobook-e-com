@@ -77,7 +77,7 @@ tbody tr{border-top:1px solid #f0e8df;}
 @media(max-width:860px){
   .sidebar{width:64px;}
   .sidebar .label-text,.sidebar .nav-label,.sidebar .user-text{display:none;}
-  .grid-4{grid-template-columns:1fr 1fr!important;}
+  .grid-4{grid-template-columns:1fr!important;}
   .grid-3,.grid-2{grid-template-columns:1fr!important;}
   .split{grid-template-columns:1fr!important;}
 }
@@ -149,21 +149,9 @@ tbody tr{border-top:1px solid #f0e8df;}
           <div style="font-size:15px;font-weight:700;margin-bottom:16px;">Order Ikut Sumber</div>
           <div id="source-breakdown"></div>
         </div>
-        <div class="split" style="display:grid;grid-template-columns:1fr 340px;gap:20px;">
-          <div class="card" style="overflow-x:auto;">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #ede4d8;">
-              <div style="font-size:15px;font-weight:700;">Order Terkini</div>
-              <div style="font-size:12px;color:#a86d69;font-weight:600;cursor:pointer;" onclick="goView('orders')">Lihat semua <i class="ph ph-arrow-right"></i></div>
-            </div>
-            <table>
-              <thead><tr><th>Order</th><th>Pelanggan</th><th>Pakej</th><th>Status</th><th>Editor</th></tr></thead>
-              <tbody id="recent-orders"></tbody>
-            </table>
-          </div>
-          <div class="card" style="overflow-x:auto;">
-            <div style="padding:18px 22px;border-bottom:1px solid #ede4d8;font-size:15px;font-weight:700;">Beban Kerja Editor</div>
-            <div style="padding:14px 22px;" id="editor-workload"></div>
-          </div>
+        <div class="card" style="overflow-x:auto;">
+          <div style="padding:18px 22px;border-bottom:1px solid #ede4d8;font-size:15px;font-weight:700;">Beban Kerja Editor</div>
+          <div style="padding:14px 22px;" id="editor-workload"></div>
         </div>
       </div>
 
@@ -3250,16 +3238,6 @@ function renderOverview(){
   }).join('');
 
   renderSourceBreakdown();
-
-  document.getElementById('recent-orders').innerHTML = ORDERS.slice(0,6).map(o=>`
-    <tr>
-      <td style="padding:12px 16px;font-size:12px;font-weight:600;color:#a86d69;">${esc(o.id)}</td>
-      <td style="padding:12px 16px;font-size:13px;color:#2d2520;">${esc(o.name)}</td>
-      <td style="padding:12px 16px;font-size:12px;color:#6f6358;">${esc(o.pkg)}</td>
-      <td style="padding:12px 16px;">${statusPill(o.status)}</td>
-      <td style="padding:12px 16px;font-size:12px;color:#6f6358;">${esc(o.editor)}</td>
-    </tr>
-  `).join('') || '<tr><td colspan="5" style="padding:20px 16px;text-align:center;font-size:13px;color:#9a8d80;">Tiada order lagi.</td></tr>';
 
   if(!EDITORS.length){
     document.getElementById('editor-workload').innerHTML = '<div style="font-size:12px;color:#9a8d80;padding:12px 0;">Belum ada editor — tambah editor di bahagian Urus Editor.</div>';
