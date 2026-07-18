@@ -2035,20 +2035,20 @@ function sendReceiptWhatsApp(){
   if(waNum.startsWith('0')) waNum = '60' + waNum.slice(1);
   else if(!waNum.startsWith('60')) waNum = '60' + waNum;
 
-  const items = r.items || [];
-  let sub = 0;
-  const lines = items.map(function(i){
-    const qty = Number(i.qty) || 1;
-    const lineTotal = parseFloat(i.price*qty || i.price || 0);
-    sub += lineTotal;
-    return `- ${i.name}${qty>1?' x'+qty:''}: RM ${lineTotal.toFixed(2)}`;
-  }).join('\n');
-  const postage = parseFloat(r.postage) || 0;
-  const totalStr = (o.total && String(o.total).indexOf('RM')>=0) ? o.total : 'RM ' + (sub+postage).toFixed(2);
-
-  const msg = `🧾 *RESIT PEMBELIAN — PixyoPrint*\n\nNo. Order: #${o.id}\nNama: ${o.name}\nTarikh: ${o.date}\n\n${lines || '- (tiada item)'}\n\nSubtotal: RM ${sub.toFixed(2)}\nPostage: ${postage>0?'RM '+postage.toFixed(2):'Percuma'}\n*JUMLAH: ${totalStr}*\n\nTerima kasih kerana membuat tempahan dengan PixyoPrint! 🙏`;
-
-  window.open('https://wa.me/' + waNum + '?text=' + encodeURIComponent(msg), '_blank');
+  const winRef = window.open('', '_blank');
+  showToast('Menjana link resit...');
+  fetch('/api/orders/' + encodeURIComponent(id) + '/receipt-link', { method:'POST', headers: authHeaders() })
+    .then(r=>r.json()).then(res=>{
+      if(res.ok && res.url){
+        const msg = `Hai ${o.name}! Ini resit rasmi untuk order #${o.id} anda dari PixyoPrint 🧾\n\n${res.url}\n\nTerima kasih kerana membuat tempahan dengan kami! 🙏`;
+        const waUrl = 'https://wa.me/' + waNum + '?text=' + encodeURIComponent(msg);
+        if(winRef) winRef.location.href = waUrl;
+        else window.open(waUrl, '_blank');
+      } else {
+        if(winRef) winRef.close();
+        showToast(res.error || 'Gagal jana link resit');
+      }
+    }).catch(()=>{ if(winRef) winRef.close(); showToast('Gagal sambung ke server'); });
 }
 
 function waFollowUpPayment(id){

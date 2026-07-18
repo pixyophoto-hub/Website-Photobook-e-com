@@ -1468,6 +1468,29 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json({"ok": False, "error": "unauthorized"}, 401)
             return self._json({"ok": True, "editors": load_data().get("editors", [])})
 
+        if self.path.startswith("/api/receipt"):
+            qs = urllib.parse.parse_qs(self.path.split("?", 1)[1] if "?" in self.path else "")
+            ref = (qs.get("ref") or [""])[0]
+            token = (qs.get("token") or [""])[0]
+            orders = load_data().get("orders", [])
+            order = next((o for o in orders if o.get("reference") == ref), None)
+            # SECURITY: token rawak wajib sepadan — reference pendek sahaja tak cukup utk akses resit
+            if not order or not token or not hmac_lib.compare_digest(str(order.get("receipt_token") or ""), token):
+                return self._json({"ok": False, "error": "Resit tidak ditemui"}, 404)
+            items = order.get("items") or []
+            return self._json({
+                "ok": True,
+                "reference": order.get("reference"),
+                "name": order.get("name", ""),
+                "date": order.get("created_at", ""),
+                "status": order.get("status", ""),
+                "items": [{"name": it.get("name", ""), "qty": it.get("qty", 1), "price": it.get("price", 0)} for it in items],
+                "subtotal": order.get("subtotal", 0),
+                "postage": order.get("postage", 0),
+                "discount": order.get("discount", 0),
+                "total": order.get("total", 0),
+            })
+
         if self.path.startswith("/api/order-status"):
             ref = self.path.split("ref=")[-1] if "ref=" in self.path else ""
             orders = load_data().get("orders", [])
@@ -1806,6 +1829,23 @@ class Handler(SimpleHTTPRequestHandler):
                 save_data(d)
                 return self._json({"ok": True, "url": result["url"]})
             return self._json({"ok": False, "error": result.get("error", "Gagal jana link")}, 502)
+
+        if self.path.startswith("/api/orders/") and self.path.endswith("/receipt-link"):
+            if not self._is_admin():
+                return self._json({"ok": False, "error": "unauthorized"}, 401)
+            ref = self.path[len("/api/orders/"):-len("/receipt-link")]
+            d = load_data()
+            order = next((o for o in d.get("orders", []) if o.get("reference") == ref), None)
+            if not order:
+                return self._json({"ok": False, "error": "Order tidak dijumpai"}, 404)
+            # Token rawak panjang — cegah tekaan reference pendek (6 aksara) daripada dedah resit pelanggan lain
+            if not order.get("receipt_token"):
+                order["receipt_token"] = secrets.token_hex(16)
+                save_data(d)
+            host = self.headers.get("Host", f"localhost:{PORT}")
+            scheme = "http" if ("localhost" in host or "127.0.0.1" in host) else "https"
+            url = f"{scheme}://{host}/receipt.html?ref={ref}&token={order['receipt_token']}"
+            return self._json({"ok": True, "url": url})
 
         if self.path.startswith("/api/orders/") and self.path.endswith("/ep-rates"):
             if not self._user():
