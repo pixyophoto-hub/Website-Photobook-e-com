@@ -842,11 +842,20 @@ tbody tr{border-top:1px solid #f0e8df;}
         <div id="od-items-edit" style="display:none;flex-direction:column;gap:8px;">
           <div id="od-ei-list" style="display:flex;flex-direction:column;gap:6px;"></div>
           <button type="button" onclick="addItemEditRow()" style="align-self:flex-start;background:none;border:none;color:#a86d69;font-size:12px;font-weight:700;cursor:pointer;padding:4px 0;display:flex;align-items:center;gap:4px;"><i class="ph ph-plus-circle"></i> Tambah Item</button>
-          <div style="display:flex;gap:7px;margin-top:2px;">
-            <input id="od-edit-medium" class="inp" placeholder="Cara hantar gambar" style="width:100%;box-sizing:border-box;font-size:12px;padding:7px 9px;">
-            <input id="od-edit-postage" class="inp" type="number" step="0.01" min="0" placeholder="Postage (RM)" style="width:130px;box-sizing:border-box;font-size:12px;padding:7px 9px;" oninput="recalcEditTotal()">
+          <div style="display:flex;gap:7px;margin-top:6px;">
+            <div style="flex:1;">
+              <div style="font-size:10px;color:#b3a89c;font-weight:700;letter-spacing:.5px;margin-bottom:4px;">PLATFORM HANTAR GAMBAR</div>
+              <input id="od-edit-medium" class="inp" placeholder="cth: WhatsApp, Telegram, Google Drive" style="width:100%;box-sizing:border-box;font-size:12px;padding:7px 9px;">
+            </div>
+            <div style="width:130px;">
+              <div style="font-size:10px;color:#b3a89c;font-weight:700;letter-spacing:.5px;margin-bottom:4px;">POSTAGE (RM)</div>
+              <input id="od-edit-postage" class="inp" type="number" step="0.01" min="0" style="width:100%;box-sizing:border-box;font-size:12px;padding:7px 9px;" oninput="recalcEditTotal()">
+            </div>
           </div>
-          <textarea id="od-edit-note" class="inp" placeholder="Nota" rows="2" style="width:100%;box-sizing:border-box;font-size:12px;padding:7px 9px;resize:vertical;"></textarea>
+          <div>
+            <div style="font-size:10px;color:#b3a89c;font-weight:700;letter-spacing:.5px;margin-bottom:4px;">NOTA</div>
+            <textarea id="od-edit-note" class="inp" placeholder="Nota" rows="2" style="width:100%;box-sizing:border-box;font-size:12px;padding:7px 9px;resize:vertical;"></textarea>
+          </div>
           <div style="border-top:1px solid #e8e0d8;margin-top:4px;padding-top:10px;display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:13px;font-weight:600;color:#6f6358;">JUMLAH (dikira automatik)</span>
             <span id="od-edit-total-preview" style="font-size:16px;font-weight:700;color:#a86d69;"></span>
@@ -2070,12 +2079,20 @@ function showOrderDetail(id){
   document.getElementById('od-id').textContent = o.id;
   document.getElementById('od-name').textContent = o.name;
   document.getElementById('od-email').textContent = o.email;
-  // Nombor WhatsApp — jadikan pautan boleh klik jika ada
+  // Nombor WhatsApp — tambah kod negara (60) + pra-isi mesej follow-up pembayaran
   const phone = (o._raw && o._raw.phone) ? String(o._raw.phone) : '';
   const phoneEl = document.getElementById('od-phone');
   if(phone){
-    const waNum = phone.replace(/[^0-9]/g,'');
-    phoneEl.innerHTML = `<i class="ph ph-whatsapp-logo" style="color:#25D366;"></i> <a href="https://wa.me/${esc(waNum)}" target="_blank" rel="noopener" style="color:#2471a3;text-decoration:none;">${esc(phone)}</a>`;
+    let waNum = phone.replace(/[^0-9]/g,'');
+    if(waNum.startsWith('0')) waNum = '60' + waNum.slice(1);
+    else if(!waNum.startsWith('60')) waNum = '60' + waNum;
+    const rawStatusForWa = (o._raw && o._raw.status) || o.status;
+    let waLink = 'https://wa.me/' + waNum;
+    if(rawStatusForWa === 'pending' || o.status === 'Menunggu Bayaran'){
+      const waMsg = `Hai ${o.name}! Ini PixyoPrint 🙂 Nak follow up pembayaran untuk order #${o.id} (${o.pkg}) sebanyak ${o.total}. Boleh bantu selesaikan bila-bila lapang ya, supaya kami boleh mula proses tempahan. Terima kasih! 🙏`;
+      waLink += '?text=' + encodeURIComponent(waMsg);
+    }
+    phoneEl.innerHTML = `<i class="ph ph-whatsapp-logo" style="color:#25D366;"></i> <a href="${waLink}" target="_blank" rel="noopener" style="color:#2471a3;text-decoration:none;">${esc(phone)}</a>`;
   } else {
     phoneEl.textContent = '';
   }
