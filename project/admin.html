@@ -779,12 +779,32 @@ tbody tr{border-top:1px solid #f0e8df;}
     <div style="padding:20px 24px;display:flex;flex-direction:column;gap:16px;">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div style="background:#faf8f5;border-radius:10px;padding:14px;">
-          <div style="font-size:11px;color:#9a8d80;font-weight:600;margin-bottom:4px;">PELANGGAN</div>
-          <div id="od-name" style="font-size:14px;font-weight:700;color:#2d2520;"></div>
-          <div id="od-email" style="font-size:12px;color:#9a8d80;margin-top:2px;"></div>
-          <div id="od-phone" style="font-size:12px;color:#9a8d80;margin-top:2px;"></div>
-          <div style="font-size:10px;color:#b3a89c;font-weight:700;letter-spacing:.5px;margin-top:10px;">ALAMAT</div>
-          <div id="od-address" style="font-size:12px;color:#473f38;line-height:1.5;margin-top:2px;"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <div style="font-size:11px;color:#9a8d80;font-weight:600;">PELANGGAN</div>
+            <button id="od-edit-btn" onclick="toggleEditCustomer()" style="background:none;border:none;cursor:pointer;color:#a86d69;font-size:11px;font-weight:700;padding:2px 4px;display:flex;align-items:center;gap:4px;"><i class="ph ph-pencil-simple"></i> Edit</button>
+          </div>
+          <div id="od-view-mode">
+            <div id="od-name" style="font-size:14px;font-weight:700;color:#2d2520;"></div>
+            <div id="od-email" style="font-size:12px;color:#9a8d80;margin-top:2px;"></div>
+            <div id="od-phone" style="font-size:12px;color:#9a8d80;margin-top:2px;"></div>
+            <div style="font-size:10px;color:#b3a89c;font-weight:700;letter-spacing:.5px;margin-top:10px;">ALAMAT</div>
+            <div id="od-address" style="font-size:12px;color:#473f38;line-height:1.5;margin-top:2px;"></div>
+          </div>
+          <div id="od-edit-mode" style="display:none;flex-direction:column;gap:7px;">
+            <input id="od-edit-name" class="inp" placeholder="Nama" style="width:100%;box-sizing:border-box;font-size:12px;padding:7px 9px;">
+            <input id="od-edit-email" class="inp" placeholder="Email" style="width:100%;box-sizing:border-box;font-size:12px;padding:7px 9px;">
+            <input id="od-edit-phone" class="inp" placeholder="No. Telefon" style="width:100%;box-sizing:border-box;font-size:12px;padding:7px 9px;">
+            <input id="od-edit-alamat" class="inp" placeholder="Alamat" style="width:100%;box-sizing:border-box;font-size:12px;padding:7px 9px;">
+            <div style="display:flex;gap:7px;">
+              <input id="od-edit-poskod" class="inp" placeholder="Poskod" style="width:100%;box-sizing:border-box;font-size:12px;padding:7px 9px;">
+              <input id="od-edit-bandar" class="inp" placeholder="Bandar" style="width:100%;box-sizing:border-box;font-size:12px;padding:7px 9px;">
+            </div>
+            <input id="od-edit-negeri" class="inp" placeholder="Negeri" style="width:100%;box-sizing:border-box;font-size:12px;padding:7px 9px;">
+            <div style="display:flex;gap:8px;margin-top:2px;">
+              <button onclick="saveCustomerEdit()" class="btn-primary" style="flex:1;font-size:12px;padding:8px;border-radius:8px;">Simpan</button>
+              <button onclick="toggleEditCustomer()" style="flex:1;font-size:12px;padding:8px;border-radius:8px;background:#fff;border:1.5px solid #d8c8bc;color:#6f6358;cursor:pointer;">Batal</button>
+            </div>
+          </div>
         </div>
         <div style="background:#faf8f5;border-radius:10px;padding:14px;">
           <div style="font-size:11px;color:#9a8d80;font-weight:600;margin-bottom:4px;">TARIKH ORDER</div>
@@ -2135,6 +2155,67 @@ function showOrderDetail(id){
 function closeOrderModal(){
   document.getElementById('order-modal-overlay').style.display = 'none';
   _currentOrderId = null;
+  document.getElementById('od-edit-mode').style.display = 'none';
+  document.getElementById('od-view-mode').style.display = 'block';
+}
+
+function toggleEditCustomer(){
+  const view = document.getElementById('od-view-mode');
+  const edit = document.getElementById('od-edit-mode');
+  const editing = edit.style.display === 'flex';
+  if(editing){
+    edit.style.display = 'none';
+    view.style.display = 'block';
+    return;
+  }
+  const o = ORDERS.find(x=>x.id===_currentOrderId);
+  if(!o) return;
+  const r = o._raw || {};
+  document.getElementById('od-edit-name').value   = r.name || '';
+  document.getElementById('od-edit-email').value  = r.email || '';
+  document.getElementById('od-edit-phone').value  = r.phone || '';
+  document.getElementById('od-edit-alamat').value = r.alamat || '';
+  document.getElementById('od-edit-poskod').value = r.poskod || '';
+  document.getElementById('od-edit-bandar').value = r.bandar || '';
+  document.getElementById('od-edit-negeri').value = r.negeri || '';
+  view.style.display = 'none';
+  edit.style.display = 'flex';
+}
+
+function saveCustomerEdit(){
+  const id = _currentOrderId;
+  if(!id) return;
+  const payload = {
+    name:   document.getElementById('od-edit-name').value.trim(),
+    email:  document.getElementById('od-edit-email').value.trim(),
+    phone:  document.getElementById('od-edit-phone').value.trim(),
+    alamat: document.getElementById('od-edit-alamat').value.trim(),
+    poskod: document.getElementById('od-edit-poskod').value.trim(),
+    bandar: document.getElementById('od-edit-bandar').value.trim(),
+    negeri: document.getElementById('od-edit-negeri').value.trim(),
+  };
+  if(!payload.name){ showToast('Nama tidak boleh kosong'); return; }
+  fetch('/api/orders/' + encodeURIComponent(id), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(payload)
+  }).then(r=>r.json()).then(res=>{
+    if(res.ok){
+      const o = ORDERS.find(x=>x.id===id);
+      if(o){
+        Object.assign(o._raw, payload);
+        o.name = payload.name;
+        o.email = payload.email || '—';
+      }
+      showToast('Maklumat pelanggan dikemaskini');
+      document.getElementById('od-edit-mode').style.display = 'none';
+      document.getElementById('od-view-mode').style.display = 'block';
+      showOrderDetail(id);
+      renderOrders();
+    } else {
+      showToast(res.error || 'Gagal simpan');
+    }
+  }).catch(()=>showToast('Gagal sambung ke server'));
 }
 
 // ── EasyParcel booking dari order detail ──────────────────

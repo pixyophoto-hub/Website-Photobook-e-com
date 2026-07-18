@@ -2214,6 +2214,13 @@ class Handler(SimpleHTTPRequestHandler):
                     else:
                         if "editor" in b: order["editor"] = b["editor"]
                         if "status" in b: order["status"] = b["status"]
+                        if "name" in b: order["name"] = str(b["name"]).strip()[:120]
+                        if "email" in b: order["email"] = str(b["email"]).strip()[:254]
+                        if "phone" in b: order["phone"] = str(b["phone"]).strip()[:30]
+                        if "alamat" in b: order["alamat"] = str(b["alamat"]).strip()[:300]
+                        if "poskod" in b: order["poskod"] = str(b["poskod"]).strip()[:10]
+                        if "bandar" in b: order["bandar"] = str(b["bandar"]).strip()[:100]
+                        if "negeri" in b: order["negeri"] = str(b["negeri"]).strip()[:100]
                     break
             save_data(d)
             return self._json({"ok": True})
