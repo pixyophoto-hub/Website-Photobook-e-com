@@ -285,7 +285,7 @@ def tg_parse_order(text):
     """Parse mesej /order berlabel. Pulang dict atau None."""
     if not text or not text.strip().lower().startswith("/order"):
         return None
-    order = {"name": "", "phone": "", "email": "", "alamat": "", "note": "", "items": []}
+    order = {"name": "", "phone": "", "email": "", "alamat": "", "note": "", "postage": 0.0, "items": []}
     for raw in text.splitlines():
         line = raw.strip()
         if not line or line.lower().startswith("/order") or ":" not in line:
@@ -302,6 +302,9 @@ def tg_parse_order(text):
             order["alamat"] = val[:300]
         elif key in ("nota", "note", "catatan"):
             order["note"] = val[:500]
+        elif key in ("postage", "penghantaran", "pos"):
+            try: order["postage"] = max(0.0, float(val))
+            except (TypeError, ValueError): order["postage"] = 0.0
         elif key in ("item", "produk", "pakej"):
             parts = [p.strip() for p in val.split("|")]
             nm = parts[0][:160]
@@ -321,8 +324,8 @@ def tg_parse_order(text):
 
 _TG_HELP = ("Format order:\n/order\nNama: Siti Aminah\nTelefon: 0123456789\n"
             "Item: Photobook 8x8 Hardcover | 1 | 125\nItem: Add-on Layout | 1 | 4\n"
-            "Alamat: No 12, Jalan Mawar, 43000 Kajang, Selangor\nNota: dah bayar penuh\n\n"
-            "(Lampirkan gambar resit sekali — akan disimpan.)")
+            "Alamat: No 12, Jalan Mawar, 43000 Kajang, Selangor\nPostage: 10\nNota: dah bayar penuh\n\n"
+            "(Postage pilihan — biar kosong jika percuma. Lampirkan gambar resit sekali — akan disimpan.)")
 
 def tg_handle_update(update):
     try:
@@ -373,11 +376,13 @@ def tg_handle_update(update):
 
         d = load_data()
         subtotal = sum(it["price"] * it["qty"] for it in parsed["items"])
+        postage = parsed.get("postage", 0.0) or 0.0
+        total = subtotal + postage
         ref = gen_order_ref({o.get("reference") for o in d.get("orders", [])})
         order = {
             "reference": ref, "source": "telegram", "manual": True, "status": "completed",
-            "total": round(subtotal, 2), "subtotal": round(subtotal, 2),
-            "discount": 0, "postage": 0, "voucher": "",
+            "total": round(total, 2), "subtotal": round(subtotal, 2),
+            "discount": 0, "postage": round(postage, 2), "voucher": "",
             "name": parsed["name"], "email": parsed["email"], "phone": parsed["phone"],
             "alamat": parsed["alamat"], "poskod": "", "bandar": "", "negeri": "",
             "medium": "Telegram", "note": parsed["note"], "receipt_url": receipt_url,
@@ -390,7 +395,7 @@ def tg_handle_update(update):
         d.setdefault("orders", []).append(order)
         save_data(d)
         tg_send(chat_id, "✅ Order masuk sistem!\nNo: #" + ref + "\nNama: " + parsed["name"] +
-                "\nJumlah: RM " + ("%.2f" % subtotal) +
+                "\nJumlah: RM " + ("%.2f" % total) +
                 (("\nResit: disimpan ✓") if receipt_url else "\n(Tiada resit dilampirkan)"))
     except Exception as e:
         print("[telegram] handle error:", e)
