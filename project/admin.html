@@ -722,8 +722,8 @@ tbody tr{border-top:1px solid #f0e8df;}
 
             <div style="background:#f5f0eb;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:11.5px;color:#6f6358;line-height:1.7;">
               <b>Format order dalam Telegram:</b><br>
-              <code style="font-size:11px;">/order<br>Nama: Siti Aminah<br>Telefon: 0123456789<br>Item: Photobook 8x8 Hardcover | 1 | 125<br>Item: Add-on Layout | 1 | 4<br>Alamat: No 12, Kajang, Selangor<br>Postage: 10<br>Nota: dah bayar penuh</code><br>
-              <span style="color:#8a7e72;">Item = <b>nama | kuantiti | harga</b>. Postage = pilihan, biar kosong jika percuma (jangan letak sebagai Item). Lampirkan gambar resit sekali — akan disimpan.</span>
+              <code style="font-size:11px;">/order<br>Nama: Siti Aminah<br>Telefon: 0123456789<br>Item: Photobook 8x8 Hardcover | 1 | 125<br>Item: Add-on Layout | 1 | 4<br>Alamat: No 12, Kajang, Selangor<br>Postage: 10<br>Medium: WhatsApp<br>Nota: dah bayar penuh</code><br>
+              <span style="color:#8a7e72;">Item = <b>nama | kuantiti | harga</b>. Postage = pilihan, biar kosong jika percuma (jangan letak sebagai Item). Medium = cara hantar gambar (pilihan, default "Telegram" jika tak diisi).</span>
             </div>
 
             <div style="display:flex;justify-content:flex-end;">
@@ -3249,11 +3249,16 @@ function renderOverview(){
   const weekStart = new Date(now); weekStart.setDate(now.getDate()-now.getDay());
   const doneThisWeek = ORDERS.filter(o=>o.status==='Siap').length;
   const totalRevenue = ORDERS.filter(o=>o.status!=='Menunggu Bayaran').reduce((s,o)=>s+parseFloat((o._raw&&o._raw.total)||0),0);
+  const todayStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  const todaySales = ORDERS.filter(o=>{
+    const ts = o._raw && o._raw.created_ts;
+    return ts && ts.slice(0,10)===todayStr && o.status!=='Menunggu Bayaran';
+  }).reduce((s,o)=>s+parseFloat((o._raw&&o._raw.total)||0),0);
   const kpiLive = [
     { label:'Jumlah Order',    value: String(total),          trend:'—', trendColor:'#6f8466', icon:'ph-fill ph-clipboard-text', iconBg:'#f3e0dc', iconColor:'#a86d69' },
     { label:'Dalam Proses',    value: String(inProgress),     trend:'—', trendColor:'#c98a86', icon:'ph-fill ph-spinner',        iconBg:'#eef4fb', iconColor:'#2471a3' },
     { label:'Siap',            value: String(doneThisWeek),   trend:'—', trendColor:'#9aae90', icon:'ph-fill ph-check-circle',   iconBg:'#dde6d8', iconColor:'#4a5e3a' },
-    { label:'Hasil Terkumpul', value:'RM '+totalRevenue.toFixed(2), trend:'—', trendColor:'#6f8466', icon:'ph-fill ph-money', iconBg:'#fef9ec', iconColor:'#b7860a' }
+    { label:'Hasil Terkumpul', value:'RM '+totalRevenue.toFixed(2), trend:'RM '+todaySales.toFixed(2)+' jualan hari ini', trendColor:'#6f8466', icon:'ph-fill ph-money', iconBg:'#fef9ec', iconColor:'#b7860a' }
   ];
   document.getElementById('kpi-cards').innerHTML = kpiLive.map(k=>{
     const clickable = k.label === 'Jumlah Order';
