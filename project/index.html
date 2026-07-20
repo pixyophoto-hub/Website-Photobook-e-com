@@ -1707,22 +1707,24 @@ function renderWedding(){
 }
 
 // ── Cuci Gambar ──────────
+// pkgName = nama produk kena SAMA PERSIS macam yang ditambah di Admin > Tetapan > Produk,
+// supaya "Beli di Website" boleh padankan harga & sambung ke Troli/Checkout sebenar.
 const CUCI_PRODUCTS = [
-  { id:'polaroid', name:'Polaroid',     unitPrice:0.30, min:100, specs:['Kertas Glossy/Matte'] },
-  { id:'2r',       name:'2R (6x9cm)',   unitPrice:0.30, min:100, specs:['Kertas Glossy/Matte'] },
-  { id:'3r',       name:'3R (9x13cm)',  unitPrice:0.60, min:50,  specs:['Kertas Glossy/Matte'] },
-  { id:'4r',       name:'4R (10x15cm)', unitPrice:1.00, min:30,  specs:['Kertas Glossy/Matte'] },
-  { id:'5r',       name:'5R (13x18cm)', unitPrice:1.50, min:20,  specs:['Kertas Glossy/Matte'] },
-  { id:'6r',       name:'6R (15x20cm)', unitPrice:1.90, min:20,  specs:['Kertas Glossy/Matte'] },
-  { id:'a4',       name:'A4',           unitPrice:5.00, min:6,   specs:['Kertas Glossy/Matte'] },
-  { id:'a3',       name:'A3',           unitPrice:10.00, min:3,  specs:['Kertas Glossy/Matte'] },
+  { id:'polaroid', name:'Polaroid',     pkgName:'Cuci Gambar Polaroid', unitPrice:0.30,  min:100, specs:['Kertas Glossy/Matte'] },
+  { id:'2r',       name:'2R (6x9cm)',   pkgName:'Cuci Gambar 2R',       unitPrice:0.30,  min:100, specs:['Kertas Glossy/Matte'] },
+  { id:'3r',       name:'3R (9x13cm)',  pkgName:'Cuci Gambar 3R',       unitPrice:0.60,  min:50,  specs:['Kertas Glossy/Matte'] },
+  { id:'4r',       name:'4R (10x15cm)', pkgName:'Cuci Gambar 4R',       unitPrice:1.00,  min:30,  specs:['Kertas Glossy/Matte'] },
+  { id:'5r',       name:'5R (13x18cm)', pkgName:'Cuci Gambar 5R',       unitPrice:1.50,  min:20,  specs:['Kertas Glossy/Matte'] },
+  { id:'6r',       name:'6R (15x20cm)', pkgName:'Cuci Gambar 6R',       unitPrice:1.90,  min:20,  specs:['Kertas Glossy/Matte'] },
+  { id:'a4',       name:'A4',           pkgName:'Cuci Gambar A4',       unitPrice:5.00,  min:6,   specs:['Kertas Glossy/Matte'] },
+  { id:'a3',       name:'A3',           pkgName:'Cuci Gambar A3',       unitPrice:10.00, min:3,   specs:['Kertas Glossy/Matte'] },
 ];
 function renderCuci(){
   const grid = document.getElementById('cuci-grid');
   if(!grid) return;
   grid.innerHTML = CUCI_PRODUCTS.map(p=>{
     const img = `<div style="width:100%;aspect-ratio:1/1;background:repeating-linear-gradient(45deg,#efe4e2,#efe4e2 12px,#e8dad7 12px,#e8dad7 24px);display:flex;align-items:center;justify-content:center;color:#c9a9a4;"><i class="ph ph-image" style="font-size:40px;"></i></div>`;
-    return `<div class="cuci-item" data-id="${escA(p.id)}" data-name="${escA(p.name)}" data-price="${p.unitPrice}" data-min="${p.min}" style="background:#fffdfa;border:1px solid #ede4d8;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;">
+    return `<div class="cuci-item" data-id="${escA(p.id)}" data-name="${escA(p.name)}" data-pkgname="${escA(p.pkgName)}" data-price="${p.unitPrice}" data-min="${p.min}" style="background:#fffdfa;border:1px solid #ede4d8;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;">
       ${img}
       <div style="padding:16px 18px;display:flex;flex-direction:column;flex:1;">
         <div style="font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;color:#2d2520;">${escA(p.name)}</div>
@@ -1737,7 +1739,10 @@ function renderCuci(){
           <button type="button" onclick="cuciStep(this,1)" style="width:34px;height:34px;flex:none;border:1px solid #e3d8cb;background:#fff;border-radius:8px;font-size:16px;font-weight:700;color:#6f6358;cursor:pointer;">+</button>
         </div>
         <div class="cuci-subtotal" style="text-align:center;font-size:12.5px;color:#8a7e72;margin-bottom:12px;">Jumlah: <b style="color:#2d2520;">RM ${(p.unitPrice*p.min).toFixed(2)}</b></div>
-        <button type="button" onclick="cuciOrder(this)" style="text-align:center;background:#c98a86;color:#fff;border:none;text-decoration:none;font-size:13.5px;font-weight:600;padding:11px;border-radius:8px;cursor:pointer;">Tempah via WhatsApp</button>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button type="button" onclick="cuciBuyOnWebsite(this)" style="text-align:center;background:#2d2520;color:#fff;border:none;font-size:13.5px;font-weight:600;padding:11px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><i class="ph ph-credit-card"></i> Beli di Website</button>
+          <button type="button" onclick="cuciOrder(this)" style="text-align:center;background:#fff;color:#2d2520;border:1.5px solid #d8c8bc;font-size:13.5px;font-weight:600;padding:10px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><i class="ph ph-whatsapp-logo" style="color:#25D366;"></i> Tempah via WhatsApp</button>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -1754,14 +1759,13 @@ function cuciStep(btn, delta){
 function cuciRecalc(item){
   const input = item.querySelector('.cuci-qty');
   const price = parseFloat(item.dataset.price) || 0;
-  const min = parseInt(item.dataset.min, 10) || 1;
   let qty = parseInt(input.value, 10) || 0;
   if(qty < 0) qty = 0;
   const sub = item.querySelector('.cuci-subtotal b');
   if(sub) sub.textContent = 'RM ' + (price*qty).toFixed(2);
 }
-function cuciOrder(btn){
-  const item = btn.closest('.cuci-item');
+// Sahkan kuantiti cukup minimum; pulangkan qty sah atau null jika tak cukup (auto-betulkan + reminder)
+function cuciValidateQty(item){
   const input = item.querySelector('.cuci-qty');
   const min = parseInt(item.dataset.min, 10) || 1;
   const qty = parseInt(input.value, 10) || 0;
@@ -1769,12 +1773,36 @@ function cuciOrder(btn){
     showToast(`Minimum tempahan untuk ${item.dataset.name} ialah ${min} keping. Sila tambah kuantiti.`);
     input.value = min;
     cuciRecalc(item);
-    return;
+    return null;
   }
+  return qty;
+}
+function cuciOrder(btn){
+  const item = btn.closest('.cuci-item');
+  const qty = cuciValidateQty(item);
+  if(qty === null) return;
   const price = parseFloat(item.dataset.price) || 0;
   const total = (price*qty).toFixed(2);
   const msg = `Salam, saya berminat nak cuci gambar saiz ${item.dataset.name}, kuantiti ${qty} keping (anggaran RM ${total}). Boleh terangkan cara tempah?`;
   window.open('https://wa.me/60199572015?text=' + encodeURIComponent(msg), '_blank');
+}
+// Beli terus guna sistem Troli/Checkout website (payment gateway) — perlukan produk
+// dengan nama sepadan (pkgName) wujud di Admin > Tetapan > Produk.
+function cuciBuyOnWebsite(btn){
+  const item = btn.closest('.cuci-item');
+  const qty = cuciValidateQty(item);
+  if(qty === null) return;
+  const pkg = PKG.find(p => p.name === item.dataset.pkgname);
+  if(!pkg){
+    showToast('Produk ini belum tersedia untuk beli terus di website buat masa ini. Sila guna WhatsApp.');
+    return;
+  }
+  state.cart[pkg.id] = qty;
+  state.selPkg = pkg.id;
+  updateCartLabel();
+  renderCheckout();
+  showToast(pkg.name + ' (' + qty + ' keping) ditambah ke troli ✓');
+  goPage('checkout');
 }
 
 function goServisTerokai(){
