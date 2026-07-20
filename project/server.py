@@ -149,7 +149,7 @@ def _send_photo_reminder_email(order):
             "Kami masih menunggu GAMBAR anda untuk mula proses susun atur & cetakan.\n"
             f"Sila hantar gambar melalui: {medium or 'WhatsApp / Google Drive'}\n\n"
             "Jika anda sudah menghantar gambar, abaikan email ini.\n\n"
-            "Sebarang pertanyaan, WhatsApp kami di 013-318 2285.\n\n"
+            "Sebarang pertanyaan, WhatsApp kami di 019-957 2015.\n\n"
             "Terima kasih,\nPixyoPrint"
         )
         msg = EmailMessage()
