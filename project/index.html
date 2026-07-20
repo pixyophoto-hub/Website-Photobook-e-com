@@ -239,6 +239,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
   <div class="nav-links">
     <span class="nav-link active" id="nl-servis" onclick="goServisTerokai()">Travel &amp; Family</span>
     <span class="nav-link" id="nl-wedding" onclick="goPage('wedding')">Wedding</span>
+    <span class="nav-link" id="nl-cuci" onclick="goPage('cuci')">Cuci Gambar</span>
     <span class="nav-link" id="nl-upload" onclick="goPage('upload')">Hantar Gambar</span>
     <span class="nav-link" id="nl-status" onclick="goPage('status')">Status Tempahan</span>
     <span class="nav-link" id="nl-hubungi" onclick="goPage('hubungi')">Hubungi</span>
@@ -249,6 +250,7 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
   <div id="mobile-menu">
     <div class="mm-link active" id="mm-servis" onclick="goServisTerokai()">Travel &amp; Family</div>
     <div class="mm-link" id="mm-wedding" onclick="mmGo('wedding')">Wedding</div>
+    <div class="mm-link" id="mm-cuci" onclick="mmGo('cuci')">Cuci Gambar</div>
     <div class="mm-link" id="mm-upload" onclick="mmGo('upload')">Hantar Gambar</div>
     <div class="mm-link" id="mm-status" onclick="mmGo('status')">Status Tempahan</div>
     <div class="mm-link" id="mm-hubungi" onclick="mmGo('hubungi')">Hubungi</div>
@@ -545,6 +547,30 @@ body{font-family:'Hanken Grotesk',sans-serif;color:#423b36;background:#faf6ef;mi
     <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#2d2520;margin-bottom:8px;">Nak tempah atau tanya dulu?</div>
     <div style="font-size:13px;color:#8a7e72;margin-bottom:20px;line-height:1.6;">Ada pertanyaan? Tekan butang untuk kami bantu.</div>
     <a href="https://wa.me/60199572015?text=hi%20saya%20berminat%20dengan%20pembelian%20album%20wedding%2C%20boleh%20bantu%20saya" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#fff;text-decoration:none;font-size:15px;font-weight:600;padding:14px 28px;border-radius:100px;"><i class="ph ph-whatsapp-logo" style="font-size:20px;"></i> Tempah / Tanya via WhatsApp</a>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: CUCI GAMBAR -->
+<!-- ============================================================ -->
+<div class="page" id="page-cuci" style="padding:40px 32px 80px;">
+  <div style="text-align:center;margin-bottom:40px;padding:56px 20px 12px;">
+    <div style="font-family:'Courier New',monospace;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#a86d69;margin-bottom:12px;">Servis Cetakan</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(34px,5vw,54px);font-weight:600;line-height:1.05;color:#2d2520;">Cuci <span style="font-style:italic;color:#c98a86;">Gambar</span></div>
+    <div style="font-size:14px;color:#8a7e72;margin-top:14px;max-width:540px;margin-left:auto;margin-right:auto;line-height:1.6;">Cetak gambar berkualiti tinggi dalam pelbagai saiz. Hantar gambar, kami cetak & pos terus ke rumah anda.</div>
+  </div>
+
+  <div style="max-width:620px;margin:0 auto 26px;background:#fbf3f2;border:1px solid #eaddd9;border-radius:10px;padding:12px 16px;font-size:12.5px;color:#8a6f6a;line-height:1.6;text-align:center;">
+    <i class="ph ph-info" style="color:#c98a86;"></i> Harga di bawah harga sebenar. Setiap saiz ada kuantiti minimum tempahan — sila rujuk di bawah setiap saiz.
+  </div>
+
+  <div id="cuci-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:22px;max-width:1040px;margin:0 auto;"></div>
+
+  <!-- CTA -->
+  <div style="text-align:center;margin-top:44px;padding:32px 20px;background:#faf3f2;border-radius:16px;max-width:720px;margin-left:auto;margin-right:auto;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#2d2520;margin-bottom:8px;">Nak cuci gambar atau tanya dulu?</div>
+    <div style="font-size:13px;color:#8a7e72;margin-bottom:20px;line-height:1.6;">Ada pertanyaan? Tekan butang untuk kami bantu.</div>
+    <a href="https://wa.me/60199572015?text=hi%20saya%20berminat%20nak%20cuci%20gambar%2C%20boleh%20bantu%20saya" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#fff;text-decoration:none;font-size:15px;font-weight:600;padding:14px 28px;border-radius:100px;"><i class="ph ph-whatsapp-logo" style="font-size:20px;"></i> Tempah / Tanya via WhatsApp</a>
   </div>
 </div>
 
@@ -1613,7 +1639,7 @@ function showToast(msg) {
 // ============================================================
 // NAVIGATION
 // ============================================================
-const pages = ['servis','wedding','upload','catalog','checkout','status','hubungi','privasi','datarequest','terma'];
+const pages = ['servis','wedding','cuci','upload','catalog','checkout','status','hubungi','privasi','datarequest','terma'];
 
 function goPage(id) {
   pages.forEach(p => {
@@ -1625,13 +1651,14 @@ function goPage(id) {
   const nl = document.getElementById('nl-'+id);
   if(nl) nl.classList.add('active');
   // segerakkan keadaan aktif menu mobile
-  ['servis','wedding','upload','status','hubungi'].forEach(p=>{ const mm=document.getElementById('mm-'+p); if(mm) mm.classList.toggle('active', p===id); });
+  ['servis','wedding','cuci','upload','status','hubungi'].forEach(p=>{ const mm=document.getElementById('mm-'+p); if(mm) mm.classList.toggle('active', p===id); });
   window.scrollTo(0,0);
   // Kemas kini URL supaya boleh dikongsi (deep link)
   try { if(history.replaceState) history.replaceState(null, '', id==='servis' ? (location.pathname + location.search) : ('#'+id)); } catch(e){}
 
   if(id === 'checkout') renderCheckout();
   if(id === 'wedding') renderWedding();
+  if(id === 'cuci') renderCuci();
   if(id === 'status') renderStatus();
   if(id === 'privasi') renderPrivasi();
   if(id === 'datarequest') resetDataRequest();
@@ -1677,6 +1704,77 @@ function renderWedding(){
       </div>
     </div>`;
   }).join('');
+}
+
+// ── Cuci Gambar ──────────
+const CUCI_PRODUCTS = [
+  { id:'polaroid', name:'Polaroid',     unitPrice:0.30, min:100, specs:['Kertas Glossy/Matte'] },
+  { id:'2r',       name:'2R (6x9cm)',   unitPrice:0.30, min:100, specs:['Kertas Glossy/Matte'] },
+  { id:'3r',       name:'3R (9x13cm)',  unitPrice:0.60, min:50,  specs:['Kertas Glossy/Matte'] },
+  { id:'4r',       name:'4R (10x15cm)', unitPrice:1.00, min:30,  specs:['Kertas Glossy/Matte'] },
+  { id:'5r',       name:'5R (13x18cm)', unitPrice:1.50, min:20,  specs:['Kertas Glossy/Matte'] },
+  { id:'6r',       name:'6R (15x20cm)', unitPrice:1.90, min:20,  specs:['Kertas Glossy/Matte'] },
+  { id:'a4',       name:'A4',           unitPrice:5.00, min:6,   specs:['Kertas Glossy/Matte'] },
+  { id:'a3',       name:'A3',           unitPrice:10.00, min:3,  specs:['Kertas Glossy/Matte'] },
+];
+function renderCuci(){
+  const grid = document.getElementById('cuci-grid');
+  if(!grid) return;
+  grid.innerHTML = CUCI_PRODUCTS.map(p=>{
+    const img = `<div style="width:100%;aspect-ratio:1/1;background:repeating-linear-gradient(45deg,#efe4e2,#efe4e2 12px,#e8dad7 12px,#e8dad7 24px);display:flex;align-items:center;justify-content:center;color:#c9a9a4;"><i class="ph ph-image" style="font-size:40px;"></i></div>`;
+    return `<div class="cuci-item" data-id="${escA(p.id)}" data-name="${escA(p.name)}" data-price="${p.unitPrice}" data-min="${p.min}" style="background:#fffdfa;border:1px solid #ede4d8;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;">
+      ${img}
+      <div style="padding:16px 18px;display:flex;flex-direction:column;flex:1;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;color:#2d2520;">${escA(p.name)}</div>
+        <div style="font-size:18px;font-weight:700;color:#c98a86;margin:4px 0 8px;">RM ${p.unitPrice.toFixed(2)} / keping</div>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:14px;">
+          ${p.specs.map(s=>`<div style="font-size:12.5px;color:#6f6358;display:flex;align-items:center;gap:6px;"><i class="ph ph-check" style="color:#6f8466;"></i> ${escA(s)}</div>`).join('')}
+          <div style="font-size:12.5px;color:#a86d69;display:flex;align-items:center;gap:6px;font-weight:600;"><i class="ph ph-warning-circle"></i> Minimum tempahan ${p.min} keping</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <button type="button" onclick="cuciStep(this,-1)" style="width:34px;height:34px;flex:none;border:1px solid #e3d8cb;background:#fff;border-radius:8px;font-size:16px;font-weight:700;color:#6f6358;cursor:pointer;">−</button>
+          <input type="number" class="cuci-qty" value="${p.min}" min="${p.min}" step="1" oninput="cuciRecalc(this.closest('.cuci-item'))" style="flex:1;min-width:0;width:0;text-align:center;border:1px solid #e3d8cb;border-radius:8px;padding:8px 4px;font-size:14px;font-weight:600;box-sizing:border-box;">
+          <button type="button" onclick="cuciStep(this,1)" style="width:34px;height:34px;flex:none;border:1px solid #e3d8cb;background:#fff;border-radius:8px;font-size:16px;font-weight:700;color:#6f6358;cursor:pointer;">+</button>
+        </div>
+        <div class="cuci-subtotal" style="text-align:center;font-size:12.5px;color:#8a7e72;margin-bottom:12px;">Jumlah: <b style="color:#2d2520;">RM ${(p.unitPrice*p.min).toFixed(2)}</b></div>
+        <button type="button" onclick="cuciOrder(this)" style="text-align:center;background:#c98a86;color:#fff;border:none;text-decoration:none;font-size:13.5px;font-weight:600;padding:11px;border-radius:8px;cursor:pointer;">Tempah via WhatsApp</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function cuciStep(btn, delta){
+  const item = btn.closest('.cuci-item');
+  const input = item.querySelector('.cuci-qty');
+  const min = parseInt(item.dataset.min, 10) || 1;
+  let val = (parseInt(input.value, 10) || 0) + delta;
+  if(val < min) val = min;
+  input.value = val;
+  cuciRecalc(item);
+}
+function cuciRecalc(item){
+  const input = item.querySelector('.cuci-qty');
+  const price = parseFloat(item.dataset.price) || 0;
+  const min = parseInt(item.dataset.min, 10) || 1;
+  let qty = parseInt(input.value, 10) || 0;
+  if(qty < 0) qty = 0;
+  const sub = item.querySelector('.cuci-subtotal b');
+  if(sub) sub.textContent = 'RM ' + (price*qty).toFixed(2);
+}
+function cuciOrder(btn){
+  const item = btn.closest('.cuci-item');
+  const input = item.querySelector('.cuci-qty');
+  const min = parseInt(item.dataset.min, 10) || 1;
+  const qty = parseInt(input.value, 10) || 0;
+  if(qty < min){
+    showToast(`Minimum tempahan untuk ${item.dataset.name} ialah ${min} keping. Sila tambah kuantiti.`);
+    input.value = min;
+    cuciRecalc(item);
+    return;
+  }
+  const price = parseFloat(item.dataset.price) || 0;
+  const total = (price*qty).toFixed(2);
+  const msg = `Salam, saya berminat nak cuci gambar saiz ${item.dataset.name}, kuantiti ${qty} keping (anggaran RM ${total}). Boleh terangkan cara tempah?`;
+  window.open('https://wa.me/60199572015?text=' + encodeURIComponent(msg), '_blank');
 }
 
 function goServisTerokai(){
